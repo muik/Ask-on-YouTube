@@ -25,7 +25,7 @@ window.onload = async () => {
 
     }
 
-    if (window.location.hostname === "chat.openai.com") {
+    if (window.location.hostname === "chatgpt.com") {
         if (document.getElementsByTagName("textarea")[0]) {
             document.getElementsByTagName("textarea")[0].focus();
             // If search query is "?ref=glasp"

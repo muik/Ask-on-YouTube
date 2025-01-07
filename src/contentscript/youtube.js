@@ -97,7 +97,7 @@ export function insertSummaryBtn() {
             const prompt = copyTranscriptAndPrompt();
             setTimeout(() => {
                 chrome.runtime.sendMessage({ message: "setPrompt", prompt: prompt });
-                window.open("https://chat.openai.com/chat?ref=glasp", "_blank");
+                window.open("https://chatgpt.com/?ref=glasp", "_blank");
             }, 500);
         })
 
