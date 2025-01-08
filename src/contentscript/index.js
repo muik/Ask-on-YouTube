@@ -27,16 +27,19 @@ window.onload = async () => {
 
     if (window.location.hostname === "chatgpt.com") {
         if (document.getElementsByTagName("textarea")[0]) {
-            document.getElementsByTagName("textarea")[0].focus();
             // If search query is "?ref=glasp"
             if (window.location.search === "?ref=glasp") {
                 // get prompt from background.js
                 chrome.runtime.sendMessage({ message: "getPrompt" }, (response) => {
-                    document.getElementsByTagName("textarea")[0].value = response.prompt;
-                    if (response.prompt !== "") {
-                        document.getElementsByTagName("textarea")[0].focus();
-                        document.getElementsByTagName("button")[document.getElementsByTagName("button").length-1].click();
-                    }
+                    setTimeout(() => {
+                        const promptTextarea = document.querySelector("main form .ProseMirror");
+                        promptTextarea.innerHTML = `<p>${response.prompt}</p>`;
+
+                        setTimeout(() => {
+                            const sendButton = document.querySelector('[data-testid="send-button"]');
+                            sendButton.click();
+                        }, 100);
+                    }, 100);
                 });
             }
         }
