@@ -135,6 +135,47 @@ export function insertSummaryBtn() {
 
     });
 
+    insertCommentBtn();
+}
+
+function insertCommentBtn() {
+
+    waitForElm('#contents #main').then(() => {
+        const commentsEl = document.querySelector('#comments');
+
+        // Sanitize
+        Array.from(commentsEl.querySelectorAll(".yt_ai_comments")).forEach(el => { el.remove(); });
+
+        // Place Script Div
+        const buttonHtml = `<button class="yt-spec-button-shape-next yt-spec-button-shape-next--tonal yt-spec-button-shape-next--mono yt-spec-button-shape-next--size-m yt-spec-button-shape-next--icon-leading"
+            label="Copy comments">Copy comments</button>`;
+        const topHtml = `<div id="yt_ai_comments_top" class="yt_ai_comments" style="margin-left:auto">${buttonHtml}</div>`;
+        const bottomHtml = `<div id="yt_ai_comments_bottom" class="yt_ai_comments" style="margin:auto; margin-bottom:16px">${buttonHtml}</div>`;
+
+        commentsEl.querySelector("#header #title").insertAdjacentHTML("beforeend", topHtml);
+        commentsEl.querySelector("#contents").insertAdjacentHTML("beforeend", bottomHtml);
+
+        // Event Listener: Copy Comments
+        Array.from(commentsEl.querySelectorAll(".yt_ai_comments button")).forEach(el => {
+            el.addEventListener("click", (e) => {
+                const btn = e.target;
+                const defaultText = btn.textContent;
+
+                expandCommentReplies();
+
+                setTimeout(() => {
+                    copyUserComments();
+
+                    btn.textContent = "Copied!";
+
+                    setTimeout(() => {
+                        btn.textContent = defaultText;
+                    }, 2000);
+                }, 200);
+            });
+        });
+    });
+
 }
 
 function sanitizeWidget() {
@@ -243,6 +284,41 @@ function copyTranscript(videoId) {
         // contentBody += `- [${timestamp}](${`https://www.youtube.com${timestampHref}`}) ${text}\n`;
         contentBody += `(${timestamp}) ${text}\n`;
     })
+    copyTextToClipboard(contentBody);
+}
+
+function expandCommentReplies() {
+    Array.from(document.querySelectorAll('#comments #contents #more-replies button')).forEach(el => {
+        el.click();
+    });
+}
+
+function copyUserComments() {
+    let contentBody = `## User Comments\n`;
+    let preDepth = 0;
+
+    Array.from(document.querySelectorAll('#contents #main')).forEach(el => {
+        const author = el.querySelector('#author-text').innerText.trim();
+        const content = el.querySelector('#content').innerText.trim();
+        const publishedTime = el.querySelector('#published-time-text').innerText.trim();
+        const likesCount = el.querySelector('#vote-count-middle').innerText.trim();
+        const depth = el.closest('#expander-contents') ? 1 : 0;
+        const indent = '  '.repeat(depth);
+
+        if (depth > preDepth) {
+            contentBody += `${indent}[Replies]\n`;
+        }
+
+        contentBody += `${indent}- ${author}, ${publishedTime}\n`;
+        contentBody += `${indent}  ${content}\n`;
+
+        if (likesCount) {
+            contentBody += `${indent}  ${likesCount} likes\n`;
+        }
+
+        preDepth = depth;
+    })
+
     copyTextToClipboard(contentBody);
 }
 
