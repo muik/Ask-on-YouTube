@@ -1,9 +1,9 @@
 "use strict";
 
-import { getLangOptionsWithLink, getTranscriptHTML } from "./transcript";
-import { getSearchParam } from "./searchParam";
-import { getChunckedTranscripts, getSummaryPrompt } from "./prompt";
 import { copyTextToClipboard } from "./copy";
+import { getChunckedTranscripts, getSummaryPrompt } from "./prompt";
+import { getSearchParam } from "./searchParam";
+import { getLangOptionsWithLink, getTranscriptHTML } from "./transcript";
 
 
 export function insertSummaryBtn() {
@@ -135,47 +135,72 @@ export function insertSummaryBtn() {
 
     });
 
-    insertCommentBtn();
+    insertCommentsHeader();
+    insertCommentsFooter();
 }
 
-function insertCommentBtn() {
-
-    waitForElm('#contents #main').then(() => {
-        const commentsEl = document.querySelector('#comments');
+function insertCommentsHeader() {
+    waitForElm('#comments #header #title').then(el => {
+        const id = 'yt_ai_comments_header';
 
         // Sanitize
-        Array.from(commentsEl.querySelectorAll(".yt_ai_comments")).forEach(el => { el.remove(); });
+        Array.from(document.querySelectorAll(`#comments #${id}`)).forEach(el => { el.remove(); });
 
         // Place Script Div
-        const buttonHtml = `<button class="yt-spec-button-shape-next yt-spec-button-shape-next--tonal yt-spec-button-shape-next--mono yt-spec-button-shape-next--size-m yt-spec-button-shape-next--icon-leading"
-            label="Copy comments">Copy comments</button>`;
-        const topHtml = `<div id="yt_ai_comments_top" class="yt_ai_comments" style="margin-left:auto">${buttonHtml}</div>`;
-        const bottomHtml = `<div id="yt_ai_comments_bottom" class="yt_ai_comments" style="margin:auto; margin-bottom:16px">${buttonHtml}</div>`;
+        const html = `<div id="${id}" style="margin-left:auto"></div>`;
+        el.insertAdjacentHTML("beforeend", html);
 
-        commentsEl.querySelector("#header #title").insertAdjacentHTML("beforeend", topHtml);
-        commentsEl.querySelector("#contents").insertAdjacentHTML("beforeend", bottomHtml);
-
-        // Event Listener: Copy Comments
-        Array.from(commentsEl.querySelectorAll(".yt_ai_comments button")).forEach(el => {
-            el.addEventListener("click", (e) => {
-                const btn = e.target;
-                const defaultText = btn.textContent;
-
-                expandCommentReplies();
-
-                setTimeout(() => {
-                    copyUserComments();
-
-                    btn.textContent = "Copied!";
-
-                    setTimeout(() => {
-                        btn.textContent = defaultText;
-                    }, 2000);
-                }, 200);
-            });
-        });
+        insertCommentBtn(id);
     });
+}
 
+function insertCommentsFooter() {
+    waitForElm('#comments #contents #main').then(el => {
+        const id = 'yt_ai_comments_footer';
+
+        // Sanitize
+        Array.from(document.querySelectorAll(`#comments #${id}`)).forEach(el => { el.remove(); });
+
+        // Place Script Div
+        const html = `<div id="${id}" style="margin-left:auto; margin-right:auto; margin-bottom:16px"></div>`;
+        el.closest('#contents').insertAdjacentHTML("beforeend", html);
+
+        insertCommentBtn(id);
+    });
+}
+
+function insertCommentBtn(id) {
+    const buttonHtml = `<button class="yt-ai-comments yt-spec-button-shape-next
+            yt-spec-button-shape-next--tonal yt-spec-button-shape-next--mono
+            yt-spec-button-shape-next--size-m yt-spec-button-shape-next--icon-leading"
+        label="Copy comments">Copy comments</button>`;
+
+    const el = document.querySelector(`#${id}`);
+    el.insertAdjacentHTML('beforeend', buttonHtml);
+
+    addCopyCommentsEventListener(id);
+}
+
+// Event Listener: Copy Comments
+function addCopyCommentsEventListener(id) {
+    const el = document.querySelector(`#comments #${id} button.yt-ai-comments`);
+
+    el.addEventListener("click", (e) => {
+        const btn = e.target;
+        const defaultText = btn.textContent;
+
+        expandCommentReplies();
+
+        setTimeout(() => {
+            copyUserComments();
+
+            btn.textContent = "Copied!";
+
+            setTimeout(() => {
+                btn.textContent = defaultText;
+            }, 2000);
+        }, 200);
+    });
 }
 
 function sanitizeWidget() {
