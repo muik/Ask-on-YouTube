@@ -1,3 +1,4 @@
+import { config } from "./config.js";
 import { waitForElm } from "./utils.js";
 
 /**
@@ -7,7 +8,7 @@ import { waitForElm } from "./utils.js";
 function isOnGeminiPage() {
     if (
         window.location.hostname === "gemini.google.com" &&
-        window.location.search === "?ref=glasp"
+        window.location.search === `?ref=${config['refCode']}`
     ) {
         return true;
     }

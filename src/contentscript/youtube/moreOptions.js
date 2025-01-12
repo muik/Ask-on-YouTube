@@ -1,3 +1,4 @@
+import { config } from "../config.js";
 import { watchElement } from "../utils.js";
 
 /**
@@ -56,7 +57,7 @@ export function insertMoreOptions() {
                 .addEventListener("click", () => {
                     setTimeout(() => {
                         window.open(
-                            "https://gemini.google.com/app?ref=glasp",
+                            `https://gemini.google.com/app?ref=${config['refCode']}`,
                             "_blank"
                         );
                     }, 500);

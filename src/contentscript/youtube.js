@@ -1,5 +1,6 @@
 "use strict";
 
+import { config } from "./config";
 import { copyTextToClipboard } from "./copy";
 import { getChunckedTranscripts, getSummaryPrompt } from "./prompt";
 import { getSearchParam } from "./searchParam";
@@ -99,7 +100,7 @@ export function insertSummaryBtn() {
             const prompt = copyTranscriptAndPrompt();
             setTimeout(() => {
                 chrome.runtime.sendMessage({ message: "setPrompt", prompt: prompt });
-                window.open("https://chatgpt.com/?ref=glasp", "_blank");
+                window.open(`https://chatgpt.com/?ref=${config['refCode']}`, "_blank");
             }, 500);
         })
 

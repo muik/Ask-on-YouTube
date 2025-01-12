@@ -1,5 +1,6 @@
 "use strict";
 
+import { config } from "./config";
 import { runOnGeminiPage } from "./gemini";
 import { insertSummaryBtn } from "./youtube";
 import { detectVideoOptionClick, insertMoreOptions } from "./youtube/moreOptions";
@@ -32,10 +33,10 @@ window.onload = async () => {
     });
   }
 
-  // If search query is "?ref=glasp"
+  // If opened by the extension, insert the prompt
   if (
     window.location.hostname === "chatgpt.com" &&
-    window.location.search === "?ref=glasp"
+    window.location.search === `?ref=${config['refCode']}`
   ) {
     if (document.getElementsByTagName("textarea")[0]) {
       // get prompt from background.js
