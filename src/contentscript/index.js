@@ -25,10 +25,12 @@ window.onload = async () => {
 
     }
 
-    if (window.location.hostname === "chatgpt.com") {
+// If search query is "?ref=glasp"
+    if (
+window.location.hostname === "chatgpt.com" &&
+    window.location.search === "?ref=glasp"
+) {
         if (document.getElementsByTagName("textarea")[0]) {
-            // If search query is "?ref=glasp"
-            if (window.location.search === "?ref=glasp") {
                 // get prompt from background.js
                 chrome.runtime.sendMessage({ message: "getPrompt" }, (response) => {
                     setTimeout(() => {
@@ -41,7 +43,6 @@ window.onload = async () => {
                         }, 100);
                     }, 100);
                 });
-            }
         }
     }
     
