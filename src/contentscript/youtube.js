@@ -281,41 +281,6 @@ function copyTranscript(videoId) {
     copyTextToClipboard(contentBody);
 }
 
-function expandCommentReplies() {
-    Array.from(document.querySelectorAll('#comments #contents #more-replies button')).forEach(el => {
-        el.click();
-    });
-}
-
-function copyUserComments() {
-    let contentBody = `## User Comments\n`;
-    let preDepth = 0;
-
-    Array.from(document.querySelectorAll('#contents #main')).forEach(el => {
-        const author = el.querySelector('#author-text').innerText.trim();
-        const content = el.querySelector('#content').innerText.trim();
-        const publishedTime = el.querySelector('#published-time-text').innerText.trim();
-        const likesCount = el.querySelector('#vote-count-middle').innerText.trim();
-        const depth = el.closest('#expander-contents') ? 1 : 0;
-        const indent = '  '.repeat(depth);
-
-        if (depth > preDepth) {
-            contentBody += `${indent}[Replies]\n`;
-        }
-
-        contentBody += `${indent}- ${author}, ${publishedTime}\n`;
-        contentBody += `${indent}  ${content}\n`;
-
-        if (likesCount) {
-            contentBody += `${indent}  ${likesCount} likes\n`;
-        }
-
-        preDepth = depth;
-    })
-
-    copyTextToClipboard(contentBody);
-}
-
 function copyTranscriptAndPrompt() {
     const textEls = document.getElementsByClassName("yt_ai_summary_transcript_text");
     const textData = Array.from(textEls).map((textEl, i) => { return {
