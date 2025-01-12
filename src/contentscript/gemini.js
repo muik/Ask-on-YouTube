@@ -22,7 +22,26 @@ export function runOnGeminiPage() {
         return;
     }
 
-    // insert prompt into the input field
+    // Select new model
+    waitForElm("bard-mode-switcher button").then((element) => {
+        // Click the button to open the dropdown
+        element.click();
+
+        const modelButtons = document.querySelectorAll(
+            ".mat-mdc-menu-content button.mat-mdc-menu-item"
+        );
+        if (modelButtons && modelButtons.length > 1) {
+            modelButtons[1].click();
+        }
+
+        insertPrompt();
+    });
+}
+
+/**
+ * Inserts the prompt into the Gemini page.
+ */
+function insertPrompt() {
     waitForElm("rich-textarea div.ql-editor.textarea.new-input-ui").then(
         (element) => {
             chrome.runtime.sendMessage({ message: "getPrompt" }, (response) => {
