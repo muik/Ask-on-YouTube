@@ -10,22 +10,23 @@ import { insertCommentBtn } from "./youtube/copyComments";
 
 
 export function insertSummaryBtn() {
+    const id = 'yt_ai_summary_container_'; // Top level container id
 
     // Sanitize Transcript Div
     if (document.querySelector("#yt_ai_summary_lang_select")) { document.querySelector("#yt_ai_summary_lang_select").innerHTML = ""; }
     if (document.querySelector("#yt_ai_summary_summary")) { document.querySelector("#yt_ai_summary_summary").innerHTML = ""; }
-    Array.from(document.getElementsByClassName("yt_ai_summary_container")).forEach(el => { el.remove(); });
+    Array.from(document.getElementsByClassName(id)).forEach(el => { el.remove(); });
 
     if (!getSearchParam(window.location.href).v) { return; }
 
     waitForElm('#secondary.style-scope.ytd-watch-flexy').then(() => {
 
         // Sanitize
-        Array.from(document.getElementsByClassName("yt_ai_summary_container")).forEach(el => { el.remove(); });
+        Array.from(document.getElementsByClassName(id)).forEach(el => { el.remove(); });
 
         // Place Script Div
         document.querySelector("#secondary.style-scope.ytd-watch-flexy").insertAdjacentHTML("afterbegin", `
-        <div class="yt_ai_summary_container">
+        <div class="${id}">
             <div id="yt_ai_summary_header" class="yt_ai_summary_header">
                 <a href="https://glasp.co/youtube-summary" target="_blank" style="width: 24px;height: 24px;">
                     <svg width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -107,7 +108,7 @@ export function insertSummaryBtn() {
         // Event Listener: Jump to Current Timestamp
         document.querySelector("#yt_ai_summary_header_track").addEventListener("click", (e) => {
             e.stopPropagation();
-            scrollIntoCurrTimeDiv();
+            scrollIntoCurrTimeDiv(id);
         })
 
         // Event Listener: Toggle Transcript Body
@@ -237,14 +238,14 @@ function getTYEndTime() {
     return document.querySelector("#movie_player > div.html5-video-container > video").duration ?? 0;
 }
 
-function scrollIntoCurrTimeDiv() {
+function scrollIntoCurrTimeDiv(containerId) {
     const currTime = getTYCurrentTime();
     Array.from(document.getElementsByClassName("yt_ai_summary_transcript_text_timestamp")).forEach((el, i, arr) => {
         const startTimeOfEl = el.getAttribute("data-start-time");
         const startTimeOfNextEl = (i === arr.length-1) ? getTYEndTime() : arr[i+1].getAttribute("data-start-time") ?? 0;
         if (currTime >= startTimeOfEl && currTime < startTimeOfNextEl) {
             el.scrollIntoView({ behavior: 'auto', block: 'start' });
-            document.querySelector("#secondary > div.yt_ai_summary_container").scrollIntoView({ behavior: 'auto', block: 'end' });
+            document.querySelector(`#secondary > div.${containerId}`).scrollIntoView({ behavior: 'auto', block: 'end' });
         }
     })
 }
