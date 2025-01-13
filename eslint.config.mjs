@@ -8,6 +8,7 @@ export default [
             globals: {
                 ...globals.browser,
                 ...globals.webextensions,
+                ...globals.node,
                 chrome: "readonly",
             },
         },
