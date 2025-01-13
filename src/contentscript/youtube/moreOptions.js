@@ -1,98 +1,92 @@
 import { config } from "../config.js";
-import { watchElement } from "../utils.js";
+import { getSearchParam } from "../searchParam";
 
 /**
- * Helper function to check if an element is visible.
- * @param {HTMLElement} element - The element to check.
- * @returns {boolean} - Returns true if the element is visible, otherwise false.
+ * Inserts the "View in Gemini" button into the YouTube video options menu.
+ * @param {Element} element - The YouTube video options menu.
  */
-function isElementVisible(element) {
-    const rect = element.getBoundingClientRect();
-    return rect.height > 0;
-}
+function insertViewInGeminiButton(element) {
+    if (element.querySelector("#view_in_gemini")) {
+        console.debug("Element already added the option.");
+        return;
+    }
 
-/**
- * Inserts the "View in Gemini" option into the more options dropdown menu.
- */
-export function insertMoreOptions() {
-    watchElement({
-        selector:
-            'tp-yt-iron-dropdown[aria-disabled="false"]:not([aria-hidden="true"])',
-        callback: (element) => {
-            const id = "yt_ai_more_options";
+    // Adjust the popup dialog height after adding an item
+    const popupElement = element.querySelector("ytd-menu-popup-renderer");
+    const currentMaxHeight = parseInt(
+        window.getComputedStyle(popupElement).maxHeight || "0",
+        10
+    );
 
-            // Skip if the element already has the ID attribute set
-            if (element.getAttribute(id) !== null) {
-                return;
-            }
+    if (currentMaxHeight === 0) {
+        console.debug("popup dialog is not visible.");
+        return;
+    }
 
-            const lastItem = element.querySelector(
-                "ytd-menu-service-item-renderer:last-child"
-            );
+    const lastItem = element.querySelector(
+        "ytd-menu-service-item-renderer:last-child"
+    );
 
-            // Verify if the last item is visible
-            if (!lastItem || !isElementVisible(lastItem)) {
-                console.debug("Last menu item is not visible.");
-                return;
-            }
+    // Verify if the last item exists
+    if (!lastItem) {
+        console.debug("Last menu item is not visible.", lastItem);
+        return;
+    }
 
-            element.setAttribute(id, true);
+    // Add a separator below the last item
+    lastItem.setAttribute("has-separator", "");
 
-            // Add a separator below the last item
-            lastItem.setAttribute("has-separator", "");
-
-            const geminiOptionHTML = `
+    const geminiOptionHTML = `
                 <div id="view_in_gemini" class="style-scope ytd-menu-popup-renderer" role="menuitem" tabindex="-1" aria-selected="false" style="cursor:pointer">
                     <tp-yt-paper-item class="style-scope ytd-menu-service-item-renderer" role="option" tabindex="0" aria-disabled="false">    
                         <div style="font-size:14px">View in Gemini</div>
                     </tp-yt-paper-item>
                 </div>`;
 
-            lastItem
-                .closest("tp-yt-paper-listbox")
-                .insertAdjacentHTML("beforeend", geminiOptionHTML);
+    lastItem
+        .closest("tp-yt-paper-listbox")
+        .insertAdjacentHTML("beforeend", geminiOptionHTML);
 
-            element
-                .querySelector("#view_in_gemini")
-                .addEventListener("click", () => {
-                    setTimeout(() => {
-                        window.open(
-                            `https://gemini.google.com/app?ref=${config['refCode']}`,
-                            "_blank"
-                        );
-                    }, 500);
-
-                    // Close the dropdown menu
-                    element.style.display = "none";
-                });
-
-            // Adjust the popup dialog height after adding an item
-            const popupElement = element.querySelector(
-                "ytd-menu-popup-renderer"
+    // Click event listener for the "View in Gemini" button
+    element.querySelector("#view_in_gemini").addEventListener("click", () => {
+        setTimeout(() => {
+            window.open(
+                `https://gemini.google.com/app?ref=${config["refCode"]}`,
+                "_blank"
             );
-            const currentMaxHeight = parseInt(
-                window.getComputedStyle(popupElement).maxHeight || "0",
-                10
-            );
-            if (!isNaN(currentMaxHeight) && currentMaxHeight > 0) {
-                const newMaxHeight = currentMaxHeight + 150;
-                popupElement.style.maxHeight = `${newMaxHeight}px`;
-            } else {
-                console.warn("max-height is not set or is not a valid number.");
-            }
-        },
+        }, 500);
+
+        // Close the dropdown menu
+        element.style.display = "none";
     });
+
+    if (!isNaN(currentMaxHeight) && currentMaxHeight > 0) {
+        const newMaxHeight = currentMaxHeight + 150;
+        popupElement.style.maxHeight = `${newMaxHeight}px`;
+    } else {
+        console.debug(
+            "max-height is not set or is not a valid number.",
+            currentMaxHeight,
+            popupElement
+        );
+    }
 }
 
 /**
- * Detects when a video option is clicked.
+ * Extracts the video ID from the YouTube video options menu.
+ * @param {Element} target - The clicked element.
+ * @returns {string} The YouTube video ID.
  */
-export function detectVideoOptionClick(target) {
+function getVideoIdFromItemVideoOptionMenu(target) {
     if (
         target.tagName != "DIV" ||
         !target.parentElement ||
         !target.parentElement.classList.contains("yt-icon")
     ) {
+        return;
+    }
+
+    if (!target.closest("yt-icon-button.dropdown-trigger")) {
         return;
     }
 
@@ -124,14 +118,14 @@ export function detectVideoOptionClick(target) {
         menuButton.closest("ytd-playlist-video-renderer") ||
         menuButton.closest("ytd-grid-video-renderer");
     if (!videoContainer) {
-        console.log("No video container found", menuButton);
+        console.debug("No video container found", menuButton);
         return; // Exit if no video container is identified
     }
 
     // Locate an <a> tag within the container that links to the video
     const videoLink = videoContainer.querySelector("a#thumbnail");
     if (!videoLink || !videoLink.href) {
-        console.log("No video link found", videoContainer);
+        console.debug("No video link found", videoContainer);
         return;
     }
 
@@ -139,8 +133,45 @@ export function detectVideoOptionClick(target) {
     const url = new URL(videoLink.href);
     let videoId = url.searchParams.get("v");
 
+    return videoId;
+}
+
+/**
+ * Extracts the video ID from the main YouTube video options menu.
+ * @param {Element} target - The clicked element.
+ * @returns {string} The YouTube video ID.
+ */
+function getVideoIdFromMainVideoOptionMenu(target) {
+    if (
+        target.tagName != "DIV" ||
+        !target.classList.contains("yt-spec-touch-feedback-shape__fill") ||
+        !target.closest("#actions-inner")
+    ) {
+        return;
+    }
+
+    return getSearchParam(window.location.href).v;
+}
+
+/**
+ * Detects when a video option is clicked.
+ */
+export function detectVideoOptionClick(target) {
+    console.debug("Detecting video option click:", target);
+    const videoId =
+        getVideoIdFromItemVideoOptionMenu(target) ||
+        getVideoIdFromMainVideoOptionMenu(target);
+
     if (videoId && /^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
         setGeminiPrompt(videoId);
+
+        const dropdown = document.querySelector(
+            'tp-yt-iron-dropdown[aria-disabled="false"]:not([aria-hidden="true"])'
+        );
+        console.debug("Dropdown:", dropdown);
+        if (dropdown) {
+            insertViewInGeminiButton(dropdown);
+        }
     } else {
         console.warn("Invalid or missing video ID.", videoId);
     }
@@ -151,27 +182,29 @@ export function detectVideoOptionClick(target) {
  * @param {string} videoId - The YouTube video ID.
  */
 function setGeminiPrompt(videoId) {
-    const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
-    if (chrome.runtime && chrome.runtime.sendMessage) {
-        chrome.runtime.sendMessage(
-            {
-                message: "setPrompt",
-                prompt: videoUrl,
-            },
-            (response) => {
-                if (chrome.runtime.lastError) {
-                    console.error(
-                        "Error sending message:",
-                        chrome.runtime.lastError.message
-                    );
-                } else {
-                    console.debug("Message sent successfully:", response);
-                }
-            }
-        );
-    } else {
+    if (!chrome.runtime || !chrome.runtime.sendMessage) {
         console.warn("chrome.runtime is unavailable or unsupported.");
         // Provide fallback behavior if necessary
         alert("Unable to send the prompt to Gemini. Please try again later.");
+        return;
     }
+
+    const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+
+    chrome.runtime.sendMessage(
+        {
+            message: "setPrompt",
+            prompt: videoUrl,
+        },
+        (response) => {
+            if (chrome.runtime.lastError) {
+                console.error(
+                    "Error sending message:",
+                    chrome.runtime.lastError.message
+                );
+            } else {
+                console.debug("Message sent successfully:", response);
+            }
+        }
+    );
 }

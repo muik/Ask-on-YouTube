@@ -1,10 +1,7 @@
 "use strict";
 
 import { insertSummaryBtn } from "./youtube";
-import {
-    detectVideoOptionClick,
-    insertMoreOptions,
-} from "./youtube/moreOptions";
+import { detectVideoOptionClick } from "./youtube/moreOptions";
 
 let oldHref = "";
 
@@ -27,8 +24,6 @@ window.onload = async () => {
             });
         });
         observer.observe(bodyList, { childList: true, subtree: true });
-
-        insertMoreOptions();
 
         document.addEventListener("click", (event) => {
             detectVideoOptionClick(event.target);
