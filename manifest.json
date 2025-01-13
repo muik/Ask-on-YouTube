@@ -3,6 +3,7 @@
     "version": "1.0.4",
     "manifest_version": 3,
     "description": "Use ChatGPT to summarize YouTube videos",
+    "permissions": ["storage"],
     "background": {
         "service_worker": "background.bundle.js",
         "type": "module"
@@ -11,6 +12,10 @@
         "default_icon": {
             "48": "images/48.png"
         }
+    },
+    "options_ui": {
+        "open_in_tab": true,
+        "page": "settings.html"
     },
     "content_scripts": [
         {

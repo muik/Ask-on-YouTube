@@ -28,6 +28,11 @@ const plugins = [
             }
         }]
     }),
+    new HtmlWebpackPlugin({
+        filename: "settings.html", // Output filename
+        template: path.join(__dirname, "src", "options", "settings.html"), // Input template
+        chunks: ["settings"] // Include only the 'settings' entry
+    }),
     new WriteFilePlugin()
 ];
 
@@ -64,6 +69,7 @@ const config = {
         'contentscript/gemini': path.join(__dirname, "src", "contentscript", "gemini.js"),
         'contentscript/chatgpt': path.join(__dirname, "src", "contentscript", "chatgpt.js"),
         'background': path.join(__dirname, "background.js"),
+        settings: path.join(__dirname, "src", "options", "settings.js"),
     },
     output: {
         path: path.join(__dirname, "dist"),

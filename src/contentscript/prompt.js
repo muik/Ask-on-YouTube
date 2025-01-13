@@ -1,9 +1,10 @@
-export function getSummaryPrompt(transcript) {
-  return `Title: "${document.title
-    .replace(/\n+/g, " ")
-    .trim()}"\nVideo Transcript: "${truncateTranscript(transcript)
-    .replace(/\n+/g, " ")
-    .trim()}"\nVideo Summary:`;
+import { getPromptChatGPT } from "../storage";
+
+export async function getSummaryPrompt(transcript) {
+  const prompt = await getPromptChatGPT();
+  const title = document.title.replace(/\n+/g, " ").trim();
+  const transcriptRevised = truncateTranscript(transcript).replace(/\n+/g, " ").trim();
+  return `${prompt}\nTitle: "${title}"\nTranscript: "${transcriptRevised}"`;
 }
 
 // Seems like 15,000 bytes is the limit for the prompt

@@ -98,11 +98,10 @@ export function insertSummaryBtn() {
         // Event Listener: AI Summary
         document.querySelector("#yt_ai_summary_header_summary").addEventListener("click", (e) => {
             e.stopPropagation();
-            const prompt = copyTranscriptAndPrompt();
-            setTimeout(() => {
+            copyTranscriptAndPrompt().then((prompt) => {
                 chrome.runtime.sendMessage({ message: "setPrompt", prompt: prompt });
                 window.open(`https://chatgpt.com/?ref=${config['refCode']}`, "_blank");
-            }, 500);
+            });
         })
 
         // Event Listener: Jump to Current Timestamp
@@ -282,14 +281,14 @@ function copyTranscript(videoId) {
     copyTextToClipboard(contentBody);
 }
 
-function copyTranscriptAndPrompt() {
+async function copyTranscriptAndPrompt() {
     const textEls = document.getElementsByClassName("yt_ai_summary_transcript_text");
     const textData = Array.from(textEls).map((textEl, i) => { return {
         text: textEl.textContent.trim(),
         index: i,
     }})
     const text = getChunckedTranscripts(textData, textData);
-    const prompt = getSummaryPrompt(text);
+    const prompt = await getSummaryPrompt(text);
     copyTextToClipboard(prompt);
     return prompt;
 }

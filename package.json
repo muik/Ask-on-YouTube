@@ -8,7 +8,7 @@
     "lint": "eslint src/ --fix",
     "build": "npm run lint && npm run clean && webpack",
     "build-release": "npm run lint && npm run clean && NODE_ENV=production webpack",
-    "watch": "nodemon --watch src --exec 'npm run build'",
+    "watch": "nodemon --watch src/ --watch webpack.config.js --ext js,html --exec 'npm run build'",
     "test": "NODE_OPTIONS=--experimental-vm-modules npx jest"
   },
   "repository": {
