@@ -90,6 +90,7 @@ export function insertMoreOptions() {
 export function detectVideoOptionClick(target) {
     if (
         target.tagName != "DIV" ||
+        !target.parentElement ||
         !target.parentElement.classList.contains("yt-icon")
     ) {
         return;
