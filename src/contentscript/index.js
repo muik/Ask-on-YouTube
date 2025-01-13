@@ -1,7 +1,6 @@
 "use strict";
 
 import { config } from "./config";
-import { runOnGeminiPage } from "./gemini";
 import { insertSummaryBtn } from "./youtube";
 import { detectVideoOptionClick, insertMoreOptions } from "./youtube/moreOptions";
 
@@ -54,5 +53,4 @@ window.onload = async () => {
     }
   }
 
-  runOnGeminiPage();
 };

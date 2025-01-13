@@ -1,5 +1,11 @@
+"use strict";
+
 import { config } from "./config.js";
 import { waitForElm } from "./utils.js";
+
+window.onload = async () => {
+    runOnGeminiPage();
+};
 
 /**
  * Checks if the current page is the Gemini page opened by this extension.
@@ -8,7 +14,7 @@ import { waitForElm } from "./utils.js";
 function isOnGeminiPage() {
     if (
         window.location.hostname === "gemini.google.com" &&
-        window.location.search === `?ref=${config['refCode']}`
+        window.location.search === `?ref=${config["refCode"]}`
     ) {
         return true;
     }
@@ -18,7 +24,7 @@ function isOnGeminiPage() {
 /**
  * Runs the script on the Gemini page.
  */
-export function runOnGeminiPage() {
+function runOnGeminiPage() {
     if (!isOnGeminiPage()) {
         return;
     }

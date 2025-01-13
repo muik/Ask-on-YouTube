@@ -61,6 +61,7 @@ const config = {
     mode: process.env.NODE_ENV || "development",
     entry: {
         'contentscript/index': path.join(__dirname, "src", "contentscript", "index.js"),
+        'contentscript/gemini': path.join(__dirname, "src", "contentscript", "gemini.js"),
         'background': path.join(__dirname, "background.js"),
     },
     output: {
