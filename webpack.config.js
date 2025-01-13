@@ -23,7 +23,7 @@ const plugins = [
             to: "images"
         },{
             from: "src/css/*.css",
-            to({ context, absoluteFilename }) {
+            to() {
                 return "contentscript/[name][ext]";
             }
         }]
