@@ -71,6 +71,10 @@ export function insertSummaryBtn() {
             </div>
         </div>`);
 
+        // Show buttons on initial load
+        document.querySelector("#yt_ai_summary_header_copy").classList.toggle("yt_ai_summary_header_icon_show");
+        document.querySelector("#yt_ai_summary_header_summary").classList.toggle("yt_ai_summary_header_icon_show");
+
         // Event Listener: Hover Label
         Array.from(document.getElementsByClassName("yt-summary-hover-el")).forEach(el => {
             const label = el.getAttribute("data-hover-label");
@@ -89,10 +93,13 @@ export function insertSummaryBtn() {
         })
 
         // Event Listener: Copy Transcript
-        document.querySelector("#yt_ai_summary_header_copy").addEventListener("click", (e) => {
+        document.querySelector("#yt_ai_summary_header_copy").addEventListener("click", async (e) => {
             e.stopPropagation();
-            const videoId = getSearchParam(window.location.href).v;
-            copyTranscript(videoId);
+
+            if (await loadTranscript()) {
+                const videoId = getSearchParam(window.location.href).v;
+                copyTranscript(videoId);
+            }
         })
 
         // Event Listener: AI Summary
@@ -113,33 +120,41 @@ export function insertSummaryBtn() {
         // Event Listener: Toggle Transcript Body
         document.querySelector("#yt_ai_summary_header").addEventListener("click", async () => {
 
-            const videoId = getSearchParam(window.location.href).v;
             sanitizeWidget();
 
             if (!isWidgetOpen()) { return; }
 
-            // Get Transcript Language Options & Create Language Select Btns
-            const langOptionsWithLink = await getLangOptionsWithLink(videoId);
-            if (!langOptionsWithLink) {
-                noTranscriptionAlert();
-                return;
-            }
-            createLangSelectBtns(langOptionsWithLink);
-
-            // Create Transcript HTML & Add Event Listener
-            const transcriptHTML = await getTranscriptHTML(langOptionsWithLink[0].link, videoId);
-            document.querySelector("#yt_ai_summary_text").innerHTML = transcriptHTML;
-            evtListenerOnTimestamp();
-
-            // Event Listener: Language Select Btn Click
-            evtListenerOnLangBtns(langOptionsWithLink, videoId);
-
+            await loadTranscript();
         })
 
     });
 
     insertCommentsHeader();
     insertCommentsFooter();
+}
+
+async function loadTranscript() {
+    const videoId = getSearchParam(window.location.href).v;
+
+    if (document.querySelector("#yt_ai_summary_lang_select").innerHTML) {
+        return true;
+    }
+
+    // Get Transcript Language Options & Create Language Select Btns
+    const langOptionsWithLink = await getLangOptionsWithLink(videoId);
+    if (!langOptionsWithLink) {
+        noTranscriptionAlert();
+        return false;
+    }
+    createLangSelectBtns(langOptionsWithLink);
+
+    // Create Transcript HTML & Add Event Listener
+    const transcriptHTML = await getTranscriptHTML(langOptionsWithLink[0].link, videoId);
+    document.querySelector("#yt_ai_summary_text").innerHTML = transcriptHTML;
+    evtListenerOnTimestamp();
+
+    // Event Listener: Language Select Btn Click
+    evtListenerOnLangBtns(langOptionsWithLink, videoId);
 }
 
 function insertCommentsHeader() {
@@ -175,19 +190,19 @@ function insertCommentsFooter() {
 function sanitizeWidget() {
     // Sanitize Transcript Div
     document.querySelector("#yt_ai_summary_lang_select").innerHTML = "";
-    document.querySelector("#yt_ai_summary_text").innerHTML = "";
 
     // Height Adjust
     document.querySelector("#yt_ai_summary_body").style.maxHeight = window.innerHeight - 160 + "px";
-    document.querySelector("#yt_ai_summary_text").innerHTML = `
-    <svg class="yt_ai_summary_loading" style="display: block;width: 48px;margin: 40px auto;" width="48" height="48" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M100 36C59.9995 36 37 66 37 99C37 132 61.9995 163.5 100 163.5C138 163.5 164 132 164 99" stroke="#5C94FF" stroke-width="6"/>
-    </svg>`;
+
+    if (!document.querySelector("#yt_ai_summary_text").innerHTML) {
+        document.querySelector("#yt_ai_summary_text").innerHTML = `
+        <svg class="yt_ai_summary_loading" style="display: block;width: 48px;margin: 40px auto;" width="48" height="48" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M100 36C59.9995 36 37 66 37 99C37 132 61.9995 163.5 100 163.5C138 163.5 164 132 164 99" stroke="#5C94FF" stroke-width="6"/>
+        </svg>`;
+    }
 
     // Toggle Class List
     document.querySelector("#yt_ai_summary_body").classList.toggle("yt_ai_summary_body_show");
-    document.querySelector("#yt_ai_summary_header_copy").classList.toggle("yt_ai_summary_header_icon_show");
-    document.querySelector("#yt_ai_summary_header_summary").classList.toggle("yt_ai_summary_header_icon_show");
     document.querySelector("#yt_ai_summary_header_track").classList.toggle("yt_ai_summary_header_icon_show");
     document.querySelector("#yt_ai_summary_header_toggle").classList.toggle("yt_ai_summary_header_toggle_rotate");
 }
