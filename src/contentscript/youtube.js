@@ -112,7 +112,7 @@ export function insertSummaryBtn() {
         })
 
         // Event Listener: Toggle Transcript Body
-        document.querySelector("#yt_ai_summary_header").addEventListener("click", async (e) => {
+        document.querySelector("#yt_ai_summary_header").addEventListener("click", async () => {
 
             const videoId = getSearchParam(window.location.href).v;
             sanitizeWidget();
@@ -274,7 +274,7 @@ function copyTranscript(videoId) {
         if (!el) { return; }
         if (el.children.length < 2) { return; }
         const timestamp = el.querySelector(".yt_ai_summary_transcript_text_timestamp").innerText;
-        const timestampHref = el.querySelector(".yt_ai_summary_transcript_text_timestamp").getAttribute("data-timestamp-href");
+        // const timestampHref = el.querySelector(".yt_ai_summary_transcript_text_timestamp").getAttribute("data-timestamp-href");
         const text = el.querySelector(".yt_ai_summary_transcript_text").innerText;
         // contentBody += `- [${timestamp}](${`https://www.youtube.com${timestampHref}`}) ${text}\n`;
         contentBody += `(${timestamp}) ${text}\n`;

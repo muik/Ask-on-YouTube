@@ -5,8 +5,9 @@
   "main": "background.js",
   "scripts": {
     "clean": "rimraf dist/*",
-    "build": "npm run clean && webpack",
-    "build-release": "npm run clean && NODE_ENV=production webpack",
+    "lint": "eslint src/ --fix",
+    "build": "npm run lint && npm run clean && webpack",
+    "build-release": "npm run lint && npm run clean && NODE_ENV=production webpack",
     "watch": "nodemon --watch src --exec 'npm run build'",
     "test": "NODE_OPTIONS=--experimental-vm-modules npx jest"
   },
@@ -21,10 +22,13 @@
   },
   "homepage": "https://github.com/kazuki-sf/youtube_summary#readme",
   "devDependencies": {
+    "@eslint/js": "^9.18.0",
     "copy-webpack-plugin": "^9.0.1",
     "css-loader": "^6.4.0",
+    "eslint": "^9.18.0",
     "file-loader": "^6.2.0",
     "fs-extra": "^10.0.0",
+    "globals": "^15.14.0",
     "html-loader": "^2.1.2",
     "html-webpack-plugin": "^5.4.0",
     "jest": "^27.2.4",

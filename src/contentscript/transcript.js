@@ -17,7 +17,7 @@ export async function getLangOptionsWithLink(videoId) {
   languageOptions.sort(function(x,y){ return x.includes(first) ? -1 : y.includes(first) ? 1 : 0; });
   languageOptions.sort(function(x,y){ return x == first ? -1 : y == first ? 1 : 0; });
 
-  return Array.from(languageOptions).map((langName, index) => {
+  return Array.from(languageOptions).map((langName) => {
     const link = captionTracks.find(i => i.name.simpleText === langName).baseUrl;
     return {
       language: langName,

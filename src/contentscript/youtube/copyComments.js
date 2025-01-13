@@ -1,3 +1,5 @@
+import { copyTextToClipboard } from "../copy";
+
 /**
  * Insert a button to copy all comments in the video
  * @param {string} id - The id of the element to insert the button

@@ -11,7 +11,7 @@ export function getSearchParam(str) {
         query  = searchParam.substring(index);
 
     let urlParams = {};
-    while (match = search.exec(query)) {
+    while ((match = search.exec(query)) !== null) {
         urlParams[decode(match[1])] = decode(match[2]);
     }
     return urlParams;

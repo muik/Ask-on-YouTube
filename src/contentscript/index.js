@@ -2,8 +2,8 @@
 
 import { insertSummaryBtn } from "./youtube";
 import {
-  detectVideoOptionClick,
-  insertMoreOptions,
+    detectVideoOptionClick,
+    insertMoreOptions,
 } from "./youtube/moreOptions";
 
 let oldHref = "";
@@ -19,7 +19,7 @@ window.onload = async () => {
 
         const bodyList = document.querySelector("body");
         let observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
+            mutations.forEach(() => {
                 if (oldHref !== document.location.href) {
                     oldHref = document.location.href;
                     insertSummaryBtn();
