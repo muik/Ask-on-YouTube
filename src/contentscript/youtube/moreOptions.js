@@ -49,7 +49,9 @@ function insertViewInGeminiButton(element) {
         .insertAdjacentHTML("beforeend", geminiOptionHTML);
 
     // Click event listener for the "View in Gemini" button
-    element.querySelector("#view_in_gemini").addEventListener("click", () => {
+    element.querySelector("#view_in_gemini").addEventListener("click", (e) => {
+        e.stopPropagation();
+
         window.open(
             `https://gemini.google.com/app?ref=${config["refCode"]}`,
             "_blank"
