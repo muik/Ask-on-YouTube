@@ -103,12 +103,24 @@ export function insertSummaryBtn() {
         })
 
         // Event Listener: AI Summary
-        document.querySelector("#yt_ai_summary_header_summary").addEventListener("click", (e) => {
+        document.querySelector("#yt_ai_summary_header_summary").addEventListener("click", async (e) => {
             e.stopPropagation();
-            copyTranscriptAndPrompt().then((prompt) => {
-                chrome.runtime.sendMessage({ message: "setPrompt", prompt: prompt });
+
+            try {
+                // Load the transcript
+                const isTranscriptLoaded = await loadTranscript();
+                if (!isTranscriptLoaded) return; // Exit if there's no transcript
+        
+                // Copy transcript and generate a prompt
+                const prompt = await copyTranscriptAndPrompt();
+        
+                // Send the prompt via Chrome messaging and open ChatGPT
+                await chrome.runtime.sendMessage({ message: "setPrompt", prompt });
+
                 window.open(`https://chatgpt.com/?ref=${config['refCode']}`, "_blank");
-            });
+            } catch (error) {
+                console.error("Error processing transcript:", error);
+            }
         })
 
         // Event Listener: Jump to Current Timestamp
@@ -155,6 +167,7 @@ async function loadTranscript() {
 
     // Event Listener: Language Select Btn Click
     evtListenerOnLangBtns(langOptionsWithLink, videoId);
+    return true;
 }
 
 function insertCommentsHeader() {
