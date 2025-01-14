@@ -1,8 +1,4 @@
-import {
-    defaultPromptChatGPT,
-    defaultPromptGemini,
-    defaultSettings,
-} from "../storage";
+import { defaultSettings } from "../storage";
 
 document.addEventListener("DOMContentLoaded", () => {
     const promptAreaChatGPT = document.getElementById("promptChatGPT");
@@ -18,12 +14,10 @@ document.addEventListener("DOMContentLoaded", () => {
         ["promptChatGPT", "promptGemini", "useExperimentalGemini"],
         (result) => {
             promptAreaChatGPT.value =
-                result.promptChatGPT || defaultPromptChatGPT;
-            promptAreaGemini.value = result.promptGemini || defaultPromptGemini;
-            if (
-                result.useExperimentalGemini === undefined ||
-                result.useExperimentalGemini === null
-            ) {
+                result.promptChatGPT || defaultSettings.defaultPromptChatGPT;
+            promptAreaGemini.value =
+                result.promptGemini || defaultSettings.defaultPromptGemini;
+            if (result.useExperimentalGemini == null) {
                 useExperimentalGeminiCheck.checked =
                     defaultSettings.useExperimentalGemini;
             } else {
