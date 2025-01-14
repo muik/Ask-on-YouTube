@@ -7,7 +7,9 @@ export const defaultSettings = {
 export async function getPromptChatGPT() {
     return new Promise((resolve) => {
         chrome.storage.sync.get(["promptChatGPT"], (result) => {
-            resolve(result.promptChatGPT || defaultSettings.defaultPromptChatGPT);
+            const value =
+                result.promptChatGPT || defaultSettings.defaultPromptChatGPT;
+            resolve(value.trim());
         });
     });
 }
@@ -15,7 +17,9 @@ export async function getPromptChatGPT() {
 export async function getPromptGemini() {
     return new Promise((resolve) => {
         chrome.storage.sync.get(["promptGemini"], (result) => {
-            resolve((result.promptGemini || defaultSettings.defaultPromptGemini).trim());
+            const value =
+                result.promptGemini || defaultSettings.defaultPromptGemini;
+            resolve(value.trim());
         });
     });
 }
