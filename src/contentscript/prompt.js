@@ -8,7 +8,10 @@ export async function getSummaryPrompt(transcript) {
 }
 
 // Seems like 15,000 bytes is the limit for the prompt
-const limit = 14000; // 1000 is a buffer
+//const limit = 14000; // 1000 is a buffer
+
+// Seems like the limit is increased
+const limit = 100_000;
 
 export function getChunckedTranscripts(textData, textDataOriginal) {
 
@@ -21,6 +24,7 @@ export function getChunckedTranscripts(textData, textDataOriginal) {
   let result = "";
   const text = textData.sort((a, b) => a.index - b.index).map(t => t.text).join(" ");
   const bytes = textToBinaryString(text).length;
+  console.debug("Bytes: ", bytes, "Limit: ", limit);
 
   if (bytes > limit) {
     // Get only even numbered chunks from textArr
