@@ -1,6 +1,7 @@
 import { getPromptGemini } from "../../storage.js";
 import { config } from "../config.js";
 import { getSearchParam } from "../searchParam";
+import { waitForElm } from "../utils.js";
 
 /**
  * Inserts the "View in Gemini" button into the YouTube video options menu.
@@ -168,19 +169,18 @@ export function detectVideoOptionClick(target) {
 
     console.debug("Detecting video option click:", target);
 
-    if (/^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
-        const dropdown = document.querySelector(
-            'tp-yt-iron-dropdown[aria-disabled="false"]:not([aria-hidden="true"])'
-        );
-        if (dropdown) {
-            // TODO set loading state
-            setGeminiPrompt(videoId).then(() => {
-                insertViewInGeminiButton(dropdown);
-            });
-        }
-    } else {
+    if (!/^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
         console.warn("Invalid video ID.", videoId, target);
+        return;
     }
+
+    // TODO set loading state
+    setGeminiPrompt(videoId).then(() => {
+        // TODO set timeout
+        waitForElm("tp-yt-iron-dropdown[aria-disabled='false']:not([aria-hidden='true'])").then((dropdown) => {
+            insertViewInGeminiButton(dropdown);
+        });
+    });
 }
 
 /**
