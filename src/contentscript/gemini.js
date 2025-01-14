@@ -1,5 +1,6 @@
 "use strict";
 
+import { getUseExperimentalGemini } from "../storage.js";
 import { config } from "./config.js";
 import { waitForElm } from "./utils.js";
 
@@ -29,20 +30,28 @@ function runOnGeminiPage() {
         return;
     }
 
-    // Select new model
-    waitForElm("bard-mode-switcher button").then((element) => {
-        // Click the button to open the dropdown
-        element.click();
-
-        const modelButtons = document.querySelectorAll(
-            ".mat-mdc-menu-content button.mat-mdc-menu-item"
-        );
-        if (modelButtons && modelButtons.length > 1) {
-            modelButtons[1].click();
+    getUseExperimentalGemini().then((useExperimentalGemini) => {
+        if (useExperimentalGemini) {
+            selectExperimentalModel().then(insertPrompt);
+        } else {
+            insertPrompt();
         }
-
-        insertPrompt();
     });
+}
+
+/**
+ * Selects the experimental model in the Gemini page.
+ */
+async function selectExperimentalModel() {
+    const element = await waitForElm("bard-mode-switcher button");
+    // Click the button to open the dropdown
+    element.click();
+    const modelButtons = document.querySelectorAll(
+        ".mat-mdc-menu-content button.mat-mdc-menu-item"
+    );
+    if (modelButtons && modelButtons.length > 1) {
+        modelButtons[1].click();
+    }
 }
 
 /**
