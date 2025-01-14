@@ -1,3 +1,4 @@
+import { getPromptGemini } from "../../storage.js";
 import { config } from "../config.js";
 import { getSearchParam } from "../searchParam";
 
@@ -49,12 +50,10 @@ function insertViewInGeminiButton(element) {
 
     // Click event listener for the "View in Gemini" button
     element.querySelector("#view_in_gemini").addEventListener("click", () => {
-        setTimeout(() => {
-            window.open(
-                `https://gemini.google.com/app?ref=${config["refCode"]}`,
-                "_blank"
-            );
-        }, 500);
+        window.open(
+            `https://gemini.google.com/app?ref=${config["refCode"]}`,
+            "_blank"
+        );
 
         // Close the dropdown menu
         element.style.display = "none";
@@ -157,31 +156,36 @@ function getVideoIdFromMainVideoOptionMenu(target) {
  * Detects when a video option is clicked.
  */
 export function detectVideoOptionClick(target) {
-    console.debug("Detecting video option click:", target);
     const videoId =
         getVideoIdFromItemVideoOptionMenu(target) ||
         getVideoIdFromMainVideoOptionMenu(target);
 
-    if (videoId && /^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
-        setGeminiPrompt(videoId);
+    if (!videoId) {
+        return;
+    }
 
+    console.debug("Detecting video option click:", target);
+
+    if (/^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
         const dropdown = document.querySelector(
             'tp-yt-iron-dropdown[aria-disabled="false"]:not([aria-hidden="true"])'
         );
-        console.debug("Dropdown:", dropdown);
         if (dropdown) {
-            insertViewInGeminiButton(dropdown);
+            // TODO set loading state
+            setGeminiPrompt(videoId).then(() => {
+                insertViewInGeminiButton(dropdown);
+            });
         }
     } else {
-        console.warn("Invalid or missing video ID.", videoId);
+        console.warn("Invalid video ID.", videoId, target);
     }
 }
 
 /**
- * Saves the prompt to insert into Gemini.
+ * Saves the prompt to use when inserting prompts into Gemini.
  * @param {string} videoId - The YouTube video ID.
  */
-function setGeminiPrompt(videoId) {
+async function setGeminiPrompt(videoId) {
     if (!chrome.runtime || !chrome.runtime.sendMessage) {
         console.warn("chrome.runtime is unavailable or unsupported.");
         // Provide fallback behavior if necessary
@@ -190,11 +194,13 @@ function setGeminiPrompt(videoId) {
     }
 
     const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+    const userText = await getPromptGemini();
+    const prompt = `${userText}\n${videoUrl}`;
 
     chrome.runtime.sendMessage(
         {
             message: "setPrompt",
-            prompt: videoUrl,
+            prompt: prompt,
         },
         (response) => {
             if (chrome.runtime.lastError) {
