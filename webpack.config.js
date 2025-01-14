@@ -68,7 +68,7 @@ const config = {
         'contentscript/index': path.join(__dirname, "src", "contentscript", "index.js"),
         'contentscript/gemini': path.join(__dirname, "src", "contentscript", "gemini.js"),
         'contentscript/chatgpt': path.join(__dirname, "src", "contentscript", "chatgpt.js"),
-        'background': path.join(__dirname, "background.js"),
+        'background': path.join(__dirname, "src", "background.js"),
         settings: path.join(__dirname, "src", "options", "settings.js"),
     },
     output: {
