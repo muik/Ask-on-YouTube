@@ -196,8 +196,8 @@ async function setGeminiPrompt(videoId) {
     }
 
     const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
-    const userText = await getPromptGemini();
-    const prompt = `${userText}\n${videoUrl}`;
+    const promptText = await getPromptGemini();
+    const prompt = promptText ? `${promptText}\n${videoUrl}` : videoUrl;
 
     chrome.runtime.sendMessage(
         {

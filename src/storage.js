@@ -12,7 +12,7 @@ export async function getPromptChatGPT() {
 export async function getPromptGemini() {
     return new Promise((resolve) => {
         chrome.storage.sync.get(["promptGemini"], (result) => {
-            resolve(result.promptGemini || defaultPromptGemini);
+            resolve((result.promptGemini || defaultPromptGemini).trim());
         });
     });
 }
