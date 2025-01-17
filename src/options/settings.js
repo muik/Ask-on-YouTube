@@ -1,3 +1,4 @@
+import "../css/settings.css";
 import { defaultSettings } from "../storage.js";
 
 document.addEventListener("DOMContentLoaded", () => {

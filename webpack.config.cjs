@@ -31,7 +31,8 @@ const plugins = [
     new HtmlWebpackPlugin({
         filename: "settings.html", // Output filename
         template: path.join(__dirname, "src", "options", "settings.html"), // Input template
-        chunks: ["settings"] // Include only the 'settings' entry
+        chunks: ["settings"], // Include only the 'settings' entry
+        inject: "body",
     }),
     new WriteFilePlugin()
 ];
