@@ -16,6 +16,11 @@ chrome.runtime.onInstalled.addListener(function (details) {
     }
 });
 
+// On Chrome Icon Click
+chrome.action.onClicked.addListener(() => {
+    chrome.runtime.openOptionsPage();
+});
+
 let prompt = "";
 const settings = {};
 //const cachedTranscripts = {}; // TODO: Implement caching
