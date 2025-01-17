@@ -33,6 +33,7 @@ export async function getTranscript(langOption) {
   return transcript;
 }
 
+// @deprecated - Moved to src/background/transcript.js
 export async function getRawTranscript(link) {
 
   // Get Transcript

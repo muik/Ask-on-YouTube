@@ -9,6 +9,7 @@ export default [
                 ...globals.browser,
                 ...globals.webextensions,
                 ...globals.node,
+                ...globals.jest,
                 chrome: "readonly",
             },
         },

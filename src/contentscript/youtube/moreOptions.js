@@ -1,15 +1,22 @@
-import { getPromptGemini } from "../../storage.js";
 import { config } from "../config.js";
-import { getSearchParam } from "../searchParam";
+import { getSearchParam } from "../searchParam.js";
 import { waitForElm } from "../utils.js";
 
 /**
  * Inserts the "View in Gemini" button into the YouTube video options menu.
  * @param {Element} element - The YouTube video options menu.
+ * @param {VideoInfo} videoInfo - The YouTube video Info.
  */
-function insertViewInGeminiButton(element) {
-    if (element.querySelector("#view_in_gemini")) {
+function insertExtraOptions(element, videoInfo) {
+    console.debug("Inserting extra options:", element, videoInfo);
+    const containerId = "extra_options";
+    const containerSelector = `#${containerId}`;
+    let containerElement = element.querySelector(containerSelector);
+
+    if (containerElement) {
         console.debug("Element already added the option.");
+        containerElement.setAttribute("video-id", videoInfo.id);
+        containerElement.setAttribute("video-title", videoInfo.title);
         return;
     }
 
@@ -39,9 +46,10 @@ function insertViewInGeminiButton(element) {
     lastItem.setAttribute("has-separator", "");
 
     const geminiOptionHTML = `
-                <div id="view_in_gemini" class="style-scope ytd-menu-popup-renderer" role="menuitem" tabindex="-1" aria-selected="false" style="cursor:pointer">
+                <div id="${containerId}" class="style-scope ytd-menu-popup-renderer" role="menuitem" tabindex="-1" aria-selected="false" style="cursor:pointer">
                     <tp-yt-paper-item class="style-scope ytd-menu-service-item-renderer" role="option" tabindex="0" aria-disabled="false">    
-                        <div style="font-size:14px">View in Gemini</div>
+                        <div class="extra-options" target-value="chatgpt" style="font-size:14px;width:50%">ChatGPT</div>
+                        <div class="extra-options" target-value="gemini" style="font-size:14px">Gemini</div>
                     </tp-yt-paper-item>
                 </div>`;
 
@@ -49,17 +57,13 @@ function insertViewInGeminiButton(element) {
         .closest("tp-yt-paper-listbox")
         .insertAdjacentHTML("beforeend", geminiOptionHTML);
 
+    containerElement = element.querySelector(containerSelector);
+    containerElement.setAttribute("video-id", videoInfo.id);
+    containerElement.setAttribute("video-title", videoInfo.title);
+
     // Click event listener for the "View in Gemini" button
-    element.querySelector("#view_in_gemini").addEventListener("click", (e) => {
-        e.stopPropagation();
-
-        window.open(
-            `https://gemini.google.com/app?ref=${config["refCode"]}`,
-            "_blank"
-        );
-
-        // Close the dropdown menu
-        element.style.display = "none";
+    containerElement.querySelectorAll(".extra-options").forEach((elm) => {
+        elm.addEventListener("click", onExtraOptionClick);
     });
 
     if (!isNaN(currentMaxHeight) && currentMaxHeight > 0) {
@@ -75,11 +79,54 @@ function insertViewInGeminiButton(element) {
 }
 
 /**
+ * Event listener for the extra options.
+ * @param {Event} e
+ */
+function onExtraOptionClick(e) {
+    e.stopPropagation();
+
+    const target = e.target.getAttribute("target-value");
+    let url;
+
+    if (target === "chatgpt") {
+        url = "https://chatgpt.com/";
+    } else if (target === "gemini") {
+        url = "https://gemini.google.com/app";
+    } else {
+        console.error("Invalid option clicked.", e.target);
+        return;
+    }
+
+    const containerElement = e.target.closest("#extra_options");
+    const videoInfo = {
+        id: containerElement.getAttribute("video-id"),
+        title: containerElement.getAttribute("video-title"),
+    };
+
+    chrome.runtime.sendMessage(
+        { message: "setPrompt", target: target, videoInfo },
+        (response) => {
+            if (response.error) {
+                console.error("Error setting prompt.", response.error);
+                return;
+            }
+
+            window.open(`${url}?ref=${config["refCode"]}`, "_blank");
+
+            // Close the dropdown menu
+            // TODO: Find a better way to close the dropdown menu
+            const dropdown = e.target.closest("tp-yt-iron-dropdown");
+            dropdown.style.display = "none";
+        }
+    );
+}
+
+/**
  * Extracts the video ID from the YouTube video options menu.
  * @param {Element} target - The clicked element.
- * @returns {string} The YouTube video ID.
+ * @returns {VideoInfo} The YouTube video Info.
  */
-function getVideoIdFromItemVideoOptionMenu(target) {
+function getVideoInfoFromItemVideoOptionMenu(target) {
     if (
         target.tagName != "DIV" ||
         !target.parentElement ||
@@ -125,25 +172,35 @@ function getVideoIdFromItemVideoOptionMenu(target) {
     }
 
     // Locate an <a> tag within the container that links to the video
-    const videoLink = videoContainer.querySelector("a#thumbnail");
-    if (!videoLink || !videoLink.href) {
+    const linkElement = videoContainer.querySelector("a#thumbnail");
+    if (!linkElement || !linkElement.href) {
         console.debug("No video link found", videoContainer);
         return;
     }
 
-    // Extract the video ID from the URL (e.g., https://www.youtube.com/watch?v=VIDEO_ID)
-    const url = new URL(videoLink.href);
-    let videoId = url.searchParams.get("v");
+    const titleElement = videoContainer.querySelector("#video-title");
+    if (!titleElement || !titleElement.textContent) {
+        console.debug("No video title found", videoContainer);
+        return; // Exit if no video title is identified
+    }
 
-    return videoId;
+    // Extract the video ID from the URL (e.g., https://www.youtube.com/watch?v=VIDEO_ID)
+    const url = new URL(linkElement.href);
+    const id = url.searchParams.get("v");
+    const title = titleElement.textContent.trim();
+
+    return {
+        id: id,
+        title: title,
+    };
 }
 
 /**
  * Extracts the video ID from the main YouTube video options menu.
  * @param {Element} target - The clicked element.
- * @returns {string} The YouTube video ID.
+ * @returns {VideoInfo} The YouTube video Info.
  */
-function getVideoIdFromMainVideoOptionMenu(target) {
+function getVideoInfoFromMainVideoOptionMenu(target) {
     if (
         target.tagName != "DIV" ||
         !target.classList.contains("yt-spec-touch-feedback-shape__fill") ||
@@ -152,67 +209,49 @@ function getVideoIdFromMainVideoOptionMenu(target) {
         return;
     }
 
-    return getSearchParam(window.location.href).v;
+    return getVideoInfoFromVideoDetail();
+}
+
+/**
+ * Extracts the video info from the YouTube video detail page.
+ * @returns {VideoInfo} The YouTube video Info.
+ */
+export function getVideoInfoFromVideoDetail() {
+    const titleElement = document.querySelector("#title > h1");
+    if (!titleElement || !titleElement.textContent) {
+        console.error("No title element found", document);
+        return;
+    }
+
+    return {
+        id: getSearchParam(window.location.href).v,
+        title: titleElement.textContent.trim(),
+    };
 }
 
 /**
  * Detects when a video option is clicked.
  */
 export function detectVideoOptionClick(target) {
-    const videoId =
-        getVideoIdFromItemVideoOptionMenu(target) ||
-        getVideoIdFromMainVideoOptionMenu(target);
+    const videoInfo =
+        getVideoInfoFromItemVideoOptionMenu(target) ||
+        getVideoInfoFromMainVideoOptionMenu(target);
 
-    if (!videoId) {
+    if (!videoInfo) {
         return;
     }
 
-    console.debug("Detecting video option click:", target);
+    console.debug("Detecting video option click:", target, videoInfo);
 
-    if (!/^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
-        console.warn("Invalid video ID.", videoId, target);
+    if (!/^[a-zA-Z0-9_-]{11}$/.test(videoInfo.id)) {
+        console.warn("Invalid video ID.", videoInfo.id, target);
         return;
     }
 
-    // TODO set loading state
-    setGeminiPrompt(videoId).then(() => {
-        // TODO set timeout
-        waitForElm("tp-yt-iron-dropdown[aria-disabled='false']:not([aria-hidden='true'])").then((dropdown) => {
-            insertViewInGeminiButton(dropdown);
-        });
+    // TODO set timeout
+    waitForElm(
+        "tp-yt-iron-dropdown[aria-disabled='false']:not([aria-hidden='true'])"
+    ).then((dropdown) => {
+        insertExtraOptions(dropdown, videoInfo);
     });
-}
-
-/**
- * Saves the prompt to use when inserting prompts into Gemini.
- * @param {string} videoId - The YouTube video ID.
- */
-async function setGeminiPrompt(videoId) {
-    if (!chrome.runtime || !chrome.runtime.sendMessage) {
-        console.warn("chrome.runtime is unavailable or unsupported.");
-        // Provide fallback behavior if necessary
-        alert("Unable to send the prompt to Gemini. Please try again later.");
-        return;
-    }
-
-    const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
-    const promptText = await getPromptGemini();
-    const prompt = promptText ? `${promptText}\n${videoUrl}` : videoUrl;
-
-    chrome.runtime.sendMessage(
-        {
-            message: "setPrompt",
-            prompt: prompt,
-        },
-        (response) => {
-            if (chrome.runtime.lastError) {
-                console.error(
-                    "Error sending message:",
-                    chrome.runtime.lastError.message
-                );
-            } else {
-                console.debug("Message sent successfully:", response);
-            }
-        }
-    );
 }

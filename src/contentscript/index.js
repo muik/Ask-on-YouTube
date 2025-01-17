@@ -1,7 +1,7 @@
 "use strict";
 
-import { insertSummaryBtn } from "./youtube";
-import { detectVideoOptionClick } from "./youtube/moreOptions";
+import { insertSummaryBtn } from "./youtube.js";
+import { detectVideoOptionClick } from "./youtube/moreOptions.js";
 
 let oldHref = "";
 

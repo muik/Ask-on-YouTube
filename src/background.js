@@ -1,5 +1,11 @@
 "use strict";
 
+import {
+    getChatGPTPrompt,
+    getGeminiPrompt,
+    loadTranscript,
+} from "./background/prompt.js";
+
 console.log("connected...");
 const onInstallURL = "https://glasp.co/youtube-summary";
 
@@ -11,12 +17,26 @@ chrome.runtime.onInstalled.addListener(function (details) {
 });
 
 let prompt = "";
+const settings = {};
+//const cachedTranscripts = {}; // TODO: Implement caching
 
 // On Message
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.message === "setPrompt") {
-        prompt = request.prompt;
-        sendResponse({ status: "success", data: "Prompt received." });
+        console.debug("Received setPrompt request:", request);
+        handleSetPromptRequest(request).then((result) => {
+            if (result.prompt) {
+                prompt = result.prompt;
+                sendResponse({
+                    status: "success",
+                    message: "Prompt received.",
+                });
+            } else if (result.error) {
+                sendResponse(result);
+            } else {
+                sendResponse({ error: { message: "No prompt received." } });
+            }
+        });
     } else if (request.message === "getPrompt") {
         sendResponse({ prompt: prompt });
         prompt = ""; // Reset prompt
@@ -25,3 +45,38 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     // Returning true ensures the response is asynchronous
     return true;
 });
+
+async function handleSetPromptRequest(request) {
+    if (!request.videoInfo) {
+        console.error("No video info received.");
+        return { error: { message: "No video info received." } };
+    }
+
+    const videoInfo = request.videoInfo;
+
+    if (request.target === "chatgpt") {
+        const transcript = await loadTranscript(videoInfo.id);
+        if (!transcript) {
+            return {
+                error: {
+                    code: "TRANSCRIPT_NOT_FOUND",
+                    message: "Transcript not found.",
+                },
+            };
+        }
+
+        const prompt = await getChatGPTPrompt(videoInfo, transcript, settings);
+        return { prompt: prompt };
+    } else if (request.target === "gemini") {
+        const prompt = await getGeminiPrompt(videoInfo.id, settings);
+        return { prompt: prompt };
+    } else {
+        console.error("Invalid target:", request.target);
+        return {
+            error: {
+                code: "INVALID_TARGET",
+                message: "Invalid target.",
+            },
+        };
+    }
+}

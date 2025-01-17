@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "description": "YouTube Summary with ChatGPT",
   "main": "background.js",
+  "type": "module",
   "scripts": {
     "clean": "rimraf dist/*",
     "lint": "eslint src/ --fix",
     "build": "npm run lint && npm run clean && webpack",
     "build-release": "npm run lint && npm run clean && NODE_ENV=production webpack",
-    "watch": "nodemon --watch src/ --watch webpack.config.js --ext js,html --exec 'npm run build'",
+    "watch": "nodemon --watch src/ --watch webpack.config.cjs --ext js,html --exec 'npm run build'",
     "test": "NODE_OPTIONS=--experimental-vm-modules npx jest"
   },
   "repository": {
@@ -26,20 +27,24 @@
     "copy-webpack-plugin": "^9.0.1",
     "css-loader": "^6.4.0",
     "eslint": "^9.18.0",
+    "eslint-plugin-jest": "^28.11.0",
     "file-loader": "^6.2.0",
     "fs-extra": "^10.0.0",
     "globals": "^15.14.0",
     "html-loader": "^2.1.2",
     "html-webpack-plugin": "^5.4.0",
-    "jest": "^27.2.4",
+    "jest": "^27.5.1",
+    "node-fetch": "^3.3.2",
     "nodemon": "^3.1.9",
     "rimraf": "^3.0.2",
+    "util": "^0.12.5",
     "webpack": "^5.59.0",
     "webpack-cli": "^4.9.1",
     "webpack-dev-server": "^4.3.1",
     "write-file-webpack-plugin": "^4.5.1"
   },
   "dependencies": {
-    "jquery": "^3.6.2"
+    "jquery": "^3.7.1",
+    "xmldom": "^0.6.0"
   }
 }

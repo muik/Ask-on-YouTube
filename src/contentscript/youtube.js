@@ -1,12 +1,12 @@
 "use strict";
 
-import { config } from "./config";
-import { copyTextToClipboard } from "./copy";
-import { getChunckedTranscripts, getSummaryPrompt } from "./prompt";
-import { getSearchParam } from "./searchParam";
-import { getLangOptionsWithLink, getTranscriptHTML } from "./transcript";
-import { waitForElm } from "./utils";
-import { insertCommentBtn } from "./youtube/copyComments";
+import { config } from "./config.js";
+import { copyTextToClipboard } from "./copy.js";
+import { getSearchParam } from "./searchParam.js";
+import { getLangOptionsWithLink, getTranscriptHTML } from "./transcript.js";
+import { waitForElm } from "./utils.js";
+import { insertCommentBtn } from "./youtube/copyComments.js";
+import { getVideoInfoFromVideoDetail } from "./youtube/moreOptions.js";
 
 
 export function insertSummaryBtn() {
@@ -107,15 +107,9 @@ export function insertSummaryBtn() {
             e.stopPropagation();
 
             try {
-                // Load the transcript
-                const isTranscriptLoaded = await loadTranscript();
-                if (!isTranscriptLoaded) return; // Exit if there's no transcript
-        
-                // Copy transcript and generate a prompt
-                const prompt = await copyTranscriptAndPrompt();
-        
                 // Send the prompt via Chrome messaging and open ChatGPT
-                await chrome.runtime.sendMessage({ message: "setPrompt", prompt });
+                const videoInfo = getVideoInfoFromVideoDetail();
+                await chrome.runtime.sendMessage({ message: "setPrompt", target: "chatgpt", videoInfo });
 
                 window.open(`https://chatgpt.com/?ref=${config['refCode']}`, "_blank");
             } catch (error) {
@@ -307,16 +301,4 @@ function copyTranscript(videoId) {
         contentBody += `(${timestamp}) ${text}\n`;
     })
     copyTextToClipboard(contentBody);
-}
-
-async function copyTranscriptAndPrompt() {
-    const textEls = document.getElementsByClassName("yt_ai_summary_transcript_text");
-    const textData = Array.from(textEls).map((textEl, i) => { return {
-        text: textEl.textContent.trim(),
-        index: i,
-    }})
-    const text = getChunckedTranscripts(textData, textData);
-    const prompt = await getSummaryPrompt(text);
-    copyTextToClipboard(prompt);
-    return prompt;
 }

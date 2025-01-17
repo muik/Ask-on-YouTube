@@ -1,6 +1,7 @@
 "use strict";
 
-import { config } from "./config";
+import { config } from "./config.js";
+import { waitForElm } from "./utils.js";
 
 window.onload = async () => {
     // If opened by the extension, insert the prompt
@@ -10,21 +11,22 @@ window.onload = async () => {
     ) {
         if (document.getElementsByTagName("textarea")[0]) {
             // get prompt from background.js
-            chrome.runtime.sendMessage({ message: "getPrompt" }, (response) => {
-                setTimeout(() => {
-                    const promptTextarea = document.querySelector(
-                        "main form .ProseMirror"
-                    );
-                    promptTextarea.innerHTML = `<p>${response.prompt}</p>`;
+            chrome.runtime.sendMessage(
+                { message: "getPrompt", target: "chatgpt" },
+                (response) => {
+                    waitForElm("main form .ProseMirror").then(
+                        (promptTextarea) => {
+                            promptTextarea.innerText = response.prompt;
 
-                    setTimeout(() => {
-                        const sendButton = document.querySelector(
-                            '[data-testid="send-button"]'
-                        );
-                        sendButton.click();
-                    }, 100);
-                }, 100);
-            });
+                            waitForElm(
+                                "button[data-testid=send-button]:not([disabled])"
+                            ).then((sendButton) => {
+                                sendButton.click();
+                            });
+                        }
+                    );
+                }
+            );
         }
     }
 };

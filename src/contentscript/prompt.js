@@ -1,4 +1,4 @@
-import { getPromptChatGPT } from "../storage";
+import { getPromptChatGPT } from "../storage.js";
 
 export async function getSummaryPrompt(transcript) {
   const prompt = await getPromptChatGPT();

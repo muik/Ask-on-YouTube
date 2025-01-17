@@ -1,4 +1,4 @@
-import { copyTextToClipboard } from "../copy";
+import { copyTextToClipboard } from "../copy.js";
 
 /**
  * Insert a button to copy all comments in the video

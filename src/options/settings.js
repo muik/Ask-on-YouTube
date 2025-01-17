@@ -1,4 +1,4 @@
-import { defaultSettings } from "../storage";
+import { defaultSettings } from "../storage.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     const promptAreaChatGPT = document.getElementById("promptChatGPT");
