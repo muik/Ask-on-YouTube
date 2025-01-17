@@ -159,3 +159,20 @@
     cursor: pointer;
     margin-right: 16px;
 }
+
+#extra-options {
+    display: flex;
+    padding: 0 16px;
+    font-size: 14px;
+}
+#extra-options .option-item {
+    flex: 1;
+    cursor: pointer;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#extra-options .option-item:hover {
+    background-color: #e5e5e5;
+}

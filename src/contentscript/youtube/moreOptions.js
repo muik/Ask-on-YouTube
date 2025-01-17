@@ -2,16 +2,17 @@ import { config } from "../config.js";
 import { getSearchParam } from "../searchParam.js";
 import { waitForElm } from "../utils.js";
 
+const extraOptionsContainerId = "extra-options";
+
 /**
  * Inserts the "View in Gemini" button into the YouTube video options menu.
- * @param {Element} element - The YouTube video options menu.
+ * @param {Element} dropDownElement - The YouTube video options menu.
  * @param {VideoInfo} videoInfo - The YouTube video Info.
  */
-function insertExtraOptions(element, videoInfo) {
-    console.debug("Inserting extra options:", element, videoInfo);
-    const containerId = "extra_options";
-    const containerSelector = `#${containerId}`;
-    let containerElement = element.querySelector(containerSelector);
+function insertExtraOptions(dropDownElement, videoInfo) {
+    console.debug("Inserting extra options:", dropDownElement, videoInfo);
+    const containerSelector = `#${extraOptionsContainerId}`;
+    let containerElement = dropDownElement.querySelector(containerSelector);
 
     if (containerElement) {
         console.debug("Element already added the option.");
@@ -21,7 +22,9 @@ function insertExtraOptions(element, videoInfo) {
     }
 
     // Adjust the popup dialog height after adding an item
-    const popupElement = element.querySelector("ytd-menu-popup-renderer");
+    const popupElement = dropDownElement.querySelector(
+        "ytd-menu-popup-renderer"
+    );
     const currentMaxHeight = parseInt(
         window.getComputedStyle(popupElement).maxHeight || "0",
         10
@@ -32,7 +35,7 @@ function insertExtraOptions(element, videoInfo) {
         return;
     }
 
-    const lastItem = element.querySelector(
+    const lastItem = dropDownElement.querySelector(
         "ytd-menu-service-item-renderer:last-child"
     );
 
@@ -45,26 +48,27 @@ function insertExtraOptions(element, videoInfo) {
     // Add a separator below the last item
     lastItem.setAttribute("has-separator", "");
 
+    const optionItemClassName = "option-item";
     const geminiOptionHTML = `
-                <div id="${containerId}" class="style-scope ytd-menu-popup-renderer" role="menuitem" tabindex="-1" aria-selected="false" style="cursor:pointer">
-                    <tp-yt-paper-item class="style-scope ytd-menu-service-item-renderer" role="option" tabindex="0" aria-disabled="false">    
-                        <div class="extra-options" target-value="chatgpt" style="font-size:14px;width:50%">ChatGPT</div>
-                        <div class="extra-options" target-value="gemini" style="font-size:14px">Gemini</div>
-                    </tp-yt-paper-item>
+                <div id="${extraOptionsContainerId}">
+                    <div class="${optionItemClassName}" target-value="chatgpt" style="">ChatGPT</div>
+                    <div class="${optionItemClassName}" target-value="gemini" style="font-size:14px;width:50%">Gemini</div>
                 </div>`;
 
     lastItem
         .closest("tp-yt-paper-listbox")
         .insertAdjacentHTML("beforeend", geminiOptionHTML);
 
-    containerElement = element.querySelector(containerSelector);
+    containerElement = dropDownElement.querySelector(containerSelector);
     containerElement.setAttribute("video-id", videoInfo.id);
     containerElement.setAttribute("video-title", videoInfo.title);
 
     // Click event listener for the "View in Gemini" button
-    containerElement.querySelectorAll(".extra-options").forEach((elm) => {
-        elm.addEventListener("click", onExtraOptionClick);
-    });
+    containerElement
+        .querySelectorAll(`.${optionItemClassName}`)
+        .forEach((elm) => {
+            elm.addEventListener("click", onExtraOptionClick);
+        });
 
     if (!isNaN(currentMaxHeight) && currentMaxHeight > 0) {
         const newMaxHeight = currentMaxHeight + 150;
@@ -97,7 +101,7 @@ function onExtraOptionClick(e) {
         return;
     }
 
-    const containerElement = e.target.closest("#extra_options");
+    const containerElement = e.target.closest(`#${extraOptionsContainerId}`);
     const videoInfo = {
         id: containerElement.getAttribute("video-id"),
         title: containerElement.getAttribute("video-title"),
