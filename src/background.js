@@ -42,13 +42,21 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 sendResponse({ error: { message: "No prompt received." } });
             }
         });
-    } else if (request.message === "getPrompt") {
+
+        // Returning true ensures the response is asynchronous
+        return true;
+    }
+    
+    if (request.message === "getPrompt") {
         sendResponse({ prompt: prompt });
         prompt = ""; // Reset prompt
+    } else if (request.message === "settingsUpdated") {
+        console.debug("Settings updated:", request);
+        settings[request.key] = request.value;
+        sendResponse({ status: "success", message: "Settings updated." });
+    } else {
+        sendResponse({ error: { message: "Invalid message." } });
     }
-
-    // Returning true ensures the response is asynchronous
-    return true;
 });
 
 async function handleSetPromptRequest(request) {

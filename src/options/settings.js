@@ -35,6 +35,14 @@ document.addEventListener("DOMContentLoaded", () => {
             statusMessageElement.textContent = "Saved!";
             statusMessageElement.classList.add("visible");
             setTimeout(() => statusMessageElement.classList.remove("visible"), 2000);
+
+            chrome.runtime.sendMessage(
+                { message: "settingsUpdated", key: key, value: value },
+                (response) => {
+                    // TODO handle errors
+                    console.debug("Settings updated:", response);
+                }
+            );
         });
     };
 
