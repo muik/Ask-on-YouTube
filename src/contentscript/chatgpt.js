@@ -6,27 +6,27 @@ import { waitForElm } from "./utils.js";
 window.onload = async () => {
     // If opened by the extension, insert the prompt
     if (
-        window.location.hostname === "chatgpt.com" &&
-        window.location.search === `?ref=${config["refCode"]}`
+        window.location.hostname !== "chatgpt.com" ||
+        window.location.search !== `?ref=${config["refCode"]}`
     ) {
-        if (document.getElementsByTagName("textarea")[0]) {
-            // get prompt from background.js
-            chrome.runtime.sendMessage(
-                { message: "getPrompt", target: "chatgpt" },
-                (response) => {
-                    waitForElm("main form .ProseMirror").then(
-                        (promptTextarea) => {
-                            promptTextarea.innerText = response.prompt;
-
-                            waitForElm(
-                                "button[data-testid=send-button]:not([disabled])"
-                            ).then((sendButton) => {
-                                sendButton.click();
-                            });
-                        }
-                    );
-                }
-            );
-        }
+        return;
     }
+
+    // get prompt from background.js
+    chrome.runtime.sendMessage(
+        { message: "getPrompt", target: "chatgpt" },
+        (response) => {
+            waitForElm("#prompt-textarea").then((promptTextarea) => {
+                const lines = response.prompt.split("\n");
+                const prompt = `<p>${lines.join("</p><p>")}</p>`;
+                promptTextarea.innerHTML = prompt;
+
+                waitForElm(
+                    "button[data-testid=send-button]:not([disabled])"
+                ).then((sendButton) => {
+                    sendButton.click();
+                });
+            });
+        }
+    );
 };
