@@ -14,8 +14,10 @@ export function insertExtraOptions() {
             const optionItemClassName = "option-item";
             const extraOptionsHTML = `
                         <div id="${extraOptionsContainerId}">
-                            <div class="${optionItemClassName}" target-value="chatgpt">ChatGPT</div>
-                            <div class="${optionItemClassName}" target-value="gemini">Gemini</div>
+                            <div class="horizontal-menu">
+                                <div class="${optionItemClassName}" target-value="chatgpt">ChatGPT</div>
+                                <div class="${optionItemClassName}" target-value="gemini">Gemini</div>
+                            </div>
                         </div>`;
 
             const footerElement = dropDownElement.querySelector("#footer");
