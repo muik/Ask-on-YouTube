@@ -1,7 +1,10 @@
 "use strict";
 
 import { insertSummaryBtn } from "./youtube.js";
-import { detectVideoOptionClick } from "./youtube/moreOptions.js";
+import {
+    detectVideoOptionClick,
+    insertExtraOptions,
+} from "./youtube/moreOptions.js";
 
 let oldHref = "";
 
@@ -28,5 +31,7 @@ window.onload = async () => {
         document.addEventListener("click", (event) => {
             detectVideoOptionClick(event.target);
         });
+
+        insertExtraOptions();
     }
 };

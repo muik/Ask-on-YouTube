@@ -5,81 +5,47 @@ import { waitForElm } from "../utils.js";
 const extraOptionsContainerId = "extra-options";
 
 /**
- * Inserts the "View in Gemini" button into the YouTube video options menu.
+ * Insert extra options ui into the footer of more options dropdown
+ */
+export function insertExtraOptions() {
+    waitForElm("tp-yt-iron-dropdown.ytd-popup-container").then(
+        (dropDownElement) => {
+            console.debug("Add extra options container.");
+            const optionItemClassName = "option-item";
+            const extraOptionsHTML = `
+                        <div id="${extraOptionsContainerId}">
+                            <div class="${optionItemClassName}" target-value="chatgpt">ChatGPT</div>
+                            <div class="${optionItemClassName}" target-value="gemini">Gemini</div>
+                        </div>`;
+
+            const footerElement = dropDownElement.querySelector("#footer");
+            footerElement.insertAdjacentHTML("beforeend", extraOptionsHTML);
+
+            // Click event listener for the "View in Gemini" button
+            const containerElement = dropDownElement.querySelector(
+                `#${extraOptionsContainerId}`
+            );
+            containerElement
+                .querySelectorAll(`.${optionItemClassName}`)
+                .forEach((elm) => {
+                    elm.addEventListener("click", onExtraOptionClick);
+                });
+        }
+    );
+}
+
+/**
+ * Update extra options
  * @param {Element} dropDownElement - The YouTube video options menu.
  * @param {VideoInfo} videoInfo - The YouTube video Info.
  */
-function insertExtraOptions(dropDownElement, videoInfo) {
-    console.debug("Inserting extra options:", dropDownElement, videoInfo);
+function updateExtraOptions(dropDownElement, videoInfo) {
+    console.debug("Update extra options:", dropDownElement, videoInfo);
     const containerSelector = `#${extraOptionsContainerId}`;
-    let containerElement = dropDownElement.querySelector(containerSelector);
-
-    if (containerElement) {
-        console.debug("Element already added the option.");
-        containerElement.setAttribute("video-id", videoInfo.id);
-        containerElement.setAttribute("video-title", videoInfo.title);
-        return;
-    }
-
-    // Adjust the popup dialog height after adding an item
-    const popupElement = dropDownElement.querySelector(
-        "ytd-menu-popup-renderer"
-    );
-    const currentMaxHeight = parseInt(
-        window.getComputedStyle(popupElement).maxHeight || "0",
-        10
-    );
-
-    if (currentMaxHeight === 0) {
-        console.debug("popup dialog is not visible.");
-        return;
-    }
-
-    const lastItem = dropDownElement.querySelector(
-        "ytd-menu-service-item-renderer:last-child"
-    );
-
-    // Verify if the last item exists
-    if (!lastItem) {
-        console.debug("Last menu item is not visible.", lastItem);
-        return;
-    }
-
-    // Add a separator below the last item
-    lastItem.setAttribute("has-separator", "");
-
-    const optionItemClassName = "option-item";
-    const geminiOptionHTML = `
-                <div id="${extraOptionsContainerId}">
-                    <div class="${optionItemClassName}" target-value="chatgpt" style="">ChatGPT</div>
-                    <div class="${optionItemClassName}" target-value="gemini" style="font-size:14px;width:50%">Gemini</div>
-                </div>`;
-
-    lastItem
-        .closest("tp-yt-paper-listbox")
-        .insertAdjacentHTML("beforeend", geminiOptionHTML);
-
-    containerElement = dropDownElement.querySelector(containerSelector);
+    const containerElement = dropDownElement.querySelector(containerSelector);
     containerElement.setAttribute("video-id", videoInfo.id);
     containerElement.setAttribute("video-title", videoInfo.title);
-
-    // Click event listener for the "View in Gemini" button
-    containerElement
-        .querySelectorAll(`.${optionItemClassName}`)
-        .forEach((elm) => {
-            elm.addEventListener("click", onExtraOptionClick);
-        });
-
-    if (!isNaN(currentMaxHeight) && currentMaxHeight > 0) {
-        const newMaxHeight = currentMaxHeight + 150;
-        popupElement.style.maxHeight = `${newMaxHeight}px`;
-    } else {
-        console.debug(
-            "max-height is not set or is not a valid number.",
-            currentMaxHeight,
-            popupElement
-        );
-    }
+    containerElement.removeAttribute("aria-hidden");
 }
 
 /**
@@ -241,7 +207,14 @@ export function detectVideoOptionClick(target) {
         getVideoInfoFromItemVideoOptionMenu(target) ||
         getVideoInfoFromMainVideoOptionMenu(target);
 
+    // for example, when the more options of comments is clicked
     if (!videoInfo) {
+        const containerElement = document.querySelector(
+            `tp-yt-iron-dropdown.ytd-popup-container #${extraOptionsContainerId}`
+        );
+        if (containerElement) {
+            containerElement.setAttribute("aria-hidden", true);
+        }
         return;
     }
 
@@ -256,6 +229,6 @@ export function detectVideoOptionClick(target) {
     waitForElm(
         "tp-yt-iron-dropdown[aria-disabled='false']:not([aria-hidden='true'])"
     ).then((dropdown) => {
-        insertExtraOptions(dropdown, videoInfo);
+        updateExtraOptions(dropdown, videoInfo);
     });
 }
