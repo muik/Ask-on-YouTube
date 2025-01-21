@@ -77,7 +77,9 @@ function onExtraOptionClick(e) {
     };
 
     if (!chrome.runtime) {
-        showReloadRequiredView();
+        showToastMessage(
+            "The Chrome extension has been updated. Please reload this page to use it."
+        );
         return;
     }
 
@@ -93,7 +95,11 @@ function onExtraOptionClick(e) {
             element.removeAttribute("disabled");
 
             if (response.error) {
-                console.error("Error setting prompt.", response.error);
+                if (response.error.code != "TRANSCRIPT_NOT_FOUND") {
+                    console.error("Error setting prompt.", response.error);
+                } else {
+                    showToastMessage(response.error.message);
+                }
                 return;
             }
 
@@ -126,7 +132,7 @@ function pressEscKey() {
 /**
  * Show a toast notification indicating that the browser needs to be reloaded.
  */
-function showReloadRequiredView() {
+function showToastMessage(message) {
     let containerElement = document.querySelector("#toast-container");
     let toastElement;
     if (!containerElement) {
@@ -151,8 +157,7 @@ function showReloadRequiredView() {
         toastElement = containerElement.querySelector("#toast-box");
     }
 
-    toastElement.textContent =
-        "The Chrome extension has been updated. Please reload this page to use it.";
+    toastElement.textContent = message;
 
     toastElement.style.display = "";
     toastElement.style.zIndex = "2206";
