@@ -1,4 +1,15 @@
-export function getSpinnerHtml() {
+export function setLoadingState(optionElement, value) {
+    if (value) {
+        optionElement.setAttribute("default-text", optionElement.innerText);
+        optionElement.innerHTML = getSpinnerHtml();
+        optionElement.setAttribute("disabled", true);
+    } else {
+        optionElement.innerHTML = optionElement.getAttribute("default-text");
+        optionElement.removeAttribute("disabled");
+    }
+}
+
+function getSpinnerHtml() {
     return `
 <tp-yt-paper-spinner id="spinner" class="style-scope ytd-continuation-item-renderer" aria-label="loading" active="">
 <div id="spinnerContainer" class="active  style-scope tp-yt-paper-spinner">

@@ -1,7 +1,7 @@
 import { config } from "../config.js";
 import { getSearchParam } from "../searchParam.js";
 import { waitForElm } from "../utils.js";
-import { getSpinnerHtml } from "./htmlSnippets.js";
+import { setLoadingState } from "./extraOptionsView.js";
 
 const extraOptionsContainerId = "extra-options";
 const dropdownSelector = "tp-yt-iron-dropdown.ytd-popup-container";
@@ -83,16 +83,21 @@ function onExtraOptionClick(e) {
         return;
     }
 
-    // set loading state
-    const preHtml = element.innerHTML;
-    element.innerHTML = getSpinnerHtml();
-    element.setAttribute("disabled", true);
+    setLoadingState(element, true);
 
     chrome.runtime.sendMessage(
         { message: "setPrompt", target: target, videoInfo },
         (response) => {
-            element.innerHTML = preHtml;
-            element.removeAttribute("disabled");
+            // Stop when dropbox already closed, it means user doesn't want to continue.
+            if (
+                document.querySelector(
+                    `${dropdownSelector}[aria-hidden='true']`
+                )
+            ) {
+                return;
+            }
+
+            setLoadingState(element, false);
 
             if (response.error) {
                 if (response.error.code != "TRANSCRIPT_NOT_FOUND") {
@@ -109,6 +114,10 @@ function onExtraOptionClick(e) {
             pressEscKey();
         }
     );
+
+    waitForElm(`${dropdownSelector}[aria-hidden='true']`).then(() => {
+        setLoadingState(element, false);
+    });
 }
 
 /**
