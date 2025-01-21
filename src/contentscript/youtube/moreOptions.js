@@ -76,7 +76,7 @@ function onExtraOptionClick(e) {
         title: containerElement.getAttribute("video-title"),
     };
 
-    if (!chrome.runtime) {
+    if (!chrome.runtime || !chrome.runtime.sendMessage) {
         showToastMessage(
             "The Chrome extension has been updated. Please reload this page to use it."
         );
@@ -85,39 +85,57 @@ function onExtraOptionClick(e) {
 
     setLoadingState(element, true);
 
-    chrome.runtime.sendMessage(
-        { message: "setPrompt", target: target, videoInfo },
-        (response) => {
-            // Stop when dropbox already closed, it means user doesn't want to continue.
-            if (
-                document.querySelector(
-                    `${dropdownSelector}[aria-hidden='true']`
-                )
-            ) {
-                return;
+    try {
+        chrome.runtime.sendMessage(
+            { message: "setPrompt", target: target, videoInfo },
+            (response) => {
+                onSetPrompt(response, element, url);
             }
-
-            setLoadingState(element, false);
-
-            if (response.error) {
-                if (response.error.code != "TRANSCRIPT_NOT_FOUND") {
-                    console.error("Error setting prompt.", response.error);
-                } else {
-                    showToastMessage(response.error.message);
-                }
-                return;
-            }
-
-            window.open(`${url}?ref=${config["refCode"]}`, "_blank");
-
-            // Close the dropdown menu
-            pressEscKey();
-        }
-    );
+        );
+    } catch (error) {
+        console.error("sendMessage setPrompt Error:", error);
+        setLoadingState(element, false);
+        return;
+    }
 
     waitForElm(`${dropdownSelector}[aria-hidden='true']`).then(() => {
         setLoadingState(element, false);
     });
+}
+
+function onSetPrompt(response, element, url) {
+    // Stop when dropbox already closed, it means user doesn't want to continue.
+    if (document.querySelector(`${dropdownSelector}[aria-hidden='true']`)) {
+        return;
+    }
+
+    setLoadingState(element, false);
+
+    if (chrome.runtime.lastError) {
+        const errorMessage = `Error - ${
+            chrome.runtime.lastError.message || chrome.runtime.lastError
+        }`;
+        console.error("Error setting prompt.", chrome.runtime.lastError);
+        showToastMessage(errorMessage);
+        return;
+    }
+
+    if (response.error) {
+        const { code, message } = response.error;
+        if (code === "TRANSCRIPT_NOT_FOUND") {
+            showToastMessage(message);
+        } else {
+            const errorMessage = `Error - code: ${code}`;
+            console.error("Error setting prompt.", response.error);
+            showToastMessage(errorMessage);
+        }
+        return;
+    }
+
+    window.open(`${url}?ref=${config["refCode"]}`, "_blank");
+
+    // Close the dropdown menu
+    pressEscKey();
 }
 
 /**
