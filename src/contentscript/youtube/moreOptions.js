@@ -3,16 +3,16 @@ import { getSearchParam } from "../searchParam.js";
 import { waitForElm } from "../utils.js";
 
 const extraOptionsContainerId = "extra-options";
+const dropdownSelector = "tp-yt-iron-dropdown.ytd-popup-container";
 
 /**
  * Insert extra options ui into the footer of more options dropdown
  */
 export function insertExtraOptions() {
-    waitForElm("tp-yt-iron-dropdown.ytd-popup-container").then(
-        (dropDownElement) => {
-            console.debug("Add extra options container.");
-            const optionItemClassName = "option-item";
-            const extraOptionsHTML = `
+    waitForElm(dropdownSelector).then((dropDownElement) => {
+        console.debug("Add extra options container.");
+        const optionItemClassName = "option-item";
+        const extraOptionsHTML = `
                         <div id="${extraOptionsContainerId}">
                             <div class="horizontal-menu">
                                 <div class="${optionItemClassName}" target-value="chatgpt">ChatGPT</div>
@@ -20,20 +20,19 @@ export function insertExtraOptions() {
                             </div>
                         </div>`;
 
-            const footerElement = dropDownElement.querySelector("#footer");
-            footerElement.insertAdjacentHTML("beforeend", extraOptionsHTML);
+        const footerElement = dropDownElement.querySelector("#footer");
+        footerElement.insertAdjacentHTML("beforeend", extraOptionsHTML);
 
-            // Click event listener for the "View in Gemini" button
-            const containerElement = dropDownElement.querySelector(
-                `#${extraOptionsContainerId}`
-            );
-            containerElement
-                .querySelectorAll(`.${optionItemClassName}`)
-                .forEach((elm) => {
-                    elm.addEventListener("click", onExtraOptionClick);
-                });
-        }
-    );
+        // Click event listener for the "View in Gemini" button
+        const containerElement = dropDownElement.querySelector(
+            `#${extraOptionsContainerId}`
+        );
+        containerElement
+            .querySelectorAll(`.${optionItemClassName}`)
+            .forEach((elm) => {
+                elm.addEventListener("click", onExtraOptionClick);
+            });
+    });
 }
 
 /**
@@ -75,6 +74,11 @@ function onExtraOptionClick(e) {
         title: containerElement.getAttribute("video-title"),
     };
 
+    if (!chrome.runtime) {
+        showReloadRequiredView();
+        return;
+    }
+
     chrome.runtime.sendMessage(
         { message: "setPrompt", target: target, videoInfo },
         (response) => {
@@ -87,10 +91,57 @@ function onExtraOptionClick(e) {
 
             // Close the dropdown menu
             // TODO: Find a better way to close the dropdown menu
-            const dropdown = e.target.closest("tp-yt-iron-dropdown");
+            const dropdown = e.target.closest(dropdownSelector);
             dropdown.style.display = "none";
         }
     );
+}
+
+/**
+ * Show a toast notification indicating that the browser needs to be reloaded.
+ */
+function showReloadRequiredView() {
+    let containerElement = document.querySelector("#toast-container");
+    let toastElement;
+    if (!containerElement) {
+        document.querySelector("ytd-popup-container").insertAdjacentHTML(
+            "beforeend",
+            `<yt-notification-action-renderer id="toast-container">
+                <div id="toast-box" style="outline: none; left: 0px; top: 955px;"></div>
+            </yt-notification-action-renderer>`
+        );
+
+        containerElement = document.querySelector("#toast-container");
+        toastElement = containerElement.querySelector("#toast-box");
+        toastElement.addEventListener("transitionend", (event) => {
+            if (
+                event.propertyName === "transform" &&
+                !toastElement.classList.contains("open")
+            ) {
+                toastElement.style.display = "none"; // Hide the element
+            }
+        });
+    } else {
+        toastElement = containerElement.querySelector("#toast-box");
+    }
+
+    toastElement.textContent =
+        "The Chrome extension has been updated. Please reload this page to use it.";
+
+    toastElement.style.display = "";
+    toastElement.style.zIndex = "2206";
+    toastElement.style.top = `${window.innerHeight - 80}px`;
+
+    // Trigger a reflow to apply transition
+    void toastElement.offsetHeight;
+
+    if (!toastElement.classList.contains("open")) {
+        toastElement.classList.add("open");
+    }
+
+    setTimeout(() => {
+        toastElement.classList.remove("open");
+    }, 3000);
 }
 
 /**
@@ -212,7 +263,7 @@ export function detectVideoOptionClick(target) {
     // for example, when the more options of comments is clicked
     if (!videoInfo) {
         const containerElement = document.querySelector(
-            `tp-yt-iron-dropdown.ytd-popup-container #${extraOptionsContainerId}`
+            `${dropdownSelector} #${extraOptionsContainerId}`
         );
         if (containerElement) {
             containerElement.setAttribute("aria-hidden", true);
@@ -228,9 +279,9 @@ export function detectVideoOptionClick(target) {
     }
 
     // TODO set timeout
-    waitForElm(
-        "tp-yt-iron-dropdown[aria-disabled='false']:not([aria-hidden='true'])"
-    ).then((dropdown) => {
-        updateExtraOptions(dropdown, videoInfo);
-    });
+    waitForElm(`${dropdownSelector}:not([aria-hidden='true'])`).then(
+        (dropdown) => {
+            updateExtraOptions(dropdown, videoInfo);
+        }
+    );
 }
