@@ -90,11 +90,27 @@ function onExtraOptionClick(e) {
             window.open(`${url}?ref=${config["refCode"]}`, "_blank");
 
             // Close the dropdown menu
-            // TODO: Find a better way to close the dropdown menu
-            const dropdown = e.target.closest(dropdownSelector);
-            dropdown.style.display = "none";
+            pressEscKey();
         }
     );
+}
+
+/**
+ * Dispatch the ESC key press event on the document
+ */
+function pressEscKey() {
+    // Create a new keyboard event
+    const escEvent = new KeyboardEvent("keydown", {
+        key: "Escape", // Key value
+        code: "Escape", // Code for the Escape key
+        keyCode: 27, // Deprecated, but some old browsers still use this
+        which: 27, // Deprecated, but included for compatibility
+        bubbles: true, // Allow the event to bubble up through the DOM
+        cancelable: true, // The event can be canceled
+    });
+
+    // Dispatch the event on the document or a specific element
+    document.dispatchEvent(escEvent);
 }
 
 /**
