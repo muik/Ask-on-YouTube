@@ -1,4 +1,5 @@
 import { copyTextToClipboard } from "../copy.js";
+import { showToastMessage } from "./toast.js";
 
 /**
  * Insert a button to copy all comments in the video
@@ -27,7 +28,15 @@ function addCopyCommentsEventListener(id) {
         expandCommentReplies();
 
         setTimeout(() => {
-            copyUserComments();
+            try {
+                copyUserComments();
+            } catch (error) {
+                console.error("Error copying comments:", error);
+                showToastMessage(
+                    "Error copying comments. Please try again later."
+                );
+                return;
+            }
 
             btn.textContent = "Copied!";
 
@@ -50,31 +59,33 @@ function copyUserComments() {
     let contentBody = `## User Comments\n`;
     let preDepth = 0;
 
-    Array.from(document.querySelectorAll("#contents #main")).forEach((el) => {
-        const author = el.querySelector("#author-text").innerText.trim();
-        const content = el.querySelector("#content").innerText.trim();
-        const publishedTime = el
-            .querySelector("#published-time-text")
-            .innerText.trim();
-        const likesCount = el
-            .querySelector("#vote-count-middle")
-            .innerText.trim();
-        const depth = el.closest("#expander-contents") ? 1 : 0;
-        const indent = "  ".repeat(depth);
+    Array.from(document.querySelectorAll("#comments #contents #main")).forEach(
+        (el) => {
+            const author = el.querySelector("#author-text").innerText.trim();
+            const content = el.querySelector("#content").innerText.trim();
+            const publishedTime = el
+                .querySelector("#published-time-text")
+                .innerText.trim();
+            const likesCount = el
+                .querySelector("#vote-count-middle")
+                .innerText.trim();
+            const depth = el.closest("#expander-contents") ? 1 : 0;
+            const indent = "  ".repeat(depth);
 
-        if (depth > preDepth) {
-            contentBody += `${indent}[Replies]\n`;
+            if (depth > preDepth) {
+                contentBody += `${indent}[Replies]\n`;
+            }
+
+            contentBody += `${indent}- ${author}, ${publishedTime}\n`;
+            contentBody += `${indent}  ${content}\n`;
+
+            if (likesCount) {
+                contentBody += `${indent}  ${likesCount} likes\n`;
+            }
+
+            preDepth = depth;
         }
-
-        contentBody += `${indent}- ${author}, ${publishedTime}\n`;
-        contentBody += `${indent}  ${content}\n`;
-
-        if (likesCount) {
-            contentBody += `${indent}  ${likesCount} likes\n`;
-        }
-
-        preDepth = depth;
-    });
+    );
 
     copyTextToClipboard(contentBody);
 }
