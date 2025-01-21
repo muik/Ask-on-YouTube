@@ -1,5 +1,6 @@
 "use strict";
 
+import { LRUCache } from "./background/lruCache.js";
 import {
     getChatGPTPrompt,
     getGeminiPrompt,
@@ -23,7 +24,7 @@ chrome.action.onClicked.addListener(() => {
 
 let prompt = "";
 const settings = {};
-//const cachedTranscripts = {}; // TODO: Implement caching
+const transcriptCache = new LRUCache(10);
 
 // On Message
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
@@ -46,7 +47,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         // Returning true ensures the response is asynchronous
         return true;
     }
-    
+
     if (request.message === "getPrompt") {
         sendResponse({ prompt: prompt });
         prompt = ""; // Reset prompt
@@ -68,7 +69,18 @@ async function handleSetPromptRequest(request) {
     const videoInfo = request.videoInfo;
 
     if (request.target === "chatgpt") {
-        const transcript = await loadTranscript(videoInfo.id);
+        let transcript;
+        if (transcriptCache.has(videoInfo.id)) {
+            transcript = transcriptCache.get(videoInfo.id);
+            console.debug(
+                `Using cached transcript for video ID: ${videoInfo.id}`
+            );
+        } else {
+            transcript = await loadTranscript(videoInfo.id);
+            transcriptCache.put(videoInfo.id, transcript);
+            console.debug(`Cached transcript for video ID: ${videoInfo.id}`);
+        }
+
         if (!transcript) {
             return {
                 error: {
