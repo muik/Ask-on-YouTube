@@ -186,7 +186,10 @@
     justify-content: center;
     padding: 0 4px;
 }
-#extra-options .option-item:hover {
+#extra-options .option-item[disabled=true] {
+    cursor: default;
+}
+#extra-options .option-item:not([disabled=true]):hover {
     background-color: var(--yt-spec-10-percent-layer);
 }
 #extra-options:not([aria-hidden])::before {

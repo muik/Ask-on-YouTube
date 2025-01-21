@@ -1,6 +1,7 @@
 import { config } from "../config.js";
 import { getSearchParam } from "../searchParam.js";
 import { waitForElm } from "../utils.js";
+import { getSpinnerHtml } from "./htmlSnippets.js";
 
 const extraOptionsContainerId = "extra-options";
 const dropdownSelector = "tp-yt-iron-dropdown.ytd-popup-container";
@@ -55,8 +56,9 @@ function updateExtraOptions(dropDownElement, videoInfo) {
  */
 function onExtraOptionClick(e) {
     e.stopPropagation();
+    const element = e.target;
 
-    const target = e.target.getAttribute("target-value");
+    const target = element.getAttribute("target-value");
     let url;
 
     if (target === "chatgpt") {
@@ -79,9 +81,17 @@ function onExtraOptionClick(e) {
         return;
     }
 
+    // set loading state
+    const preHtml = element.innerHTML;
+    element.innerHTML = getSpinnerHtml();
+    element.setAttribute("disabled", true);
+
     chrome.runtime.sendMessage(
         { message: "setPrompt", target: target, videoInfo },
         (response) => {
+            element.innerHTML = preHtml;
+            element.removeAttribute("disabled");
+
             if (response.error) {
                 console.error("Error setting prompt.", response.error);
                 return;
