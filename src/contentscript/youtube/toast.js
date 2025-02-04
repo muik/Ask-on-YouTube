@@ -1,18 +1,21 @@
+const containerId = "toast-container";
+
 /**
  * Show a toast notification indicating that the browser needs to be reloaded.
  */
 export function showToastMessage(message) {
-    let containerElement = document.querySelector("#toast-container");
+    let containerElement = document.querySelector(`#${containerId}`);
     let toastElement;
     if (!containerElement) {
         document.querySelector("ytd-popup-container").insertAdjacentHTML(
             "beforeend",
-            `<yt-notification-action-renderer id="toast-container">
+            `<yt-notification-action-renderer id="${containerId}">
                 <div id="toast-box" style="outline: none; left: 0px; top: 955px;"></div>
             </yt-notification-action-renderer>`
         );
 
-        containerElement = document.querySelector("#toast-container");
+        containerElement = document.querySelector(`#${containerId}`);
+
         toastElement = containerElement.querySelector("#toast-box");
         toastElement.addEventListener("transitionend", (event) => {
             if (
@@ -43,4 +46,3 @@ export function showToastMessage(message) {
         toastElement.classList.remove("open");
     }, 3000);
 }
-
