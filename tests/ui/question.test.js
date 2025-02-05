@@ -8,7 +8,7 @@ describe("Question dialog Test", () => {
 
     beforeEach(async () => {
         browser = await puppeteer.launch({
-            devtools: true,
+            headless: false,
             args: [
                 `--disable-extensions-except=${EXTENSION_PATH}`,
                 `--load-extension=${EXTENSION_PATH}`,
@@ -47,7 +47,10 @@ describe("Question dialog Test", () => {
         });
 
         const contentsSelector = `${questionDialogSelector} #contents`;
-        await page.waitForSelector(contentsSelector, { timeout: 2000 });
+        await page.waitForSelector(contentsSelector, {
+            timeout: 2000,
+            hidden: false,
+        });
 
         // Validate dialog contents
         const dialogTitle = await getElementText(
@@ -73,23 +76,30 @@ describe("Question dialog Test", () => {
         });
     };
 
-    it(`Question dialog renders correctly`, async () => {
-        const page = await browser.newPage();
-        await page.setViewport({ width: 1024, height: 768 });
-        await page.goto("https://www.youtube.com/watch?v=_CcYSnoZytk", {
-            waitUntil: ["networkidle0", "domcontentloaded"],
+    const moreOptionButtonTypes = [
+        {
+            selector:
+                "#actions-inner #button-shape>button div.yt-spec-touch-feedback-shape__fill",
+            name: "main",
+        },
+        {
+            selector: "ytd-compact-video-renderer yt-icon-button button#button",
+            name: "video-list",
+        },
+    ];
+
+    moreOptionButtonTypes.forEach((type) => {
+        it(`Question dialog renders correctly for ${type.name}`, async () => {
+            const page = await browser.newPage();
+            await page.setViewport({ width: 1024, height: 768 });
+            await page.goto("https://www.youtube.com/watch?v=_CcYSnoZytk", {
+                waitUntil: ["networkidle0", "domcontentloaded"],
+            });
+
+            const title = await page.title();
+            expect(title).toContain("YouTube");
+
+            await runCommonTestFlow(page, type.selector);
         });
-
-        const title = await page.title();
-        expect(title).toContain("YouTube");
-
-        for (const selector of [
-            // main video
-            "#actions-inner #button-shape>button div.yt-spec-touch-feedback-shape__fill",
-            // video list
-            "ytd-compact-video-renderer yt-icon-button button#button",
-        ]) {
-            await runCommonTestFlow(page, selector);
-        }
     });
 });
