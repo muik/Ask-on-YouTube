@@ -1,4 +1,5 @@
 import puppeteer from "puppeteer";
+import { getElementAttr, getElementText, waitAndClick } from "./helpers";
 
 const EXTENSION_PATH = "./dist";
 
@@ -21,46 +22,6 @@ describe("Question dialog Test", () => {
             browser = null;
         }
     });
-
-    // Helper function to wait for a selector and click it.
-    async function waitAndClick(page, selector, options = {}) {
-        await page.waitForSelector(selector, { timeout: 2000, ...options });
-        await page.click(selector);
-    }
-
-    // Helper function to retrieve text content from a sub-element.
-    async function getElementText(page, scopeSelector, childSelector) {
-        return page.evaluate(
-            (scopeSelector, childSelector) => {
-                const container = document.querySelector(scopeSelector);
-                return container
-                    ? container.querySelector(childSelector)?.textContent
-                    : "";
-            },
-            scopeSelector,
-            childSelector
-        );
-    }
-
-    // Helper function to retrieve an attribute from a sub-element.
-    async function getElementAttr(
-        page,
-        scopeSelector,
-        childSelector,
-        attr = "src"
-    ) {
-        return page.evaluate(
-            (scopeSelector, childSelector, attr) => {
-                const container = document.querySelector(scopeSelector);
-                return container
-                    ? container.querySelector(childSelector)?.getAttribute(attr)
-                    : null;
-            },
-            scopeSelector,
-            childSelector,
-            attr
-        );
-    }
 
     const runCommonTestFlow = async (page, moreOptionButtonSelector) => {
         // Common interaction flow
