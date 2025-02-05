@@ -2,6 +2,7 @@ import { config } from "../config.js";
 import { getSearchParam } from "../searchParam.js";
 import { waitForElm } from "../utils.js";
 import { setLoadingState } from "./extraOptionsView.js";
+import { showQuestionDialog } from "./questionView.js";
 import { showToastMessage } from "./toast.js";
 
 const extraOptionsContainerId = "extra-options";
@@ -19,6 +20,7 @@ export function insertExtraOptions() {
                             <div class="horizontal-menu">
                                 <div class="${optionItemClassName}" target-value="chatgpt">ChatGPT</div>
                                 <div class="${optionItemClassName}" target-value="gemini">Gemini</div>
+                                <div class="${optionItemClassName}" target-value="question">Question</div>
                             </div>
                         </div>`;
 
@@ -48,6 +50,7 @@ function updateExtraOptions(dropDownElement, videoInfo) {
     const containerElement = dropDownElement.querySelector(containerSelector);
     containerElement.setAttribute("video-id", videoInfo.id);
     containerElement.setAttribute("video-title", videoInfo.title);
+    containerElement.setAttribute("video-thumbnail", videoInfo.thumbnail);
     containerElement.removeAttribute("aria-hidden");
 }
 
@@ -66,7 +69,7 @@ function onExtraOptionClick(e) {
         url = "https://chatgpt.com/";
     } else if (target === "gemini") {
         url = "https://gemini.google.com/app";
-    } else {
+    } else if (target !== "question") {
         console.error("Invalid option clicked.", e.target);
         return;
     }
@@ -75,12 +78,18 @@ function onExtraOptionClick(e) {
     const videoInfo = {
         id: containerElement.getAttribute("video-id"),
         title: containerElement.getAttribute("video-title"),
+        thumbnail: containerElement.getAttribute("video-thumbnail"),
     };
 
     if (!chrome.runtime || !chrome.runtime.sendMessage) {
         showToastMessage(
             "The Chrome extension has been updated. Please reload this page to use it."
         );
+        return;
+    }
+
+    if (target === "question") {
+        onQuestionClick(videoInfo);
         return;
     }
 
@@ -102,6 +111,13 @@ function onExtraOptionClick(e) {
     waitForElm(`${dropdownSelector}[aria-hidden='true']`).then(() => {
         setLoadingState(element, false);
     });
+}
+
+function onQuestionClick(videoInfo) {
+    // Close the dropdown menu
+    pressEscKey();
+
+    showQuestionDialog(videoInfo);
 }
 
 function onSetPrompt(response, element, url) {
@@ -220,14 +236,23 @@ function getVideoInfoFromItemVideoOptionMenu(target) {
         return; // Exit if no video title is identified
     }
 
+    const thumbnailElement = videoContainer.querySelector(
+        '#thumbnail img');
+    if (!thumbnailElement) {
+        console.debug("No thumbnail found", videoContainer);
+        return;
+    }
+
     // Extract the video ID from the URL (e.g., https://www.youtube.com/watch?v=VIDEO_ID)
     const url = new URL(linkElement.href);
     const id = url.searchParams.get("v");
     const title = titleElement.textContent.trim();
+    const thumbnail = thumbnailElement.getAttribute("src");
 
     return {
         id: id,
         title: title,
+        thumbnail: thumbnail,
     };
 }
 
@@ -259,9 +284,14 @@ export function getVideoInfoFromVideoDetail() {
         return;
     }
 
+    const thumbnail = document
+        .querySelector("head > link[as=image][rel=preload]")
+        .getAttribute("href");
+
     return {
         id: getSearchParam(window.location.href).v,
         title: titleElement.textContent.trim(),
+        thumbnail: thumbnail,
     };
 }
 
