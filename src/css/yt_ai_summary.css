@@ -186,10 +186,10 @@
     justify-content: center;
     padding: 0 4px;
 }
-#extra-options .option-item[disabled=true] {
+#extra-options .option-item[disabled="true"] {
     cursor: default;
 }
-#extra-options .option-item:not([disabled=true]):hover {
+#extra-options .option-item:not([disabled="true"]):hover {
     background-color: var(--yt-spec-10-percent-layer);
 }
 #extra-options:not([aria-hidden])::before {
@@ -211,7 +211,7 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    font-family: "Roboto","Arial",sans-serif;
+    font-family: "Roboto", "Arial", sans-serif;
     font-size: 1.4rem;
     line-height: 2rem;
     font-weight: 400;
@@ -220,12 +220,12 @@
     min-width: 288px;
     box-sizing: border-box;
     cursor: default;
-    -webkit-transition: -webkit-transform .3s,opacity .3s;
-    transition: transform .3s,opacity .3s;
+    -webkit-transition: -webkit-transform 0.3s, opacity 0.3s;
+    transition: transform 0.3s, opacity 0.3s;
     opacity: 0;
     -webkit-transform: translateY(100px);
     transform: translateY(100px);
-    -webkit-font-smoothing: antialiased
+    -webkit-font-smoothing: antialiased;
 }
 #toast-container #toast-box.open {
     opacity: 1;
