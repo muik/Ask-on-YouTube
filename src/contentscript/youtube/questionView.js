@@ -1,3 +1,5 @@
+import { showToastMessage } from "./toast.js";
+
 const containerId = "dialog-container";
 
 export function showQuestionDialog(videoInfo) {
@@ -58,6 +60,7 @@ function setQuestionDialogContent(videoInfo) {
         `ytd-popup-container #${containerId}`
     );
 
+    containerElement.setAttribute("video-id", videoInfo.id);
     containerElement.querySelector(".title").textContent = videoInfo.title;
     containerElement
         .querySelector("img.thumbnail")
@@ -76,12 +79,25 @@ function insertQuestionDialog() {
     const containerElement = document.querySelector(
         `ytd-popup-container #${containerId}`
     );
+    // request button click event
+    const requestButton = containerElement.querySelector(
+        "#contents button.question-button"
+    );
+    requestButton.addEventListener("click", onRequestButtonClick);
+
+    // enter key event on the input field
+    const inputElement = containerElement.querySelector(
+        "#contents input[type='text']"
+    );
+    inputElement.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            requestButton.click();
+        }
+    });
 
     // close the dialog when the user clicks the close button
     const closeButton = containerElement.querySelector("#close-button");
-    closeButton.addEventListener("click", () => {
-        hideQuestionDialog();
-    });
+    closeButton.addEventListener("click", hideQuestionDialog);
 
     // close the dialog when the user clicks outside of it or presses escape key
     window.addEventListener("keydown", (event) => {
@@ -96,6 +112,82 @@ function insertQuestionDialog() {
     });
 
     return containerElement;
+}
+
+function onRequestButtonClick(event) {
+    const buttonElement = event.target;
+    const containerElement = buttonElement.closest(
+        `ytd-popup-container #${containerId}`
+    );
+    const inputElement = containerElement.querySelector(
+        "#contents input[type='text']"
+    );
+    const prompt = inputElement.value || inputElement.placeholder;
+    const videoInfo = {
+        id: containerElement.getAttribute("video-id"),
+        title: containerElement.querySelector(".title").textContent,
+        thumbnail: containerElement
+            .querySelector("img.thumbnail")
+            .getAttribute("src"),
+    };
+    const target = "chatgpt";
+
+    // set loading state
+    buttonElement.setAttribute("disabled", "");
+    inputElement.setAttribute("disabled", "");
+
+    try {
+        chrome.runtime.sendMessage(
+            { message: "setPrompt", target: target, videoInfo, prompt },
+            (response) => {
+                onPromptSet(response);
+                buttonElement.removeAttribute("disabled");
+                inputElement.removeAttribute("disabled");
+            }
+        );
+    } catch (error) {
+        console.error("sendMessage setPrompt Error:", error);
+        showToastMessage(`sendMessage setPrompt Error: ${error.message}`);
+        buttonElement.removeAttribute("disabled");
+        inputElement.removeAttribute("disabled");
+    }
+}
+
+function onPromptSet(response) {
+    if (isQuestionDialogClosed()) {
+        return;
+    }
+
+    if (chrome.runtime.lastError) {
+        const errorMessage = `Error - ${
+            chrome.runtime.lastError.message || chrome.runtime.lastError
+        }`;
+        console.error("Error setting prompt.", chrome.runtime.lastError);
+        showToastMessage(errorMessage);
+        return;
+    }
+
+    if (response.error) {
+        const { code, message } = response.error;
+        if (code === "TRANSCRIPT_NOT_FOUND") {
+            showToastMessage(message);
+        } else {
+            const errorMessage = `Error - code: ${code}`;
+            console.error("Error setting prompt.", response.error);
+            showToastMessage(errorMessage);
+        }
+        return;
+    }
+
+    if (!response.targetUrl) {
+        console.error("Error - targetUrl is not set.");
+        showToastMessage("Error - targetUrl is not set.");
+        return;
+    }
+
+    window.open(response.targetUrl, "_blank");
+
+    hideQuestionDialog();
 }
 
 function repositionDialog() {
@@ -131,11 +223,23 @@ function repositionDialog() {
     containerElement.style.zIndex = highestZIndex + 2;
 }
 
+function isQuestionDialogClosed() {
+    const containerElement = document.querySelector(
+        `ytd-popup-container #${containerId}`
+    );
+    return containerElement && containerElement.style.display === "none";
+}
+
 function hideQuestionDialog() {
     const containerElement = document.querySelector(
         `ytd-popup-container #${containerId}`
     );
     containerElement.style.display = "none";
+
+    const inputElement = containerElement.querySelector(
+        "#contents input[type='text']"
+    );
+    inputElement.value = "";
 
     const backgroundElement = document.querySelector(
         "tp-yt-iron-overlay-backdrop"
@@ -204,7 +308,7 @@ function getQuestionHtml() {
       <div class="title"></div>
       <div class="question-input-container">
       <input type="text" value="" placeholder="요약해줘">
-      <button class="question-button">질문</button>
+      <button class="question-button"><span class="default-text">요청</span><span class="loading-text">요청 중..</span></button>
     </div>
   </div>
   </ytd-unified-share-panel-renderer>

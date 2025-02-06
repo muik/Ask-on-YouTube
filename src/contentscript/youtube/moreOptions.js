@@ -1,4 +1,3 @@
-import { config } from "../config.js";
 import { getSearchParam } from "../searchParam.js";
 import { waitForElm } from "../utils.js";
 import { setLoadingState } from "./extraOptionsView.js";
@@ -63,13 +62,9 @@ function onExtraOptionClick(e) {
     const element = e.target;
 
     const target = element.getAttribute("target-value");
-    let url;
 
-    if (target === "chatgpt") {
-        url = "https://chatgpt.com/";
-    } else if (target === "gemini") {
-        url = "https://gemini.google.com/app";
-    } else if (target !== "question") {
+    const targets = ["chatgpt", "gemini", "question"];
+    if (!targets.includes(target)) {
         console.error("Invalid option clicked.", e.target);
         return;
     }
@@ -99,7 +94,7 @@ function onExtraOptionClick(e) {
         chrome.runtime.sendMessage(
             { message: "setPrompt", target: target, videoInfo },
             (response) => {
-                onSetPrompt(response, element, url);
+                onSetPrompt(response, element);
             }
         );
     } catch (error) {
@@ -120,7 +115,7 @@ function onQuestionClick(videoInfo) {
     showQuestionDialog(videoInfo);
 }
 
-function onSetPrompt(response, element, url) {
+function onSetPrompt(response, element) {
     // Stop when dropbox already closed, it means user doesn't want to continue.
     if (document.querySelector(`${dropdownSelector}[aria-hidden='true']`)) {
         return;
@@ -149,7 +144,13 @@ function onSetPrompt(response, element, url) {
         return;
     }
 
-    window.open(`${url}?ref=${config["refCode"]}`, "_blank");
+    if (!response.targetUrl) {
+        console.error("Error - targetUrl is not set.");
+        showToastMessage("Error - targetUrl is not set.");
+        return;
+    }
+
+    window.open(response.targetUrl, "_blank");
 
     // Close the dropdown menu
     pressEscKey();
@@ -236,8 +237,7 @@ function getVideoInfoFromItemVideoOptionMenu(target) {
         return; // Exit if no video title is identified
     }
 
-    const thumbnailElement = videoContainer.querySelector(
-        '#thumbnail img');
+    const thumbnailElement = videoContainer.querySelector("#thumbnail img");
     if (!thumbnailElement) {
         console.debug("No thumbnail found", videoContainer);
         return;

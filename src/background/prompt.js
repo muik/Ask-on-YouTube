@@ -26,6 +26,13 @@ export async function getChatGPTPrompt(videoInfo, transcript, settings) {
     return `${prompt}\nTitle: "${title}"\nTranscript: "${transcriptRevised}"`;
 }
 
+export async function getChatGPTCustomPrompt(videoInfo, transcript, prompt) {
+    const title = videoInfo.title.trim();
+    const transcriptRevised = transcript.trim();
+
+    return `Title: "${title}"\nTranscript: "${transcriptRevised}"\n------------\n${prompt}`;
+}
+
 export async function getGeminiPrompt(videoId, settings) {
     if (settings.promptGemini == null) {
         settings.promptGemini = await getPromptGemini();
