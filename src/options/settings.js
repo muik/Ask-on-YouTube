@@ -18,9 +18,9 @@ document.addEventListener("DOMContentLoaded", () => {
         ["promptChatGPT", "promptGemini", "useExperimentalGemini"],
         (result) => {
             promptAreaChatGPT.value =
-                result.promptChatGPT || defaultSettings.defaultPromptChatGPT;
+                result.promptChatGPT || defaultSettings.promptChatGPT;
             promptAreaGemini.value =
-                result.promptGemini || defaultSettings.defaultPromptGemini;
+                result.promptGemini || defaultSettings.promptGemini;
             useExperimentalGeminiCheck.checked =
                 result.useExperimentalGemini ??
                 defaultSettings.useExperimentalGemini;
