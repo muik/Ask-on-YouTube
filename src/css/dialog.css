@@ -52,6 +52,9 @@
     background: transparent;
     border-radius: 12px;
 }
+.ytq-dialog .question-input-container input[type="text"]:focus {
+    outline: none;
+}
 .ytq-dialog .question-input-container:has(input[type="text"]:disabled) {
     background-color: var(--yt-spec-10-percent-layer);
 }
