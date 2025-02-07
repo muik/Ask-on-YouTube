@@ -3,7 +3,7 @@ body {
     margin: 20px;
 }
 .container {
-    max-width: 400px;
+    max-width: 600px;
     margin: 0 auto;
 }
 textarea {
@@ -29,9 +29,6 @@ button {
     align-items: center;
     justify-content: space-between;
 }
-.label-header h3 {
-    margin: 0;
-}
 .status-message {
     margin-left: auto;
     font-size: 14px;
@@ -52,5 +49,19 @@ button {
 .description {
     font-size: 12px;
     color: #666;
+    margin-top: 5px;
+}
+.inline-label-input {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.inline-label-input label {
+    width: 100px;
+}
+.inline-label-input input {
+    width: 100%;
+}
+.inline-label-input + .status-message {
     margin-top: 5px;
 }

@@ -7,15 +7,27 @@ document.addEventListener("DOMContentLoaded", () => {
     const useExperimentalGeminiCheck = document.getElementById(
         "useExperimentalGemini"
     );
-    const statusMessageChatGPT = document.getElementById("statusMessageChatGPT");
+    const googleCloudAPIKeyInput = document.getElementById("googleCloudAPIKey");
+
+    const statusMessageChatGPT = document.getElementById(
+        "statusMessageChatGPT"
+    );
     const statusMessageGemini = document.getElementById("statusMessageGemini");
     const statusMessageToggle = document.getElementById("statusMessageToggle");
+    const statusMessageGoogleCloudAPIKey = document.getElementById(
+        "statusMessageGoogleCloudAPIKey"
+    );
 
     console.debug("Extension settings page loaded");
 
     // Load the saved prompt text when the page is loaded
     chrome.storage.sync.get(
-        ["promptChatGPT", "promptGemini", "useExperimentalGemini"],
+        [
+            "promptChatGPT",
+            "promptGemini",
+            "useExperimentalGemini",
+            "googleCloudAPIKey",
+        ],
         (result) => {
             promptAreaChatGPT.value =
                 result.promptChatGPT || defaultSettings.promptChatGPT;
@@ -24,6 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
             useExperimentalGeminiCheck.checked =
                 result.useExperimentalGemini ??
                 defaultSettings.useExperimentalGemini;
+            googleCloudAPIKeyInput.value = result.googleCloudAPIKey || "";
         }
     );
 
@@ -34,7 +47,10 @@ document.addEventListener("DOMContentLoaded", () => {
             console.debug(`Successfully saved: ${key}`);
             statusMessageElement.textContent = "Saved!";
             statusMessageElement.classList.add("visible");
-            setTimeout(() => statusMessageElement.classList.remove("visible"), 2000);
+            setTimeout(
+                () => statusMessageElement.classList.remove("visible"),
+                2000
+            );
 
             chrome.runtime.sendMessage(
                 { message: "settingsUpdated", key: key, value: value },
@@ -61,11 +77,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Auto-save with debounced input
     promptAreaChatGPT.addEventListener("input", () => {
-        debouncedSaveSetting("promptChatGPT", promptAreaChatGPT.value, statusMessageChatGPT);
+        debouncedSaveSetting(
+            "promptChatGPT",
+            promptAreaChatGPT.value,
+            statusMessageChatGPT
+        );
     });
 
     promptAreaGemini.addEventListener("input", () => {
-        debouncedSaveSetting("promptGemini", promptAreaGemini.value, statusMessageGemini);
+        debouncedSaveSetting(
+            "promptGemini",
+            promptAreaGemini.value,
+            statusMessageGemini
+        );
     });
 
     useExperimentalGeminiCheck.addEventListener("change", () => {
@@ -73,6 +97,14 @@ document.addEventListener("DOMContentLoaded", () => {
             "useExperimentalGemini",
             useExperimentalGeminiCheck.checked,
             statusMessageToggle
+        );
+    });
+
+    googleCloudAPIKeyInput.addEventListener("input", () => {
+        debouncedSaveSetting(
+            "googleCloudAPIKey",
+            googleCloudAPIKeyInput.value,
+            statusMessageGoogleCloudAPIKey
         );
     });
 });

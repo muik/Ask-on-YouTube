@@ -3,15 +3,37 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Extension Settings</title>
+        <title>Settings - Ask on YouTube</title>
     </head>
     <body>
         <div class="container">
-            <h1>Extension Settings</h1>
+            <h1>Ask on YouTube</h1>
+            <h2>Settings</h2>
 
-            <h2>ChatGPT</h2>
+            <!-- API Key for Google Cloud Vision API -->
+            <h3>Google Cloud API</h3>
+            <p class="description">
+                Ask on YouTube uses the Google Cloud Vision API to extract text
+                from images.
+            </p>
+            <div>
+                <div class="inline-label-input">
+                    <label for="googleCloudAPIKey">API Key</label>
+                    <input
+                        type="text"
+                        id="googleCloudAPIKey"
+                        placeholder="Enter your API key"
+                    />
+                </div>
+                <div
+                    id="statusMessageGoogleCloudAPIKey"
+                    class="status-message"
+                ></div>
+            </div>
+
+            <h3>ChatGPT</h3>
             <div class="label-header">
-                <h3><label for="promptChatGPT">Prompt</label></h3>
+                <label for="promptChatGPT">Prompt</label>
                 <div id="statusMessageChatGPT" class="status-message"></div>
             </div>
             <div class="prompt">
@@ -20,9 +42,9 @@
                 <p>Transcript: "${transcript}"</p>
             </div>
 
-            <h2>Gemini</h2>
+            <h3>Gemini</h3>
             <div class="label-header">
-                <h3><label for="promptGemini">Prompt</label></h3>
+                <label for="promptGemini">Prompt</label>
                 <div id="statusMessageGemini" class="status-message"></div>
             </div>
             <div class="prompt">
