@@ -1,8 +1,8 @@
 {
-    "name": "YouTube Summary with ChatGPT",
-    "version": "1.0.4",
+    "name": "Ask on YouTube using ChatGPT",
+    "version": "1.0.0",
     "manifest_version": 3,
-    "description": "Use ChatGPT to summarize YouTube videos",
+    "description": "Use ChatGPT to ask or summarize YouTube videos",
     "permissions": ["storage"],
     "background": {
         "service_worker": "background.bundle.js",
