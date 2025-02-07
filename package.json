@@ -47,6 +47,7 @@
     "write-file-webpack-plugin": "^4.5.1"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.21.0",
     "jquery": "^3.7.1",
     "xmldom": "^0.6.0"
   }
