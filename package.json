@@ -9,8 +9,9 @@
     "lint": "eslint src/ --fix",
     "build": "npm run lint && npm run clean && webpack",
     "build-release": "npm run lint && npm run clean && NODE_ENV=production webpack",
-    "watch": "nodemon --watch src/ --watch webpack.config.cjs --ext js,html,css --exec 'npm run build'",
-    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest"
+    "watch": "nodemon --watch src/ --watch webpack.config.cjs --watch manifest.json --ext js,html,css --exec 'npm run build'",
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest",
+    "zip": "tar -a -c -f youtube_summary_with_chatgpt.zip dist"
   },
   "repository": {
     "type": "git",
