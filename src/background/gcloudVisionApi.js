@@ -1,3 +1,8 @@
+/**
+ * Request OCR from Google Cloud Vision API
+ * @param {string} imageUrl - The URL of the image to request OCR from
+ * @returns {Promise<string>} The text extracted from the image
+ */
 async function requestOCR(imageUrl) {
     try {
         // Prepare the request body

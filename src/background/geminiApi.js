@@ -9,22 +9,13 @@ const apiKey = process.env.GOOGLE_CLOUD_API_KEY;
 const genAI = new GoogleGenerativeAI(apiKey);
 const fileManager = new GoogleAIFileManager(apiKey);
 
-const schema = {
+const defaultSchema = {
     type: "object",
     properties: {
         questions: { type: "array", items: { type: "string" } },
         caption: { type: "string" },
     },
     required: ["questions", "caption"],
-};
-
-const generationConfig = {
-    temperature: 1,
-    topP: 0.95,
-    topK: 64,
-    maxOutputTokens: 8192,
-    responseMimeType: "application/json",
-    responseSchema: schema,
 };
 
 const systemInstructions = {
@@ -55,7 +46,6 @@ async function uploadImageUrl(imageUrl) {
         mimeType: "image/jpeg",
         displayName: imageUrl,
     });
-
     fs.unlinkSync(localImagePath);
 
     return uploadResult.file;
@@ -63,13 +53,16 @@ async function uploadImageUrl(imageUrl) {
 
 export async function requestSuggestedQuestions(
     prompt,
-    imageUrl,
-    systemInstruction = null
+    options = {
+        imageUrl: null,
+        systemInstruction: null,
+        schema: null,
+    }
 ) {
     const files = [];
-    if (imageUrl) {
+    if (options.imageUrl) {
         const startTime = Date.now();
-        const file = await uploadImageUrl(imageUrl);
+        const file = await uploadImageUrl(options.imageUrl);
         console.debug(
             "upload image time sec:",
             (Date.now() - startTime) / 1000
@@ -87,11 +80,20 @@ export async function requestSuggestedQuestions(
         })),
     ];
 
+    const generationConfig = {
+        temperature: 1,
+        topP: 0.95,
+        topK: 64,
+        maxOutputTokens: 8192,
+        responseMimeType: "application/json",
+        responseSchema: options.schema || defaultSchema,
+    };
+
     const model = genAI.getGenerativeModel({
         model: "gemini-2.0-flash-lite-preview-02-05",
         generationConfig,
         systemInstruction: (
-            systemInstruction || systemInstructions["default"]
+            options.systemInstruction || systemInstructions["default"]
         ).trim(),
     });
 

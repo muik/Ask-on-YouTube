@@ -1,3 +1,4 @@
+import { requestOCR } from "../src/background/gcloudVisionApi";
 import { requestSuggestedQuestions } from "../src/background/geminiApi";
 
 const items = [
@@ -47,14 +48,14 @@ function getHistoryText(items, count) {
 }
 
 describe("Gemini API Real Request", () => {
-    it("request suggested questions", async () => {
+    it("request suggested questions with default", async () => {
         const item = items[2];
         const historyInline = getHistoryText(items, 2);
         const prompt = promptFormat
             .replace("{title}", item.title)
             .replace("{history}", historyInline);
 
-        await checkResponse(prompt, item);
+        await checkResponse(prompt, { imageUrl: item.imageUrl });
     });
 
     it("request suggested questions with system instruction", async () => {
@@ -74,19 +75,62 @@ Your goal is to help users decide if the video is relevant to them and quickly u
             .replace("{title}", item.title)
             .replace("{history}", historyInline);
 
-        await checkResponse(prompt, item, systemInstruction);
+        await checkResponse(prompt, {
+            imageUrl: item.imageUrl,
+            systemInstruction,
+        });
+    });
+
+    it("request suggested questions with ocr", async () => {
+        const systemInstruction = `You are an AI assistant designed to help users quickly **discover what they are curious about or get desired information** from YouTube videos **before watching them**. You will suggest questions based on the video's title and thumbnail to help users **easily and quickly ask questions to satisfy their curiosity or find necessary information**.
+
+Your response should include the following:
+* **\`"questions"\`: An array of strings, each representing a question in Korean. You should suggest between 1 and 3 questions. These questions should be:
+    * **Relevant:** Directly related to the content implied by the video title and thumbnail.
+    * **Insightful for pre-viewing:** Help users quickly grasp the main topic, purpose, or key takeaways of the video *before* watching.
+    * **Targeted for curiosity/information:** Address what a user might be curious about or what specific information they might want to know quickly.
+    * **Naturally phrased:** Sound like questions a user would actually ask when trying to quickly understand a video's content *before watching*.
+    * **Referenced by the user's question history**: Consider the user's past questions to suggest questions aligned with their likely pre-viewing interests and information needs.`;
+
+        const item = items[2];
+
+        const startTime = Date.now();
+        const caption = await requestOCR(item.imageUrl);
+        console.log("ocr request time sec:", (Date.now() - startTime) / 1000);
+        console.log("caption:", caption);
+        const historyInline = getHistoryText(items, 2);
+
+        const prompt = `A YouTube video's the title: \`${item.title}\` and the caption of it's thumbnail image: \`${caption}\`.
+
+Your task is to analyze the provided YouTube video title, thumbnail image caption, and the user's recent question history. Based on this information, you should suggest questions that a user might naturally ask to **quickly understand what the video is about, determine if it's relevant to their interests, or extract specific information without having to watch the entire video.**
+
+The user's recent question history:
+${historyInline}`;
+
+        const schema = {
+            type: "object",
+            properties: {
+                questions: { type: "array", items: { type: "string" } },
+            },
+            required: ["questions"],
+        };
+
+        const response = await requestSuggestedQuestions(prompt, {
+            imageUrl: null,
+            systemInstruction,
+            schema,
+        });
+        console.log("total request time sec:", (Date.now() - startTime) / 1000);
+        console.log("response:", response);
     });
 });
 
-async function checkResponse(prompt, item, systemInstruction) {
+async function checkResponse(prompt, options) {
     const startTime = Date.now();
-    const response = await requestSuggestedQuestions(
-        prompt,
-        item.imageUrl,
-        systemInstruction
-    );
+    const response = await requestSuggestedQuestions(prompt, options);
     console.log("request time sec:", (Date.now() - startTime) / 1000);
 
+    console.log("response:", response);
     // console.log("systemInstruction:", systemInstruction);
     // console.log("prompt:", prompt);
     // console.log("imageUrl:", item.imageUrl);
@@ -104,13 +148,4 @@ async function checkResponse(prompt, item, systemInstruction) {
             (typeof response.caption === "string" &&
                 response.caption.length > 0)
     ).toBe(true);
-
-    if (response.caption.replace(/\n/g, " ") != item.caption) {
-        console.log("expected:", item.caption);
-        console.log("caption:", response.caption);
-    }
-
-    if (!response.questions.includes(item.question)) {
-        console.log("question mismatch:", response.questions, item.question);
-    }
 }
