@@ -23,6 +23,7 @@ chrome.action.onClicked.addListener(() => {
 let prompt = "";
 export const settings = {};
 export const transcriptCache = new LRUCache(10);
+export const questionCache = new LRUCache(10);
 
 // load settings from storage on startup
 chrome.storage.sync.get(
@@ -64,7 +65,10 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 sendResponse(result);
             })
             .catch((error) => {
-                console.error("getSuggestedQuestions error:", error);
+                if (!error.code) {
+                    error.code = "UNKNOWN_ERROR";
+                    console.error("getSuggestedQuestions error:", error);
+                }
                 sendResponse({
                     error: {
                         message: error.message,
@@ -100,8 +104,15 @@ async function handleGetSuggestedQuestionsRequest(request) {
         throw error;
     }
 
+    const cacheKey = `suggestedQuestions:${videoInfo.videoId}`;
+    if (questionCache.has(cacheKey)) {
+        return questionCache.get(cacheKey);
+    }
+
     const response = await requestSuggestedQuestions(videoInfo, {
         apiKey: settings.googleCloudAPIKey,
     });
+    questionCache.put(cacheKey, response);
+
     return response;
 }
