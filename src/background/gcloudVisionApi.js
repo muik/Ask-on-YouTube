@@ -5,23 +5,7 @@
  */
 async function requestOCR(imageUrl) {
     try {
-        // Prepare the request body
-        const requestBody = {
-            requests: [
-                {
-                    image: {
-                        source: {
-                            imageUri: imageUrl,
-                        },
-                    },
-                    features: [
-                        {
-                            type: "TEXT_DETECTION",
-                        },
-                    ],
-                },
-            ],
-        };
+        const requestBody = getTextDetectionRequestBody(imageUrl);
 
         // Make the API request
         const response = await fetch(
@@ -36,18 +20,7 @@ async function requestOCR(imageUrl) {
         );
 
         if (!response.ok) {
-            const errorDetails = await response.json();
-            if (errorDetails?.error) {
-                throw new Error(
-                    `Image annotate request Error:` +
-                        ` ${errorDetails.error.status}(${errorDetails.error.code})` +
-                        ` - ${errorDetails.error.message}`
-                );
-            } else {
-                throw new Error(
-                    `HTTP error! ${response.statusText}(${response.status})`
-                );
-            }
+            await throwError(response);
         }
 
         const data = await response.json();
@@ -59,6 +32,40 @@ async function requestOCR(imageUrl) {
     } catch (error) {
         console.error("Error in OCR request:", error);
         throw error;
+    }
+}
+
+function getTextDetectionRequestBody(imageUrl) {
+    return {
+        requests: [
+            {
+                image: {
+                    source: {
+                        imageUri: imageUrl,
+                    },
+                },
+                features: [
+                    {
+                        type: "TEXT_DETECTION",
+                    },
+                ],
+            },
+        ],
+    };
+}
+
+async function throwError(response) {
+    const errorDetails = await response.json();
+    if (errorDetails?.error) {
+        throw new Error(
+            `Image annotate request Error:` +
+                ` ${errorDetails.error.status}(${errorDetails.error.code})` +
+                ` - ${errorDetails.error.message}`
+        );
+    } else {
+        throw new Error(
+            `HTTP error! ${response.statusText}(${response.status})`
+        );
     }
 }
 
