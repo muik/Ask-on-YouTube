@@ -48,6 +48,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
+    "buffer": "^6.0.3",
     "jquery": "^3.7.1",
     "xmldom": "^0.6.0"
   }

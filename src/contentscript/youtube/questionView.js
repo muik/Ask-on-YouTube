@@ -12,13 +12,6 @@ export function showQuestionDialog(videoInfo) {
         containerElement.style.display = "block";
     }
 
-    showProgressSpinner(containerElement);
-    setTimeout(() => {
-        setQuestionDialogContent(videoInfo);
-        hideProgressSpinner(containerElement);
-        repositionDialog();
-    }, 500);
-
     document.body.insertAdjacentHTML("beforeend", getDialogBackgoundHtml());
 
     // close the dialog when the user clicks the background
@@ -29,8 +22,36 @@ export function showQuestionDialog(videoInfo) {
         hideQuestionDialog();
     });
 
+    showProgressSpinner(containerElement);
+
     // set dialog position in the center of the screen
     repositionDialog();
+
+    try {
+        chrome.runtime.sendMessage(
+            { message: "getSuggestedQuestions", videoInfo },
+            (response) => {
+                if (chrome.runtime.lastError || response.error) {
+                    const error = chrome.runtime.lastError || response.error;
+                    console.error("getSuggestedQuestions Error:", error);
+                    showToastMessage(
+                        `Suggested Questions Error: ${error.message}`
+                    );
+                    setQuestionDialogContent(videoInfo);
+                } else {
+                    console.debug("suggested questions response:", response);
+                    setQuestionDialogContent(videoInfo, response);
+                }
+                hideProgressSpinner(containerElement);
+                repositionDialog();
+            }
+        );
+    } catch (error) {
+        console.error("sendMessage getSuggestedQuestions Error:", error);
+        showToastMessage(`Unknown Error: ${error.message}`);
+        hideProgressSpinner(containerElement);
+        repositionDialog();
+    }
 }
 
 function showProgressSpinner(containerElement) {
@@ -55,20 +76,48 @@ function hideProgressSpinner(containerElement) {
     containerElement.querySelector("#contents").style.display = "";
 }
 
-function setQuestionDialogContent(videoInfo) {
+function setQuestionDialogContent(
+    videoInfo,
+    suggestedQuestionsResponse = null
+) {
     const containerElement = document.querySelector(
         `ytd-popup-container #${containerId}`
     );
 
     containerElement.setAttribute("video-id", videoInfo.id);
     containerElement.querySelector(".title").textContent = videoInfo.title;
-    containerElement
-        .querySelector("img.thumbnail")
-        .setAttribute("src", videoInfo.thumbnail);
+    const thumbnailElement = containerElement.querySelector("img.thumbnail");
+    thumbnailElement.setAttribute("src", videoInfo.thumbnail);
 
     // cursor focus on the input field
     const inputElement = containerElement.querySelector("input[type='text']");
     inputElement.focus();
+
+    const suggestionsElement = containerElement.querySelector("ul.suggestions");
+    suggestionsElement.innerHTML = "";
+
+    if (suggestedQuestionsResponse) {
+        thumbnailElement.setAttribute(
+            "caption",
+            suggestedQuestionsResponse.caption
+        );
+
+        const questions = suggestedQuestionsResponse.questions;
+        if (questions) {
+            const questionClickListener = (e) => {
+                const question = e.target.textContent;
+                inputElement.value = question;
+            };
+
+            questions.forEach((question) => {
+                const li = document.createElement("li");
+                li.textContent = question;
+                suggestionsElement.appendChild(li);
+
+                li.addEventListener("click", questionClickListener);
+            });
+        }
+    }
 }
 
 function insertQuestionDialog() {
@@ -313,11 +362,7 @@ function getQuestionHtml() {
       </div>
       <div class="question-suggestions">
         <span class="title">Suggestions</span>
-        <ul class="suggestions">
-          <li>요약해줘</li>
-          <li>주요 내용 요약해줘</li>
-          <li>주요 내용 요약해줘</li>
-        </ul>
+        <ul class="suggestions"></ul>
       </div>
     </div>
   </ytd-unified-share-panel-renderer>

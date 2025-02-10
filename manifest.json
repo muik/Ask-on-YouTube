@@ -4,6 +4,7 @@
     "manifest_version": 3,
     "description": "Use ChatGPT to ask or summarize YouTube videos",
     "permissions": ["storage"],
+    "host_permissions": ["https://i.ytimg.com/*"],
     "background": {
         "service_worker": "background.bundle.js",
         "type": "module"

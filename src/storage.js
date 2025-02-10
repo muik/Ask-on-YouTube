@@ -35,3 +35,11 @@ export async function getUseExperimentalGemini() {
         });
     });
 }
+
+export async function getGoogleCloudAPIKey() {
+    return new Promise((resolve) => {
+        chrome.storage.sync.get(["googleCloudAPIKey"], (result) => {
+            resolve(result.googleCloudAPIKey);
+        });
+    });
+}

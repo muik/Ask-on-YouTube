@@ -2,6 +2,7 @@
 
 import { handleSetPromptRequest } from "./background/handleSetPromptRequest.js";
 import { LRUCache } from "./background/lruCache.js";
+import { requestSuggestedQuestions } from "./background/requestQuestions.js";
 
 console.log("connected...");
 // const onInstallURL = "https://glasp.co/youtube-summary";
@@ -23,6 +24,22 @@ let prompt = "";
 export const settings = {};
 export const transcriptCache = new LRUCache(10);
 
+// load settings from storage on startup
+chrome.storage.sync.get(
+    [
+        "promptChatGPT",
+        "promptGemini",
+        "useExperimentalGemini",
+        "googleCloudAPIKey",
+    ],
+    (result) => {
+        for (const key in result) {
+            settings[key] = result[key];
+        }
+        console.debug("Settings loaded:", settings);
+    }
+);
+
 // On Message
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.message === "setPrompt") {
@@ -40,6 +57,22 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
         // Returning true ensures the response is asynchronous
         return true;
+    } else if (request.message === "getSuggestedQuestions") {
+        console.debug("Received getSuggestedQuestions request:", request);
+        handleGetSuggestedQuestionsRequest(request)
+            .then((result) => {
+                sendResponse(result);
+            })
+            .catch((error) => {
+                console.error("getSuggestedQuestions error:", error);
+                sendResponse({
+                    error: {
+                        message: error.message,
+                        code: error.code,
+                    },
+                });
+            });
+        return true;
     }
 
     if (request.message === "getPrompt") {
@@ -50,6 +83,25 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         settings[request.key] = request.value;
         sendResponse({ status: "success", message: "Settings updated." });
     } else {
-        sendResponse({ error: { message: "Invalid message." } });
+        sendResponse({
+            error: { message: `Invalid message: ${request.message}` },
+        });
     }
 });
+
+async function handleGetSuggestedQuestionsRequest(request) {
+    const { videoInfo } = request;
+    if (!videoInfo) {
+        throw new Error("No videoInfo received.");
+    }
+    if (!settings.googleCloudAPIKey) {
+        const error = new Error("googleCloudAPIKey settings not set.");
+        error.code = "GOOGLE_CLOUD_API_KEY_NOT_SET";
+        throw error;
+    }
+
+    const response = await requestSuggestedQuestions(videoInfo, {
+        apiKey: settings.googleCloudAPIKey,
+    });
+    return response;
+}
