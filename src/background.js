@@ -3,6 +3,7 @@
 import { handleSetPromptRequest } from "./background/handleSetPromptRequest.js";
 import { LRUCache } from "./background/lruCache.js";
 import { requestSuggestedQuestions } from "./background/requestQuestions.js";
+import { validateVideoInfo } from "./data.js";
 
 console.log("connected...");
 // const onInstallURL = "https://glasp.co/youtube-summary";
@@ -103,8 +104,9 @@ async function handleGetSuggestedQuestionsRequest(request) {
         error.code = "GOOGLE_CLOUD_API_KEY_NOT_SET";
         throw error;
     }
+    validateVideoInfo(videoInfo);
 
-    const cacheKey = `suggestedQuestions:${videoInfo.videoId}`;
+    const cacheKey = videoInfo.id;
     if (questionCache.has(cacheKey)) {
         return questionCache.get(cacheKey);
     }
