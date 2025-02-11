@@ -103,6 +103,15 @@ function setQuestionDialogContent(
             suggestedQuestionsResponse.caption
         );
 
+        // For convenience, click the image to automatically input the caption
+        // TODO: Improve user intuitive UI
+        thumbnailElement.addEventListener("click", (e) => {
+            const caption = e.target.getAttribute("title");
+            if (caption) {
+                inputElement.value = caption;
+            }
+        });
+
         const questions = suggestedQuestionsResponse.questions;
         if (questions) {
             const questionClickListener = (e) => {
