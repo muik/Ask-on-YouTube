@@ -35,7 +35,7 @@ export async function getChatGPTCustomPrompt(videoInfo, transcript, prompt) {
               .replace(/\n/g, "\\n")}\`\n`
         : "";
 
-    return `#${title}
+    return `Title: ${title}
 ${captionInline}URL: https://www.youtube.com/watch?v=${videoInfo.id}
 Transcript: \`\`\`
 ${transcriptRevised}
