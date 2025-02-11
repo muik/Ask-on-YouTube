@@ -1,4 +1,4 @@
-import { getTitleTokens } from "../src/contentscript/youtube/questionView.js";
+import { getTitleTokens } from "../src/contentscript/youtube/questionDialog/titleToken.js";
 
 describe("getTitleTokens", () => {
     it("should return an array of tokens for a given input string", () => {
@@ -7,7 +7,7 @@ describe("getTitleTokens", () => {
         const expectedOutput = [
             {
                 text: "This Man Makes 3,000+ Bagels by Hand Every Day",
-                type: "text",
+                type: "inputable",
             },
             {
                 text: " | ",
@@ -15,7 +15,7 @@ describe("getTitleTokens", () => {
             },
             {
                 text: "On the Job / Priya Krishna | NYT Cooking",
-                type: "text",
+                type: "inputable",
             },
         ];
         expect(getTitleTokens(input)).toEqual(expectedOutput);
@@ -26,7 +26,7 @@ describe("getTitleTokens", () => {
         const expectedOutput = [
             {
                 text: `'딥시크 충격'에 터져나오는 탄식‥반전 카드는?`,
-                type: "text",
+                type: "inputable",
             },
             {
                 text: " ",
@@ -34,7 +34,7 @@ describe("getTitleTokens", () => {
             },
             {
                 text: "(2025.02.09/뉴스데스크/MBC)",
-                type: "text",
+                type: "inputable",
             },
         ];
         expect(getTitleTokens(input)).toEqual(expectedOutput);

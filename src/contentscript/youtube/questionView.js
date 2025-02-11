@@ -1,4 +1,5 @@
 import { handleSendMessageError } from "../../errors.js";
+import { getTitleTokens, setTitleToken } from "./questionDialog/titleToken.js";
 import { showToastMessage } from "./toast.js";
 
 const containerId = "dialog-container";
@@ -80,6 +81,12 @@ function setQuestionDialogContent(videoInfo) {
 
     const inputElement = containerElement.querySelector("input[type='text']");
     const titleElement = containerElement.querySelector(".title");
+    const captionElement = containerElement.querySelector(
+        ".video-info .caption"
+    );
+    titleElement.innerHTML = "";
+    captionElement.innerHTML = "";
+
     const titleTokens = getTitleTokens(videoInfo.title);
     titleTokens.forEach(setTitleToken(titleElement, inputElement));
 
@@ -93,75 +100,24 @@ function setQuestionDialogContent(videoInfo) {
     suggestionsElement.innerHTML = "";
 }
 
-function setTitleToken(titleElement, inputElement) {
-    const onTitleTokenClick = (e) => {
-        inputElement.value = e.target.textContent;
-    };
-    return (token) => {
-        const spanElement = document.createElement("span");
-        spanElement.textContent = token.text;
-        spanElement.classList.add(token.type);
-        titleElement.appendChild(spanElement);
-
-        if (token.type === "text") {
-            spanElement.addEventListener("click", onTitleTokenClick);
-        }
-    };
-}
-
-export function getTitleTokens(inputString) {
-    if (!inputString) {
-        return [];
-    }
-    const tokens = [];
-    const postTokens = [];
-
-    const matched = inputString.match(/(.+)( \([^)]+\))$/);
-    if (matched) {
-        postTokens.push({ text: " ", type: "separator" });
-        postTokens.push({ text: matched[2].trim(), type: "text" });
-        inputString = matched[1];
-    }
-
-    const separatorIndex = inputString.search(/ [|/] /);
-    if (separatorIndex > -1) {
-        tokens.push({
-            text: inputString.substring(0, separatorIndex),
-            type: "text",
-        });
-        tokens.push({
-            text: inputString.substring(separatorIndex, separatorIndex + 3),
-            type: "separator",
-        });
-        tokens.push({
-            text: inputString.substring(separatorIndex + 3),
-            type: "text",
-        });
-    } else {
-        tokens.push({ text: inputString, type: "text" });
-    }
-
-    if (postTokens.length > 0) {
-        tokens.push(...postTokens);
-    }
-
-    return tokens;
-}
-
 function setSuggestedQuestions(response) {
     const containerElement = document.querySelector(
         `ytd-popup-container #${containerId}`
     );
-    const thumbnailElement = containerElement.querySelector("img.thumbnail");
+    const thumbnailElement = containerElement.querySelector(
+        ".video-info img.thumbnail"
+    );
+    const captionElement = containerElement.querySelector(
+        ".video-info .caption"
+    );
     const inputElement = containerElement.querySelector("input[type='text']");
     const suggestionsElement = containerElement.querySelector("ul.suggestions");
 
     thumbnailElement.setAttribute("title", response.caption);
+    captionElement.textContent = response.caption;
 
-    // For convenience, click the image to automatically input the caption
-    // TODO: Improve user intuitive UI
-    thumbnailElement.addEventListener("click", (e) => {
-        const caption = e.target.getAttribute("title");
+    captionElement.addEventListener("click", (e) => {
+        const caption = e.target.textContent;
         if (caption) {
             inputElement.value = caption;
         }
@@ -387,8 +343,13 @@ function getQuestionHtml() {
     </div>
     </yt-share-panel-header-renderer>
     <div id="contents" class="style-scope ytd-unified-share-panel-renderer">
-      <img class="thumbnail" />
-      <div class="title"></div>
+      <div class="video-info">
+        <img class="thumbnail" />
+        <div class="text-container">
+          <div class="title"></div>
+          <span class="caption inputable"></span>
+        </div>
+      </div>
       <div class="question-input-container">
         <input type="text" value="" placeholder="${defaultQuestion}">
         <button class="question-button"><span class="default-text">요청</span><span class="loading-text">요청 중..</span></button>

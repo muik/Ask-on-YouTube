@@ -22,13 +22,31 @@
 .ytq-dialog > *:last-child {
     margin-bottom: 24px;
 }
-.ytq-dialog .title {
-    font-size: 16px;
-    font-weight: 500;
+.ytq-dialog .video-info {
+    display: flex;
     user-select: text;
 }
-.ytq-dialog .title span.text:hover {
-    text-decoration: underline;
+.ytq-dialog .video-info .thumbnail {
+    flex: 1;
+}
+.ytq-dialog .video-info .text-container {
+    margin-left: 8px;
+    margin-top: 4px;
+}
+.ytq-dialog .video-info .caption {
+    font-size: 12px;
+    color: var(--yt-spec-text-secondary);
+    margin-top: 8px;
+}
+.ytq-dialog .video-info .title {
+    font-size: 16px;
+    font-weight: 500;
+}
+.ytq-dialog .video-info span.inputable {
+    display: inline-block;
+}
+.ytq-dialog .video-info span.inputable:hover {
+    background-color: var(--yt-spec-10-percent-layer);
     cursor: pointer;
 }
 .ytq-dialog .thumbnail {
