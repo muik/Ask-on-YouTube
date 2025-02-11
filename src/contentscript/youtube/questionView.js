@@ -1,3 +1,4 @@
+import { handleSendMessageError } from "../../errors.js";
 import { showToastMessage } from "./toast.js";
 
 const containerId = "dialog-container";
@@ -48,8 +49,10 @@ export function showQuestionDialog(videoInfo) {
             }
         );
     } catch (error) {
-        console.error("sendMessage getSuggestedQuestions Error:", error);
-        showToastMessage(`Unknown Error: ${error.message}`);
+        if (!handleSendMessageError(error)) {
+            console.error("sendMessage getSuggestedQuestions Error:", error);
+            showToastMessage(`Unknown Error: ${error.message}`);
+        }
         hideProgressSpinner(containerElement);
         repositionDialog();
     }

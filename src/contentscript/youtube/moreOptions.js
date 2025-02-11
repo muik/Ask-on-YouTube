@@ -1,3 +1,4 @@
+import { Errors, handleSendMessageError } from "../../errors.js";
 import { getSearchParam } from "../searchParam.js";
 import { waitForElm } from "../utils.js";
 import { setLoadingState } from "./extraOptionsView.js";
@@ -77,9 +78,7 @@ function onExtraOptionClick(e) {
     };
 
     if (!chrome.runtime || !chrome.runtime.sendMessage) {
-        showToastMessage(
-            "The Chrome extension has been updated. Please reload this page to use it."
-        );
+        showToastMessage(Errors.EXTENSION_CONTEXT_INVALIDATED);
         return;
     }
 
@@ -98,7 +97,10 @@ function onExtraOptionClick(e) {
             }
         );
     } catch (error) {
-        console.error("sendMessage setPrompt Error:", error);
+        if (!handleSendMessageError(error)) {
+            console.error("sendMessage setPrompt Error:", error);
+            showToastMessage(`Unknown Error: ${error.message}`);
+        }
         setLoadingState(element, false);
         return;
     }
