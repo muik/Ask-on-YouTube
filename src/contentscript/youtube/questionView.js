@@ -323,6 +323,10 @@ function hideQuestionDialog() {
     if (backgroundElement) {
         backgroundElement.remove();
     }
+
+    // remove error message
+    const errorElement = containerElement.querySelector("p.error");
+    errorElement.textContent = "";
 }
 
 function getDialogBackgoundHtml() {
