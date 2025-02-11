@@ -118,3 +118,7 @@
     font-weight: bold;
     color: var(--yt-spec-text-secondary);
 }
+.ytq-dialog .question-suggestions .error {
+    font-size: 12px;
+    color: var(--yt-spec-error-indicator);
+}
