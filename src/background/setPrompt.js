@@ -8,15 +8,8 @@ import {
     loadTranscript,
 } from "./prompt.js";
 
-export async function handleSetPromptRequest(request) {
-    if (!request.videoInfo) {
-        console.error("No video info received.");
-        return { error: { message: "No video info received." } };
-    }
-
-    const videoInfo = request.videoInfo;
-
-    if (request.target === "chatgpt") {
+export async function setPrompt({ videoInfo, target, question }) {
+    if (target === "chatgpt") {
         let transcript;
         if (transcriptCache.has(videoInfo.id)) {
             transcript = transcriptCache.get(videoInfo.id);
@@ -39,27 +32,27 @@ export async function handleSetPromptRequest(request) {
         }
 
         let prompt;
-        if (request.prompt) {
+        if (question) {
             prompt = await getChatGPTCustomPrompt(
                 videoInfo,
                 transcript,
-                request.prompt
+                question
             );
         } else {
             prompt = await getChatGPTPrompt(videoInfo, transcript, settings);
         }
         return {
             prompt: prompt,
-            response: { targetUrl: getTargetUrl(request.target) },
+            response: { targetUrl: getTargetUrl(target) },
         };
-    } else if (request.target === "gemini") {
+    } else if (target === "gemini") {
         const prompt = await getGeminiPrompt(videoInfo.id, settings);
         return {
             prompt: prompt,
-            response: { targetUrl: getTargetUrl(request.target) },
+            response: { targetUrl: getTargetUrl(target) },
         };
     } else {
-        console.error("Invalid target:", request.target);
+        console.error("Invalid target:", target);
         return {
             error: {
                 code: "INVALID_TARGET",

@@ -1,8 +1,9 @@
 "use strict";
 
-import { handleSetPromptRequest } from "./background/handleSetPromptRequest.js";
 import { LRUCache } from "./background/lruCache.js";
-import { requestSuggestedQuestions } from "./background/requestQuestions.js";
+import { saveQuestionHistory } from "./background/questionHistory.js";
+import { setPrompt } from "./background/setPrompt.js";
+import { getSuggestedQuestions } from "./background/suggestQuestions.js";
 import { validateVideoInfo } from "./data.js";
 
 console.log("connected...");
@@ -21,7 +22,7 @@ chrome.action.onClicked.addListener(() => {
     chrome.runtime.openOptionsPage();
 });
 
-let prompt = "";
+let promptTemp = "";
 export const settings = {};
 export const transcriptCache = new LRUCache(10);
 export const questionCache = new LRUCache(10);
@@ -44,45 +45,41 @@ chrome.storage.sync.get(
 
 // On Message
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+    console.debug("Received message:", request);
+
     if (request.message === "setPrompt") {
-        console.debug("Received setPrompt request:", request);
-        handleSetPromptRequest(request).then((result) => {
-            if (result.prompt) {
-                prompt = result.prompt;
-                sendResponse(result.response);
-            } else if (result.error) {
-                sendResponse(result);
-            } else {
-                sendResponse({ error: { message: "No prompt received." } });
-            }
-        });
+        validateVideoInfo(request.videoInfo);
+
+        setPrompt({
+            videoInfo: request.videoInfo,
+            target: request.target,
+            question: request.question,
+        })
+            .then(handleSetPromptResult(sendResponse))
+            .catch(handleError(sendResponse));
+
+        if (request.question) {
+            saveQuestionHistory(request.videoInfo, request.question).catch(
+                (error) => {
+                    console.error("saveQuestionHistory error:", error);
+                }
+            );
+        }
 
         // Returning true ensures the response is asynchronous
         return true;
     } else if (request.message === "getSuggestedQuestions") {
-        console.debug("Received getSuggestedQuestions request:", request);
-        handleGetSuggestedQuestionsRequest(request)
-            .then((result) => {
-                sendResponse(result);
-            })
-            .catch((error) => {
-                if (!error.code) {
-                    error.code = "UNKNOWN_ERROR";
-                    console.error("getSuggestedQuestions error:", error);
-                }
-                sendResponse({
-                    error: {
-                        message: error.message,
-                        code: error.code,
-                    },
-                });
-            });
+        validateVideoInfo(request.videoInfo);
+
+        getSuggestedQuestions(request.videoInfo, settings)
+            .then(sendResponse)
+            .catch(handleError(sendResponse));
         return true;
     }
 
     if (request.message === "getPrompt") {
-        sendResponse({ prompt: prompt });
-        prompt = ""; // Reset prompt
+        sendResponse({ prompt: promptTemp });
+        promptTemp = ""; // Reset prompt
     } else if (request.message === "settingsUpdated") {
         console.debug("Settings updated:", request);
         settings[request.key] = request.value;
@@ -94,27 +91,30 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     }
 });
 
-async function handleGetSuggestedQuestionsRequest(request) {
-    const { videoInfo } = request;
-    if (!videoInfo) {
-        throw new Error("No videoInfo received.");
-    }
-    if (!settings.googleCloudAPIKey) {
-        const error = new Error("googleCloudAPIKey settings not set.");
-        error.code = "GOOGLE_CLOUD_API_KEY_NOT_SET";
-        throw error;
-    }
-    validateVideoInfo(videoInfo);
+function handleSetPromptResult(sendResponse) {
+    return (result) => {
+        if (result.prompt) {
+            promptTemp = result.prompt;
+            sendResponse(result.response);
+        } else {
+            const error =
+                result.error || new Error("Internal server error: No prompt");
+            handleError(sendResponse)(error);
+        }
+    };
+}
 
-    const cacheKey = videoInfo.id;
-    if (questionCache.has(cacheKey)) {
-        return questionCache.get(cacheKey);
-    }
-
-    const response = await requestSuggestedQuestions(videoInfo, {
-        apiKey: settings.googleCloudAPIKey,
-    });
-    questionCache.put(cacheKey, response);
-
-    return response;
+function handleError(sendResponse) {
+    return (error) => {
+        if (!error.code) {
+            error.code = "UNKNOWN_ERROR";
+            console.error("Unknown error:", error);
+        }
+        sendResponse({
+            error: {
+                message: error.message,
+                code: error.code,
+            },
+        });
+    };
 }

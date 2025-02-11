@@ -1,6 +1,7 @@
 import { showToastMessage } from "./toast.js";
 
 const containerId = "dialog-container";
+const defaultQuestion = "주요 요점이 무엇인가요?";
 
 export function showQuestionDialog(videoInfo) {
     let containerElement = document.querySelector(
@@ -98,7 +99,7 @@ function setQuestionDialogContent(
 
     if (suggestedQuestionsResponse) {
         thumbnailElement.setAttribute(
-            "caption",
+            "title",
             suggestedQuestionsResponse.caption
         );
 
@@ -171,13 +172,12 @@ function onRequestButtonClick(event) {
     const inputElement = containerElement.querySelector(
         "#contents input[type='text']"
     );
-    const prompt = inputElement.value || inputElement.placeholder;
+    const question = inputElement.value || inputElement.placeholder;
+    const thumbnailElement = containerElement.querySelector("img.thumbnail");
     const videoInfo = {
         id: containerElement.getAttribute("video-id"),
         title: containerElement.querySelector(".title").textContent,
-        thumbnail: containerElement
-            .querySelector("img.thumbnail")
-            .getAttribute("src"),
+        caption: thumbnailElement.getAttribute("title") || null,
     };
     const target = "chatgpt";
 
@@ -187,7 +187,7 @@ function onRequestButtonClick(event) {
 
     try {
         chrome.runtime.sendMessage(
-            { message: "setPrompt", target: target, videoInfo, prompt },
+            { message: "setPrompt", target: target, videoInfo, question },
             (response) => {
                 onPromptSet(response);
                 buttonElement.removeAttribute("disabled");
@@ -357,7 +357,7 @@ function getQuestionHtml() {
       <img class="thumbnail" />
       <div class="title"></div>
       <div class="question-input-container">
-        <input type="text" value="" placeholder="요약해줘">
+        <input type="text" value="" placeholder="${defaultQuestion}">
         <button class="question-button"><span class="default-text">요청</span><span class="loading-text">요청 중..</span></button>
       </div>
       <div class="question-suggestions">

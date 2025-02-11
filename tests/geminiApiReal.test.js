@@ -2,7 +2,7 @@ import { requestOCR } from "../src/background/gcloudVisionApi";
 import {
     getHistoryText,
     requestSuggestedQuestions,
-} from "../src/background/requestQuestions";
+} from "../src/background/suggestQuestions";
 
 const items = [
     {

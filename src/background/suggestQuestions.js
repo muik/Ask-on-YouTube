@@ -1,4 +1,26 @@
+import { GoogleGenerativeAIError } from "@google/generative-ai";
+import { questionCache } from "../background.js";
 import { generateJsonContent } from "./geminiApi.js";
+
+export async function getSuggestedQuestions(videoInfo, settings) {
+    if (!settings.googleCloudAPIKey) {
+        const error = new Error("googleCloudAPIKey settings not set.");
+        error.code = "GOOGLE_CLOUD_API_KEY_NOT_SET";
+        throw error;
+    }
+
+    const cacheKey = videoInfo.id;
+    if (questionCache.has(cacheKey)) {
+        return questionCache.get(cacheKey);
+    }
+
+    const response = await requestSuggestedQuestions(videoInfo, {
+        apiKey: settings.googleCloudAPIKey,
+    });
+    questionCache.put(cacheKey, response);
+
+    return response;
+}
 
 const defaultResponseSchema = {
     type: "object",
@@ -32,7 +54,7 @@ Your second task is to analyze the provided YouTube video title, thumbnail image
 The user's recent question history:
 {history}`;
 
-export async function requestSuggestedQuestions(
+async function requestSuggestedQuestions(
     videoInfo,
     {
         history = [],
@@ -63,14 +85,25 @@ export async function requestSuggestedQuestions(
             .replace("{title}", title)
             .replace("{history}", historyInline);
 
-    console.log("prompt:", prompt);
-    const response = await generateJsonContent(prompt, {
-        imageUrl,
-        systemInstruction,
-        responseSchema,
-        apiKey,
-    });
-    return response;
+    console.debug("prompt:", prompt);
+    try {
+        const response = await generateJsonContent(prompt, {
+            imageUrl,
+            systemInstruction,
+            responseSchema,
+            apiKey,
+        });
+        return response;
+    } catch (error) {
+        if (error instanceof GoogleGenerativeAIError) {
+            console.error(
+                "Failed to generate suggested questions:",
+                error.constructor.name,
+                error
+            );
+        }
+        throw error;
+    }
 }
 
 export function getHistoryText(items) {
@@ -90,7 +123,9 @@ export function getHistoryText(items) {
             if (question === undefined) {
                 throw new Error("question is undefined");
             }
-            return `- Title: \`${title}\`\n  Caption: \`${caption}\`\n  Question: \`${question}\``;
+            return `- Title: \`${title}\`\n  Caption: \`${
+                caption || ""
+            }\`\n  Question: \`${question}\``;
         })
         .join("\n");
 }
