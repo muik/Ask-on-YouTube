@@ -25,7 +25,7 @@ chrome.action.onClicked.addListener(() => {
 let promptTemp = "";
 export const settings = {};
 export const transcriptCache = new LRUCache(10);
-export const questionCache = new LRUCache(10);
+const questionCache = new LRUCache(10);
 
 // load settings from storage on startup
 chrome.storage.sync.get(
@@ -71,7 +71,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     } else if (request.message === "getSuggestedQuestions") {
         validateVideoInfo(request.videoInfo);
 
-        getSuggestedQuestions(request.videoInfo, settings)
+        getSuggestedQuestions(request.videoInfo, settings, questionCache)
             .then(sendResponse)
             .catch(handleError(sendResponse));
         return true;

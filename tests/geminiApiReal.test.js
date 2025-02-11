@@ -1,8 +1,8 @@
-import { requestOCR } from "../src/background/gcloudVisionApi";
+import { requestOCR } from "../src/background/gcloudVisionApi.js";
 import {
     getHistoryText,
     requestSuggestedQuestions,
-} from "../src/background/suggestQuestions";
+} from "../src/background/suggestQuestions.js";
 
 const items = [
     {

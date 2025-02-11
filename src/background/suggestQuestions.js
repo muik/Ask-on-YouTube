@@ -1,8 +1,7 @@
 import { GoogleGenerativeAIError } from "@google/generative-ai";
-import { questionCache } from "../background.js";
 import { generateJsonContent } from "./geminiApi.js";
 
-export async function getSuggestedQuestions(videoInfo, settings) {
+export async function getSuggestedQuestions(videoInfo, settings, questionCache) {
     if (!settings.googleCloudAPIKey) {
         const error = new Error("googleCloudAPIKey settings not set.");
         error.code = "GOOGLE_CLOUD_API_KEY_NOT_SET";
@@ -54,7 +53,7 @@ Your second task is to analyze the provided YouTube video title, thumbnail image
 The user's recent question history:
 {history}`;
 
-async function requestSuggestedQuestions(
+export async function requestSuggestedQuestions(
     videoInfo,
     {
         history = [],
