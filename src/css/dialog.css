@@ -25,6 +25,11 @@
 .ytq-dialog .title {
     font-size: 16px;
     font-weight: 500;
+    user-select: text;
+}
+.ytq-dialog .title span.text:hover {
+    text-decoration: underline;
+    cursor: pointer;
 }
 .ytq-dialog .thumbnail {
     height: 120px;

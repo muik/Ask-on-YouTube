@@ -77,16 +77,75 @@ function setQuestionDialogContent(videoInfo) {
     );
 
     containerElement.setAttribute("video-id", videoInfo.id);
-    containerElement.querySelector(".title").textContent = videoInfo.title;
+
+    const inputElement = containerElement.querySelector("input[type='text']");
+    const titleElement = containerElement.querySelector(".title");
+    const titleTokens = getTitleTokens(videoInfo.title);
+    titleTokens.forEach(setTitleToken(titleElement, inputElement));
+
     const thumbnailElement = containerElement.querySelector("img.thumbnail");
     thumbnailElement.setAttribute("src", videoInfo.thumbnail);
 
     // cursor focus on the input field
-    const inputElement = containerElement.querySelector("input[type='text']");
     inputElement.focus();
 
     const suggestionsElement = containerElement.querySelector("ul.suggestions");
     suggestionsElement.innerHTML = "";
+}
+
+function setTitleToken(titleElement, inputElement) {
+    const onTitleTokenClick = (e) => {
+        inputElement.value = e.target.textContent;
+    };
+    return (token) => {
+        const spanElement = document.createElement("span");
+        spanElement.textContent = token.text;
+        spanElement.classList.add(token.type);
+        titleElement.appendChild(spanElement);
+
+        if (token.type === "text") {
+            spanElement.addEventListener("click", onTitleTokenClick);
+        }
+    };
+}
+
+export function getTitleTokens(inputString) {
+    if (!inputString) {
+        return [];
+    }
+    const tokens = [];
+    const postTokens = [];
+
+    const matched = inputString.match(/(.+)( \([^)]+\))$/);
+    if (matched) {
+        postTokens.push({ text: " ", type: "separator" });
+        postTokens.push({ text: matched[2].trim(), type: "text" });
+        inputString = matched[1];
+    }
+
+    const separatorIndex = inputString.search(/ [|/] /);
+    if (separatorIndex > -1) {
+        tokens.push({
+            text: inputString.substring(0, separatorIndex),
+            type: "text",
+        });
+        tokens.push({
+            text: inputString.substring(separatorIndex, separatorIndex + 3),
+            type: "separator",
+        });
+        tokens.push({
+            text: inputString.substring(separatorIndex + 3),
+            type: "text",
+        });
+    } else {
+        tokens.push({ text: inputString, type: "text" });
+    }
+
+    if (postTokens.length > 0) {
+        tokens.push(...postTokens);
+    }
+
+    return tokens;
 }
 
 function setSuggestedQuestions(response) {
