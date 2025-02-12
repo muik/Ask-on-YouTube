@@ -1,4 +1,4 @@
-import { containerId } from "./questionView.js";
+import { containerId } from "../questionView.js";
 
 const defaultQuestion = "주요 요점이 무엇인가요?";
 
@@ -28,7 +28,10 @@ export function getQuestionHtml() {
         <button class="question-button"><span class="default-text">요청</span><span class="loading-text">요청 중..</span></button>
       </div>
       <div class="question-suggestions">
-        <span class="title">Suggestions</span>
+        <div class="question-options">
+          <span class="title active" data-option="recent">Recent</span>
+          <span class="title" data-option="suggestions">Suggestions</span>
+        </div>
         <ul class="suggestions"></ul>
         <p class="message"></p>
         ${spinnerHtml}

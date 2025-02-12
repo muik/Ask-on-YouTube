@@ -8,13 +8,24 @@ export const Errors = {
             "The Chrome extension has been updated. Please reload this page to use it.",
         code: "EXTENSION_CONTEXT_INVALIDATED",
     },
-    GOOGLE_CLOUD_API_KEY_NOT_VALID: {
-        message: `Invalid GEMINI_API_KEY. Please set a valid GEMINI_API_KEY on <a href='#' class='settings'>Settings</a> of ${appName}!`,
-        code: "GOOGLE_CLOUD_API_KEY_NOT_VALID",
+    INVALID_RESPONSE: {
+        message: "Invalid response, please try again later.",
+        code: "INVALID_RESPONSE",
+    },
+};
+
+export const Info = {
+    NO_RECENT_QUESTIONS: {
+        message: "No recent questions",
+        code: "NO_RECENT_QUESTIONS",
     },
     GOOGLE_CLOUD_API_KEY_NOT_SET: {
         message: `To get suggested questions, set GEMINI_API_KEY on <a href='#' class='settings'>settings</a> of ${appName}!`,
         code: "GOOGLE_CLOUD_API_KEY_NOT_SET",
+    },
+    GOOGLE_CLOUD_API_KEY_NOT_VALID: {
+        message: `Invalid GEMINI_API_KEY. Please set a valid GEMINI_API_KEY on <a href='#' class='settings'>Settings</a> of ${appName}!`,
+        code: "GOOGLE_CLOUD_API_KEY_NOT_VALID",
     },
 };
 

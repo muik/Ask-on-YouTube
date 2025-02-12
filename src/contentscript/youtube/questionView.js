@@ -1,4 +1,5 @@
-import { Errors, handleSendMessageError } from "../../errors.js";
+import { Errors, Info, handleSendMessageError } from "../../errors.js";
+import { getVideoInfoFromExtraOptions } from "./moreOptions.js";
 import {
     getDialogBackgoundHtml,
     getQuestionHtml,
@@ -29,11 +30,99 @@ export function showQuestionDialog(videoInfo) {
     });
 
     setQuestionDialogContent(videoInfo);
-    showProgressSpinner(containerElement);
+
+    containerElement
+        .querySelectorAll(".question-options .title")
+        .forEach((el) => {
+            el.addEventListener("click", onQuestionOptionClick);
+        });
+
+    const selectedQuestionOption = containerElement
+        .querySelector(".question-options .title.active")
+        .getAttribute("data-option");
+
+    requestQuestions(selectedQuestionOption, videoInfo);
+}
+
+function onQuestionOptionClick(e) {
+    if (e.target.classList.contains("active")) {
+        return;
+    }
+
+    e.target
+        .closest(".question-options")
+        .querySelector(".title.active")
+        .classList.remove("active");
+    e.target.classList.add("active");
+
+    resetQuestions();
+
+    const selectedQuestionOption = e.target.getAttribute("data-option");
+    requestQuestions(selectedQuestionOption);
+}
+
+function requestQuestions(selectedQuestionOption, videoInfo = null) {
+    showProgressSpinner();
 
     // set dialog position in the center of the screen
     repositionDialog();
 
+    if (selectedQuestionOption === "recent") {
+        requestRecentQuestions();
+    } else if (selectedQuestionOption === "suggestions") {
+        videoInfo = videoInfo || getVideoInfoFromExtraOptions();
+        requestSuggestedQuestions(videoInfo);
+    }
+}
+
+function resetQuestions() {
+    const containerElement = document.querySelector(
+        `ytd-popup-container #${containerId}`
+    );
+    containerElement.querySelector("ul.suggestions").innerHTML = "";
+
+    // remove message
+    const messageElement = containerElement.querySelector("p.message");
+    messageElement.innerHTML = "";
+    messageElement.removeAttribute("type");
+}
+
+function requestRecentQuestions() {
+    try {
+        chrome.runtime.sendMessage(
+            { action: "getRecentQuestions" },
+            (response) => {
+                if (chrome.runtime.lastError || response.error) {
+                    const error = chrome.runtime.lastError || response.error;
+                    setError(error);
+                } else {
+                    console.debug("recent questions response:", response);
+                    if (!response.history) {
+                        console.error("recent questions response:", response);
+                        setError(Errors.INVALID_RESPONSE);
+                    } else if (response.history.length < 1) {
+                        setError(Errors.NO_RECENT_QUESTIONS);
+                    } else {
+                        const questions = response.history.map(
+                            (item) => item.question
+                        );
+                        setQuestions(questions);
+                    }
+                }
+                hideProgressSpinner();
+                repositionDialog();
+            }
+        );
+    } catch (error) {
+        if (!handleSendMessageError(error)) {
+            setError(error);
+        }
+        hideProgressSpinner();
+        repositionDialog();
+    }
+}
+
+function requestSuggestedQuestions(videoInfo) {
     try {
         chrome.runtime.sendMessage(
             { message: "getSuggestedQuestions", videoInfo },
@@ -45,7 +134,7 @@ export function showQuestionDialog(videoInfo) {
                     console.debug("suggested questions response:", response);
                     setSuggestedQuestions(response);
                 }
-                hideProgressSpinner(containerElement);
+                hideProgressSpinner();
                 repositionDialog();
             }
         );
@@ -53,12 +142,15 @@ export function showQuestionDialog(videoInfo) {
         if (!handleSendMessageError(error)) {
             setError(error);
         }
-        hideProgressSpinner(containerElement);
+        hideProgressSpinner();
         repositionDialog();
     }
 }
 
-function showProgressSpinner(containerElement) {
+function showProgressSpinner() {
+    const containerElement = document.querySelector(
+        `ytd-popup-container #${containerId}`
+    );
     const spinnerElement = containerElement.querySelector("#spinner");
     spinnerElement.removeAttribute("hidden");
     const paperSpinnerElement = spinnerElement.querySelector(
@@ -68,7 +160,10 @@ function showProgressSpinner(containerElement) {
     paperSpinnerElement.setAttribute("active", "");
 }
 
-function hideProgressSpinner(containerElement) {
+function hideProgressSpinner() {
+    const containerElement = document.querySelector(
+        `ytd-popup-container #${containerId}`
+    );
     const spinnerElement = containerElement.querySelector("#spinner");
     spinnerElement.setAttribute("hidden", "");
 }
@@ -96,9 +191,6 @@ function setQuestionDialogContent(videoInfo) {
 
     // cursor focus on the input field
     inputElement.focus();
-
-    const suggestionsElement = containerElement.querySelector("ul.suggestions");
-    suggestionsElement.innerHTML = "";
 }
 
 function setSuggestedQuestions(response) {
@@ -111,23 +203,32 @@ function setSuggestedQuestions(response) {
     const captionElement = containerElement.querySelector(
         ".video-info .caption"
     );
-    const suggestionsElement = containerElement.querySelector("ul.suggestions");
 
     thumbnailElement.setAttribute("title", response.caption);
     captionElement.textContent = response.caption;
 
     captionElement.addEventListener("click", textToInputClickListener);
 
-    const questions = response.questions;
-    if (questions) {
-        questions.forEach((question) => {
-            const li = document.createElement("li");
-            li.textContent = question;
-            suggestionsElement.appendChild(li);
+    setQuestions(response.questions, containerElement);
+}
 
-            li.addEventListener("click", textToInputClickListener);
-        });
+function setQuestions(questions, containerElement = null) {
+    if (!questions || questions.length === 0) {
+        return;
     }
+
+    containerElement =
+        containerElement ||
+        document.querySelector(`ytd-popup-container #${containerId}`);
+    const suggestionsElement = containerElement.querySelector("ul.suggestions");
+
+    questions.forEach((question) => {
+        const li = document.createElement("li");
+        li.textContent = question;
+        suggestionsElement.appendChild(li);
+
+        li.addEventListener("click", textToInputClickListener);
+    });
 }
 
 function textToInputClickListener(e) {
@@ -149,18 +250,20 @@ function setError(error) {
         `ytd-popup-container #${containerId}`
     );
     const messageElement = containerElement.querySelector("p.message");
-    messageElement.setAttribute("type", "info");
 
-    if (error.code === Errors.GOOGLE_CLOUD_API_KEY_NOT_VALID.code) {
-        messageElement.innerHTML =
-            Errors.GOOGLE_CLOUD_API_KEY_NOT_VALID.message;
-        return;
-    } else if (error.code === Errors.GOOGLE_CLOUD_API_KEY_NOT_SET.code) {
-        messageElement.innerHTML = Errors.GOOGLE_CLOUD_API_KEY_NOT_SET.message;
+    const info = Info[error.code];
+    if (info) {
+        messageElement.setAttribute("type", "info");
+        messageElement.innerHTML = info.message;
         return;
     }
 
-    console.error(error);
+    const knownError = Errors[error.code];
+    if (knownError) {
+        messageElement.innerHTML = knownError.message;
+    } else {
+        console.error(error);
+    }
 
     messageElement.setAttribute("type", "error");
     messageElement.textContent = error.message;
@@ -342,8 +445,5 @@ function hideQuestionDialog() {
         backgroundElement.remove();
     }
 
-    // remove message
-    const messageElement = containerElement.querySelector("p.message");
-    messageElement.innerHTML = "";
-    messageElement.removeAttribute("type");
+    resetQuestions();
 }

@@ -1,4 +1,5 @@
 const MAX_HISTORY_SIZE = 10;
+const STORAGE_KEY = "questionHistory";
 
 /**
  * Save the question history to the storage.
@@ -8,7 +9,6 @@ const MAX_HISTORY_SIZE = 10;
 export async function saveQuestionHistory(videoInfo, question) {
     console.debug("Saving question history:", videoInfo, question);
 
-    const key = "questionHistory";
     const item = {
         videoInfo: {
             id: videoInfo.id,
@@ -19,21 +19,22 @@ export async function saveQuestionHistory(videoInfo, question) {
         timestamp: new Date().toISOString(),
     };
 
-    chrome.storage.sync.get([key], (result) => {
-        const history = result[key] || [];
+    chrome.storage.sync.get([STORAGE_KEY], (result) => {
+        const history = result[STORAGE_KEY] || [];
         history.push(item);
         if (history.length > MAX_HISTORY_SIZE) {
             history.splice(0, history.length - MAX_HISTORY_SIZE);
         }
 
-        chrome.storage.sync.set({ [key]: history }, () => {
+        chrome.storage.sync.set({ [STORAGE_KEY]: history }, () => {
             console.debug("Question history saved:", history);
         });
     });
 }
 
-export async function getQuestionHistory() {
-    const key = "questionHistory";
-    const result = await chrome.storage.sync.get([key]);
-    return result[key] || [];
+export async function getRecentQuestions() {
+    const result = await chrome.storage.sync.get([STORAGE_KEY]);
+    return {
+        history: (result[STORAGE_KEY] || []).reverse(),
+    };
 }

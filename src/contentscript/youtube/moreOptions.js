@@ -54,6 +54,20 @@ function updateExtraOptions(dropDownElement, videoInfo) {
     containerElement.removeAttribute("aria-hidden");
 }
 
+export function getVideoInfoFromExtraOptions(containerElement = null) {
+    containerElement =
+        containerElement ||
+        document.querySelector(
+            `${dropdownSelector} #${extraOptionsContainerId}`
+        );
+
+    return {
+        id: containerElement.getAttribute("video-id"),
+        title: containerElement.getAttribute("video-title"),
+        thumbnail: containerElement.getAttribute("video-thumbnail"),
+    };
+}
+
 /**
  * Event listener for the extra options.
  * @param {Event} e
@@ -71,11 +85,7 @@ function onExtraOptionClick(e) {
     }
 
     const containerElement = e.target.closest(`#${extraOptionsContainerId}`);
-    const videoInfo = {
-        id: containerElement.getAttribute("video-id"),
-        title: containerElement.getAttribute("video-title"),
-        thumbnail: containerElement.getAttribute("video-thumbnail"),
-    };
+    const videoInfo = getVideoInfoFromExtraOptions(containerElement);
 
     if (!chrome.runtime || !chrome.runtime.sendMessage) {
         showToastMessage(Errors.EXTENSION_CONTEXT_INVALIDATED.message);

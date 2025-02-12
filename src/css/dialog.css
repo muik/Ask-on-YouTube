@@ -137,10 +137,19 @@
 .ytq-dialog .question-suggestions li:hover {
     background-color: var(--yt-spec-10-percent-layer);
 }
-.ytq-dialog .question-suggestions .title {
+.ytq-dialog .question-suggestions .question-options {
+    display: flex;
     font-size: 14px;
-    font-weight: bold;
     color: var(--yt-spec-text-secondary);
+}
+.ytq-dialog .question-suggestions .title {
+    display: inline-block;
+    margin-right: 12px;
+    cursor: pointer;
+}
+.ytq-dialog .question-suggestions .title.active {
+    color: var(--yt-spec-text-primary);
+    font-weight: bold;
 }
 .ytq-dialog .question-suggestions p.message {
     font-size: 12px;

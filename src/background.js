@@ -1,7 +1,10 @@
 "use strict";
 
 import { LRUCache } from "./background/lruCache.js";
-import { saveQuestionHistory } from "./background/questionHistory.js";
+import {
+    getRecentQuestions,
+    saveQuestionHistory,
+} from "./background/questionHistory.js";
 import { setPrompt } from "./background/setPrompt.js";
 import { getSuggestedQuestions } from "./background/suggestQuestions.js";
 import { validateVideoInfo } from "./data.js";
@@ -29,11 +32,7 @@ const questionCache = new LRUCache(10);
 
 // load settings from storage on startup
 chrome.storage.sync.get(
-    [
-        "promptChatGPT",
-        "promptGemini",
-        "googleCloudAPIKey",
-    ],
+    ["promptChatGPT", "promptGemini", "googleCloudAPIKey"],
     (result) => {
         for (const key in result) {
             settings[key] = result[key];
@@ -45,6 +44,13 @@ chrome.storage.sync.get(
 // On Message
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     console.debug("Received message:", request);
+
+    if (request.action === "getRecentQuestions") {
+        getRecentQuestions()
+            .then(sendResponse)
+            .catch(handleError(sendResponse));
+        return true;
+    }
 
     if (request.message === "setPrompt") {
         validateVideoInfo(request.videoInfo);
