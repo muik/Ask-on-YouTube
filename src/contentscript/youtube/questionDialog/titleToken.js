@@ -20,18 +20,19 @@ export function getTitleTokens(inputString) {
         inputString = matched[1];
     }
 
-    const separatorIndex = inputString.search(/ [|/] /);
+    const separatorIndex = inputString.search(/( [|/] |[ㅣ])/);
     if (separatorIndex > -1) {
+        const separatorSize = inputString[separatorIndex] === " " ? 3 : 1;
         tokens.push({
             text: inputString.substring(0, separatorIndex),
             type: TokenTypes.INPUTABLE,
         });
         tokens.push({
-            text: inputString.substring(separatorIndex, separatorIndex + 3),
+            text: inputString.substring(separatorIndex, separatorIndex + separatorSize),
             type: TokenTypes.SEPARATOR,
         });
         tokens.push({
-            text: inputString.substring(separatorIndex + 3),
+            text: inputString.substring(separatorIndex + separatorSize),
             type: TokenTypes.INPUTABLE,
         });
     } else {
