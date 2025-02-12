@@ -40,6 +40,19 @@ const items = [
 ];
 
 describe("Gemini API Real Request", () => {
+    it("no caption", async () => {
+        const videoInfo = {
+            id: "6b4SAuzK9Ak",
+            title: "New Sourdough Bread Mixing After BIG Change",
+        };
+        const response = await requestSuggestedQuestions(videoInfo);
+
+        await checkResponse(response);
+
+        // caption is empty string
+        expect(response.caption).toBe("");
+    });
+
     it("request suggested questions with default", async () => {
         const item = items[2];
         const videoInfo = item.videoInfo;
@@ -137,9 +150,5 @@ async function checkResponse(response) {
     expect(questions.length).toBeLessThanOrEqual(3);
 
     expect(response.caption).toBeDefined();
-    expect(
-        response.caption === null ||
-            (typeof response.caption === "string" &&
-                response.caption.length > 0)
-    ).toBe(true);
+    expect(typeof response.caption).toBe("string");
 }

@@ -40,13 +40,13 @@ Your response should include the following:
     * **Targeted for curiosity/information:** Address what a user might be curious about or what specific information they might want to know quickly.
     * **Naturally phrased:** Sound like questions a user would actually ask when trying to quickly understand a video's content *before watching*.
     * **Referenced by the user's question history**: Consider the user's past questions to suggest questions aligned with their likely pre-viewing interests and information needs.
-* **\`"caption"\`: A string containing the exact text visible in the thumbnail image, without any translation. If the thumbnail image does not contain any text, the value should be \`null\`.`,
+* **\`"caption"\`: A string containing the exact text visible in the thumbnail image, without any translation. If the thumbnail image does not contain any text, the value should be an empty string.`,
 };
 
 const promptFormat = `Given this image is a thumbnail of a youtube video.
 Your first task is to extract text from the image.
 
-The title of the image: \`{title}\`
+The title of the youtube video: \`{title}\`
 
 Your second task is to analyze the provided YouTube video title, thumbnail image, and the user's recent question history. Based on this information, you should suggest questions that a user might naturally ask to **quickly understand what the video is about, determine if it's relevant to their interests, or extract specific information without having to watch the entire video.**
 
