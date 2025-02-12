@@ -151,3 +151,6 @@
 .ytq-dialog .question-suggestions p[type="info"] {
     color: var(--yt-spec-text-secondary);
 }
+.ytq-dialog .question-suggestions p.message a {
+    color: var(--yt-spec-text-primary);
+}
