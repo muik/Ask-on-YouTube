@@ -1,4 +1,4 @@
-import { handleSendMessageError } from "../../errors.js";
+import { Errors, handleSendMessageError } from "../../errors.js";
 import { getTitleTokens, setTitleToken } from "./questionDialog/titleToken.js";
 import { showToastMessage } from "./toast.js";
 
@@ -37,8 +37,7 @@ export function showQuestionDialog(videoInfo) {
             (response) => {
                 if (chrome.runtime.lastError || response.error) {
                     const error = chrome.runtime.lastError || response.error;
-                    console.error("getSuggestedQuestions Error:", error);
-                    setError(`Failed to load - ${error.message}`);
+                    setError(error);
                 } else {
                     console.debug("suggested questions response:", response);
                     setSuggestedQuestions(response);
@@ -49,8 +48,7 @@ export function showQuestionDialog(videoInfo) {
         );
     } catch (error) {
         if (!handleSendMessageError(error)) {
-            console.error("sendMessage getSuggestedQuestions Error:", error);
-            setError(`Failed to load - ${error.message}`);
+            setError(error);
         }
         hideProgressSpinner(containerElement);
         repositionDialog();
@@ -143,12 +141,25 @@ function textToInputClickListener(e) {
     }
 }
 
-function setError(message) {
+function setError(error) {
     const containerElement = document.querySelector(
         `ytd-popup-container #${containerId}`
     );
-    const errorElement = containerElement.querySelector("p.error");
-    errorElement.textContent = message;
+    const messageElement = containerElement.querySelector("p.message");
+    messageElement.setAttribute("type", "info");
+
+    if (error.code === Errors.GOOGLE_CLOUD_API_KEY_NOT_VALID.code) {
+        messageElement.innerHTML = Errors.GOOGLE_CLOUD_API_KEY_NOT_VALID.message;
+        return;
+    } else if (error.code === Errors.GOOGLE_CLOUD_API_KEY_NOT_SET.code) {
+        messageElement.innerHTML = Errors.GOOGLE_CLOUD_API_KEY_NOT_SET.message;
+        return;
+    }
+
+    console.error(error);
+
+    messageElement.setAttribute("type", "error");
+    messageElement.textContent = error.message;
 }
 
 function insertQuestionDialog() {
@@ -327,9 +338,10 @@ function hideQuestionDialog() {
         backgroundElement.remove();
     }
 
-    // remove error message
-    const errorElement = containerElement.querySelector("p.error");
-    errorElement.textContent = "";
+    // remove message
+    const messageElement = containerElement.querySelector("p.message");
+    messageElement.innerHTML = "";
+    messageElement.removeAttribute("type");
 }
 
 function getDialogBackgoundHtml() {
@@ -364,7 +376,7 @@ function getQuestionHtml() {
       <div class="question-suggestions">
         <span class="title">Suggestions</span>
         <ul class="suggestions"></ul>
-        <p class="error"></p>
+        <p class="message"></p>
         ${spinnerHtml}
       </div>
     </div>

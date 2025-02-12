@@ -83,6 +83,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         console.debug("Settings updated:", request);
         settings[request.key] = request.value;
         sendResponse({ status: "success", message: "Settings updated." });
+    } else if (request.message === "openSettingsPage") {
+        chrome.runtime.openOptionsPage();
     } else {
         sendResponse({
             error: { message: `Invalid message: ${request.message}` },

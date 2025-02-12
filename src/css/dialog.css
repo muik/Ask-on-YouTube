@@ -142,7 +142,12 @@
     font-weight: bold;
     color: var(--yt-spec-text-secondary);
 }
-.ytq-dialog .question-suggestions .error {
+.ytq-dialog .question-suggestions p.message {
     font-size: 12px;
+}
+.ytq-dialog .question-suggestions p[type="error"] {
     color: var(--yt-spec-error-indicator);
+}
+.ytq-dialog .question-suggestions p[type="info"] {
+    color: var(--yt-spec-text-secondary);
 }

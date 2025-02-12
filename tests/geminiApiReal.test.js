@@ -40,6 +40,18 @@ const items = [
 ];
 
 describe("Gemini API Real Request", () => {
+    it("invalid api key", async () => {
+        const videoInfo = items[2].videoInfo;
+        try {
+            await requestSuggestedQuestions(videoInfo, {
+                apiKey: "invalid_api_key",
+            });
+            throw new Error("should not reach here");
+        } catch (error) {
+            expect(error.code).toBe("GOOGLE_CLOUD_API_KEY_NOT_VALID");
+        }
+    });
+
     it("no caption", async () => {
         const videoInfo = {
             id: "6b4SAuzK9Ak",

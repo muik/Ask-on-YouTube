@@ -30,6 +30,11 @@ window.onload = async () => {
 
         document.addEventListener("click", (event) => {
             detectVideoOptionClick(event.target);
+
+            if (event.target.matches("a.settings")) {
+                event.preventDefault();
+                chrome.runtime.sendMessage({ message: "openSettingsPage" });
+            }
         });
 
         insertExtraOptions();

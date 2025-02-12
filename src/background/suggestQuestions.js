@@ -1,7 +1,15 @@
-import { GoogleGenerativeAIError } from "@google/generative-ai";
+import {
+    GoogleGenerativeAIError,
+    GoogleGenerativeAIFetchError,
+} from "@google/generative-ai";
+import { Errors } from "../errors.js";
 import { generateJsonContent } from "./geminiApi.js";
 
-export async function getSuggestedQuestions(videoInfo, settings, questionCache) {
+export async function getSuggestedQuestions(
+    videoInfo,
+    settings,
+    questionCache
+) {
     if (!settings.googleCloudAPIKey) {
         const error = new Error("googleCloudAPIKey settings not set.");
         error.code = "GOOGLE_CLOUD_API_KEY_NOT_SET";
@@ -94,15 +102,37 @@ export async function requestSuggestedQuestions(
         });
         return response;
     } catch (error) {
-        if (error instanceof GoogleGenerativeAIError) {
+        handleError(error);
+    }
+}
+
+function handleError(error) {
+    if (error instanceof GoogleGenerativeAIError) {
+        if (error instanceof GoogleGenerativeAIFetchError) {
+            if (
+                error.status === 400 &&
+                error.errorDetails[0].reason === "API_KEY_INVALID"
+            ) {
+                const newError = new Error(error.errorDetails[1].message);
+                newError.code = Errors.GOOGLE_CLOUD_API_KEY_NOT_VALID.code;
+                throw newError;
+            }
+            console.error(
+                `Failed to generate suggested questions - status: ${
+                    error.status
+                }, statusText: ${
+                    error.statusText
+                }, errorDetails: ${JSON.stringify(error.errorDetails)}`
+            );
+        } else {
             console.error(
                 "Failed to generate suggested questions:",
                 error.constructor.name,
                 error
             );
         }
-        throw error;
     }
+    throw error;
 }
 
 export function getHistoryText(items) {

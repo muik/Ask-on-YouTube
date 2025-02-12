@@ -78,7 +78,7 @@ function onExtraOptionClick(e) {
     };
 
     if (!chrome.runtime || !chrome.runtime.sendMessage) {
-        showToastMessage(Errors.EXTENSION_CONTEXT_INVALIDATED);
+        showToastMessage(Errors.EXTENSION_CONTEXT_INVALIDATED.message);
         return;
     }
 
@@ -286,7 +286,10 @@ export function getVideoInfoFromVideoDetail() {
         return;
     }
 
-    const id = getSearchParam(window.location.href).v;
+    let id = getSearchParam(window.location.href).v;
+    if (id.indexOf("#") !== -1) {
+        id = id.split("#")[0];
+    }
     const title = titleElement.textContent.trim();
     const thumbnail =
         document
