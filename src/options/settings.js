@@ -4,16 +4,12 @@ import { defaultSettings } from "../storage.js";
 document.addEventListener("DOMContentLoaded", () => {
     const promptAreaChatGPT = document.getElementById("promptChatGPT");
     const promptAreaGemini = document.getElementById("promptGemini");
-    const useExperimentalGeminiCheck = document.getElementById(
-        "useExperimentalGemini"
-    );
     const googleCloudAPIKeyInput = document.getElementById("googleCloudAPIKey");
 
     const statusMessageChatGPT = document.getElementById(
         "statusMessageChatGPT"
     );
     const statusMessageGemini = document.getElementById("statusMessageGemini");
-    const statusMessageToggle = document.getElementById("statusMessageToggle");
     const statusMessageGoogleCloudAPIKey = document.getElementById(
         "statusMessageGoogleCloudAPIKey"
     );
@@ -25,7 +21,6 @@ document.addEventListener("DOMContentLoaded", () => {
         [
             "promptChatGPT",
             "promptGemini",
-            "useExperimentalGemini",
             "googleCloudAPIKey",
         ],
         (result) => {
@@ -33,9 +28,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 result.promptChatGPT || defaultSettings.promptChatGPT;
             promptAreaGemini.value =
                 result.promptGemini || defaultSettings.promptGemini;
-            useExperimentalGeminiCheck.checked =
-                result.useExperimentalGemini ??
-                defaultSettings.useExperimentalGemini;
             googleCloudAPIKeyInput.value = result.googleCloudAPIKey || "";
         }
     );
@@ -89,14 +81,6 @@ document.addEventListener("DOMContentLoaded", () => {
             "promptGemini",
             promptAreaGemini.value,
             statusMessageGemini
-        );
-    });
-
-    useExperimentalGeminiCheck.addEventListener("change", () => {
-        saveSetting(
-            "useExperimentalGemini",
-            useExperimentalGeminiCheck.checked,
-            statusMessageToggle
         );
     });
 

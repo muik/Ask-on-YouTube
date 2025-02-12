@@ -32,7 +32,6 @@ chrome.storage.sync.get(
     [
         "promptChatGPT",
         "promptGemini",
-        "useExperimentalGemini",
         "googleCloudAPIKey",
     ],
     (result) => {

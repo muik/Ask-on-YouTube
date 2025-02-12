@@ -1,7 +1,6 @@
 export const defaultSettings = {
     promptChatGPT: "Summarize the following content.",
     promptGemini: "Summarize the following content.",
-    useExperimentalGemini: true,
 };
 
 export async function getPromptChatGPT() {
@@ -20,18 +19,6 @@ export async function getPromptGemini() {
             const value =
                 result.promptGemini || defaultSettings.promptGemini;
             resolve(value.trim());
-        });
-    });
-}
-
-export async function getUseExperimentalGemini() {
-    return new Promise((resolve) => {
-        chrome.storage.sync.get(["useExperimentalGemini"], (result) => {
-            if (result.useExperimentalGemini == null) {
-                resolve(defaultSettings.useExperimentalGemini);
-                return;
-            }
-            resolve(result.useExperimentalGemini);
         });
     });
 }
