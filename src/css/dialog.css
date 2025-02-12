@@ -24,7 +24,6 @@
 }
 .ytq-dialog .video-info {
     display: flex;
-    user-select: text;
 }
 .ytq-dialog .video-info .thumbnail {
     flex: none;
@@ -55,6 +54,7 @@
 }
 .ytq-dialog #contents {
     min-width: 470px;
+    user-select: text;
 }
 .ytq-dialog .question-input-container {
     border: 1px solid var(--yt-spec-10-percent-layer);

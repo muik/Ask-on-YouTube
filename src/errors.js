@@ -13,7 +13,7 @@ export const Errors = {
         code: "GOOGLE_CLOUD_API_KEY_NOT_VALID",
     },
     GOOGLE_CLOUD_API_KEY_NOT_SET: {
-        message: `To get some suggested questions, set GEMINI_API_KEY on <a href='#' class='settings'>settings</a> of ${appName}!`,
+        message: `To get suggested questions, set GEMINI_API_KEY on <a href='#' class='settings'>settings</a> of ${appName}!`,
         code: "GOOGLE_CLOUD_API_KEY_NOT_SET",
     },
 };
