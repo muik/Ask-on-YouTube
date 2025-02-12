@@ -110,33 +110,36 @@ function setSuggestedQuestions(response) {
     const captionElement = containerElement.querySelector(
         ".video-info .caption"
     );
-    const inputElement = containerElement.querySelector("input[type='text']");
     const suggestionsElement = containerElement.querySelector("ul.suggestions");
 
     thumbnailElement.setAttribute("title", response.caption);
     captionElement.textContent = response.caption;
 
-    captionElement.addEventListener("click", (e) => {
-        const caption = e.target.textContent;
-        if (caption) {
-            inputElement.value = caption;
-        }
-    });
+    captionElement.addEventListener("click", textToInputClickListener);
 
     const questions = response.questions;
     if (questions) {
-        const questionClickListener = (e) => {
-            const question = e.target.textContent;
-            inputElement.value = question;
-        };
-
         questions.forEach((question) => {
             const li = document.createElement("li");
             li.textContent = question;
             suggestionsElement.appendChild(li);
 
-            li.addEventListener("click", questionClickListener);
+            li.addEventListener("click", textToInputClickListener);
         });
+    }
+}
+
+function textToInputClickListener(e) {
+    const text = e.target.textContent;
+    if (text) {
+        const containerElement = e.target.closest(`#${containerId}`);
+        const inputElement =
+            containerElement.querySelector("input[type='text']");
+        inputElement.value = text;
+
+        // focus on the input field, and move the cursor to the end of the text
+        inputElement.focus();
+        inputElement.setSelectionRange(text.length, text.length);
     }
 }
 
