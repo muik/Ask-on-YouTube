@@ -286,14 +286,18 @@ export function getVideoInfoFromVideoDetail() {
         return;
     }
 
-    const thumbnail = document
-        .querySelector("head > link[as=image][rel=preload]")
-        .getAttribute("href");
+    const id = getSearchParam(window.location.href).v;
+    const title = titleElement.textContent.trim();
+    const thumbnail =
+        document
+            .querySelector("head > link[as=image][rel=preload]")
+            ?.getAttribute("href") ||
+        `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
 
     return {
-        id: getSearchParam(window.location.href).v,
-        title: titleElement.textContent.trim(),
-        thumbnail: thumbnail,
+        id,
+        title,
+        thumbnail,
     };
 }
 
