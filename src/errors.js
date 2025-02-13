@@ -11,7 +11,7 @@ export const Errors = {
         code: "INVALID_RESPONSE",
     },
     TRANSCRIPT_NOT_FOUND: {
-        message: "Transcript not found.",
+        message: "Transcript not found. It is required to ask the AI.",
         code: "TRANSCRIPT_NOT_FOUND",
     },
 };
