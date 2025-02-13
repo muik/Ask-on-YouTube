@@ -9,15 +9,13 @@ import { showToastMessage } from "./toast.js";
 
 export const containerId = "dialog-container";
 
+function getContainerElement() {
+    return document.querySelector(`ytd-popup-container #${containerId}`);
+}
+
 export function showQuestionDialog(videoInfo) {
-    let containerElement = document.querySelector(
-        `ytd-popup-container #${containerId}`
-    );
-    if (!containerElement) {
-        containerElement = insertQuestionDialog();
-    } else {
-        containerElement.style.display = "block";
-    }
+    const containerElement = getContainerElement() || insertQuestionDialog();
+    containerElement.style.display = "block";
 
     document.body.insertAdjacentHTML("beforeend", getDialogBackgoundHtml());
 
@@ -76,9 +74,7 @@ function requestQuestions(selectedQuestionOption, videoInfo = null) {
 }
 
 function resetQuestions() {
-    const containerElement = document.querySelector(
-        `ytd-popup-container #${containerId}`
-    );
+    const containerElement = getContainerElement();
     containerElement.querySelector("ul.suggestions").innerHTML = "";
 
     // remove message
@@ -148,9 +144,7 @@ function requestSuggestedQuestions(videoInfo) {
 }
 
 function showProgressSpinner() {
-    const containerElement = document.querySelector(
-        `ytd-popup-container #${containerId}`
-    );
+    const containerElement = getContainerElement();
     const spinnerElement = containerElement.querySelector("#spinner");
     spinnerElement.removeAttribute("hidden");
     const paperSpinnerElement = spinnerElement.querySelector(
@@ -161,18 +155,13 @@ function showProgressSpinner() {
 }
 
 function hideProgressSpinner() {
-    const containerElement = document.querySelector(
-        `ytd-popup-container #${containerId}`
-    );
+    const containerElement = getContainerElement();
     const spinnerElement = containerElement.querySelector("#spinner");
     spinnerElement.setAttribute("hidden", "");
 }
 
 function setQuestionDialogContent(videoInfo) {
-    const containerElement = document.querySelector(
-        `ytd-popup-container #${containerId}`
-    );
-
+    const containerElement = getContainerElement();
     containerElement.setAttribute("video-id", videoInfo.id);
 
     const inputElement = containerElement.querySelector("input[type='text']");
@@ -194,9 +183,7 @@ function setQuestionDialogContent(videoInfo) {
 }
 
 function setSuggestedQuestions(response) {
-    const containerElement = document.querySelector(
-        `ytd-popup-container #${containerId}`
-    );
+    const containerElement = getContainerElement();
     const thumbnailElement = containerElement.querySelector(
         ".video-info img.thumbnail"
     );
@@ -217,9 +204,7 @@ function setQuestions(questions, containerElement = null) {
         return;
     }
 
-    containerElement =
-        containerElement ||
-        document.querySelector(`ytd-popup-container #${containerId}`);
+    containerElement = containerElement || getContainerElement();
     const suggestionsElement = containerElement.querySelector("ul.suggestions");
 
     questions.forEach((question) => {
@@ -246,9 +231,7 @@ function textToInputClickListener(e) {
 }
 
 function setError(error) {
-    const containerElement = document.querySelector(
-        `ytd-popup-container #${containerId}`
-    );
+    const containerElement = getContainerElement();
     const messageElement = containerElement.querySelector("p.message");
 
     const info = Info[error.code];
@@ -274,9 +257,8 @@ function insertQuestionDialog() {
         .querySelector("ytd-popup-container")
         .insertAdjacentHTML("beforeend", getQuestionHtml());
 
-    const containerElement = document.querySelector(
-        `ytd-popup-container #${containerId}`
-    );
+    const containerElement = getContainerElement();
+
     // request button click event
     const requestButton = containerElement.querySelector(
         "#contents button.question-button"
@@ -314,9 +296,7 @@ function insertQuestionDialog() {
 
 function onRequestButtonClick(event) {
     const buttonElement = event.target;
-    const containerElement = buttonElement.closest(
-        `ytd-popup-container #${containerId}`
-    );
+    const containerElement = buttonElement.closest(`#${containerId}`);
     const inputElement = containerElement.querySelector(
         "#contents input[type='text']"
     );
@@ -388,9 +368,7 @@ function onPromptSet(response) {
 }
 
 function repositionDialog() {
-    const containerElement = document.querySelector(
-        `ytd-popup-container #${containerId}`
-    );
+    const containerElement = getContainerElement();
     if (!containerElement || containerElement.style.display == "none") {
         return;
     }
@@ -421,16 +399,12 @@ function repositionDialog() {
 }
 
 function isQuestionDialogClosed() {
-    const containerElement = document.querySelector(
-        `ytd-popup-container #${containerId}`
-    );
+    const containerElement = getContainerElement();
     return containerElement && containerElement.style.display === "none";
 }
 
 function hideQuestionDialog() {
-    const containerElement = document.querySelector(
-        `ytd-popup-container #${containerId}`
-    );
+    const containerElement = getContainerElement();
     containerElement.style.display = "none";
 
     const inputElement = containerElement.querySelector(
