@@ -151,15 +151,18 @@
     color: var(--yt-spec-text-primary);
     font-weight: bold;
 }
-.ytq-dialog .question-suggestions p.message {
+.ytq-dialog #contents p.message {
     font-size: 12px;
 }
-.ytq-dialog .question-suggestions p[type="error"] {
+.ytq-dialog #contents p[type="error"] {
     color: var(--yt-spec-error-indicator);
 }
-.ytq-dialog .question-suggestions p[type="info"] {
+.ytq-dialog #contents p[type="info"] {
     color: var(--yt-spec-text-secondary);
 }
 .ytq-dialog .question-suggestions p.message a {
     color: var(--yt-spec-text-primary);
+}
+.ytq-dialog #question-input-error {
+    margin-top: 4px;
 }

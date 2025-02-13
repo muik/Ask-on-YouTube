@@ -27,13 +27,14 @@ export function getQuestionHtml() {
         <input type="text" value="" placeholder="${defaultQuestion}">
         <button class="question-button"><span class="default-text">요청</span><span class="loading-text">요청 중..</span></button>
       </div>
+      <p id="question-input-error" class="message"></p>
       <div class="question-suggestions">
         <div class="question-options">
           <span class="title active" data-option="recent">Recent</span>
           <span class="title" data-option="suggestions">Suggestions</span>
         </div>
         <ul class="suggestions"></ul>
-        <p class="message"></p>
+        <p id="question-suggestions-error" class="message"></p>
         ${spinnerHtml}
       </div>
     </div>

@@ -1,11 +1,10 @@
-import { Errors, Info, handleSendMessageError } from "../../errors.js";
+import { Errors, Info } from "../../errors.js";
 import { getVideoInfoFromExtraOptions } from "./moreOptions.js";
 import {
     getDialogBackgoundHtml,
     getQuestionHtml,
 } from "./questionDialog/html.js";
 import { getTitleTokens, setTitleToken } from "./questionDialog/titleToken.js";
-import { showToastMessage } from "./toast.js";
 
 export const containerId = "dialog-container";
 
@@ -29,34 +28,11 @@ export function showQuestionDialog(videoInfo) {
 
     setQuestionDialogContent(videoInfo);
 
-    containerElement
-        .querySelectorAll(".question-options .title")
-        .forEach((el) => {
-            el.addEventListener("click", onQuestionOptionClick);
-        });
-
     const selectedQuestionOption = containerElement
         .querySelector(".question-options .title.active")
         .getAttribute("data-option");
 
     requestQuestions(selectedQuestionOption, videoInfo);
-}
-
-function onQuestionOptionClick(e) {
-    if (e.target.classList.contains("active")) {
-        return;
-    }
-
-    e.target
-        .closest(".question-options")
-        .querySelector(".title.active")
-        .classList.remove("active");
-    e.target.classList.add("active");
-
-    resetQuestions();
-
-    const selectedQuestionOption = e.target.getAttribute("data-option");
-    requestQuestions(selectedQuestionOption);
 }
 
 function requestQuestions(selectedQuestionOption, videoInfo = null) {
@@ -73,12 +49,14 @@ function requestQuestions(selectedQuestionOption, videoInfo = null) {
     }
 }
 
-function resetQuestions() {
-    const containerElement = getContainerElement();
+function resetQuestions(containerElement = null) {
+    containerElement = containerElement || getContainerElement();
     containerElement.querySelector("ul.suggestions").innerHTML = "";
 
     // remove message
-    const messageElement = containerElement.querySelector("p.message");
+    const messageElement = containerElement.querySelector(
+        "#question-suggestions-error"
+    );
     messageElement.innerHTML = "";
     messageElement.removeAttribute("type");
 }
@@ -90,14 +68,13 @@ function requestRecentQuestions() {
             (response) => {
                 if (chrome.runtime.lastError || response.error) {
                     const error = chrome.runtime.lastError || response.error;
-                    setError(error);
+                    setQuestionsError(error);
                 } else {
-                    console.debug("recent questions response:", response);
                     if (!response.history) {
                         console.error("recent questions response:", response);
-                        setError(Errors.INVALID_RESPONSE);
+                        setQuestionsError(Errors.INVALID_RESPONSE);
                     } else if (response.history.length < 1) {
-                        setError(Errors.NO_RECENT_QUESTIONS);
+                        setQuestionsError(Errors.NO_RECENT_QUESTIONS);
                     } else {
                         const questions = response.history.map(
                             (item) => item.question
@@ -110,8 +87,10 @@ function requestRecentQuestions() {
             }
         );
     } catch (error) {
-        if (!handleSendMessageError(error)) {
-            setError(error);
+        if (error.message === "Extension context invalidated.") {
+            setQuestionsError(Errors.EXTENSION_CONTEXT_INVALIDATED);
+        } else {
+            setQuestionsError(error);
         }
         hideProgressSpinner();
         repositionDialog();
@@ -125,9 +104,8 @@ function requestSuggestedQuestions(videoInfo) {
             (response) => {
                 if (chrome.runtime.lastError || response.error) {
                     const error = chrome.runtime.lastError || response.error;
-                    setError(error);
+                    setQuestionsError(error);
                 } else {
-                    console.debug("suggested questions response:", response);
                     setSuggestedQuestions(response);
                 }
                 hideProgressSpinner();
@@ -135,8 +113,10 @@ function requestSuggestedQuestions(videoInfo) {
             }
         );
     } catch (error) {
-        if (!handleSendMessageError(error)) {
-            setError(error);
+        if (error.message === "Extension context invalidated.") {
+            setQuestionsError(Errors.EXTENSION_CONTEXT_INVALIDATED);
+        } else {
+            setQuestionsError(error);
         }
         hideProgressSpinner();
         repositionDialog();
@@ -230,9 +210,11 @@ function textToInputClickListener(e) {
     }
 }
 
-function setError(error) {
+function setQuestionsError(error) {
     const containerElement = getContainerElement();
-    const messageElement = containerElement.querySelector("p.message");
+    const messageElement = containerElement.querySelector(
+        "#question-suggestions-error"
+    );
 
     const info = Info[error.code];
     if (info) {
@@ -275,6 +257,13 @@ function insertQuestionDialog() {
         }
     });
 
+    // question options click event
+    containerElement
+        .querySelectorAll(".question-options .title")
+        .forEach((el) => {
+            el.addEventListener("click", onQuestionOptionClick);
+        });
+
     // close the dialog when the user clicks the close button
     const closeButton = containerElement.querySelector("#close-button");
     closeButton.addEventListener("click", hideQuestionDialog);
@@ -292,6 +281,24 @@ function insertQuestionDialog() {
     });
 
     return containerElement;
+}
+
+function onQuestionOptionClick(e) {
+    const optionElement = e.target;
+    if (optionElement.classList.contains("active")) {
+        return;
+    }
+
+    optionElement
+        .closest(".question-options")
+        .querySelector(".title.active")
+        .classList.remove("active");
+    optionElement.classList.add("active");
+
+    resetQuestions();
+
+    const selectedQuestionOption = optionElement.getAttribute("data-option");
+    requestQuestions(selectedQuestionOption);
 }
 
 function onRequestButtonClick(event) {
@@ -312,22 +319,49 @@ function onRequestButtonClick(event) {
     // set loading state
     buttonElement.setAttribute("disabled", "");
     inputElement.setAttribute("disabled", "");
+    setInputError({}, containerElement);
 
     try {
         chrome.runtime.sendMessage(
             { message: "setPrompt", target: target, videoInfo, question },
             (response) => {
                 onPromptSet(response);
-                buttonElement.removeAttribute("disabled");
-                inputElement.removeAttribute("disabled");
+                resetRequesting();
             }
         );
     } catch (error) {
-        console.error("sendMessage setPrompt Error:", error);
-        showToastMessage(`sendMessage setPrompt Error: ${error.message}`);
-        buttonElement.removeAttribute("disabled");
-        inputElement.removeAttribute("disabled");
+        if (error.message === "Extension context invalidated.") {
+            setInputError(Errors.EXTENSION_CONTEXT_INVALIDATED);
+        } else {
+            console.error("sendMessage setPrompt Error:", error);
+            setInputError(error, containerElement);
+        }
+        resetRequesting(containerElement);
     }
+}
+
+function resetRequesting(containerElement = null) {
+    containerElement = containerElement || getContainerElement();
+    const inputElement = containerElement.querySelector(
+        "#contents input[type='text']"
+    );
+    const buttonElement = containerElement.querySelector(
+        "#contents button.question-button"
+    );
+    buttonElement.removeAttribute("disabled");
+    inputElement.removeAttribute("disabled");
+}
+
+function setInputError(
+    { message = "", type = "error" },
+    containerElement = null
+) {
+    containerElement = containerElement || getContainerElement();
+    const inputErrorElement = containerElement.querySelector(
+        "#question-input-error"
+    );
+    inputErrorElement.textContent = message;
+    inputErrorElement.setAttribute("type", type);
 }
 
 function onPromptSet(response) {
@@ -336,29 +370,35 @@ function onPromptSet(response) {
     }
 
     if (chrome.runtime.lastError) {
-        const errorMessage = `Error - ${
+        console.error(
+            "onPromptSet chrome.runtime.lastError:",
+            chrome.runtime.lastError
+        );
+        const message = `Error - ${
             chrome.runtime.lastError.message || chrome.runtime.lastError
         }`;
-        console.error("Error setting prompt.", chrome.runtime.lastError);
-        showToastMessage(errorMessage);
+        setInputError({ message });
         return;
     }
 
     if (response.error) {
         const { code, message } = response.error;
-        if (code === "TRANSCRIPT_NOT_FOUND") {
-            showToastMessage(message);
+        const error = Errors[code];
+        if (error) {
+            setInputError(error);
         } else {
-            const errorMessage = `Error - code: ${code}`;
-            console.error("Error setting prompt.", response.error);
-            showToastMessage(errorMessage);
+            console.error("onPromptSet Response Error:", response.error);
+            setInputError({ message });
         }
         return;
     }
 
     if (!response.targetUrl) {
-        console.error("Error - targetUrl is not set.");
-        showToastMessage("Error - targetUrl is not set.");
+        console.error(
+            "onPromptSet Invalid Response - targetUrl is not set. response:",
+            response
+        );
+        setInputError({ message: "Invalid response, please try again later." });
         return;
     }
 
@@ -419,5 +459,6 @@ function hideQuestionDialog() {
         backgroundElement.remove();
     }
 
-    resetQuestions();
+    resetQuestions(containerElement);
+    resetRequesting(containerElement);
 }

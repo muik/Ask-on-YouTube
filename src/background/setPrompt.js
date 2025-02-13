@@ -1,6 +1,7 @@
 "use strict";
 import { settings, transcriptCache } from "../background.js";
 import { config } from "../contentscript/config.js";
+import { Errors } from "../errors.js";
 import {
     getChatGPTCustomPrompt,
     getChatGPTPrompt,
@@ -25,8 +26,8 @@ export async function setPrompt({ videoInfo, target, question }) {
         if (!transcript) {
             return {
                 error: {
-                    code: "TRANSCRIPT_NOT_FOUND",
-                    message: "Transcript not found.",
+                    code: Errors.TRANSCRIPT_NOT_FOUND.code,
+                    message: Errors.TRANSCRIPT_NOT_FOUND.message,
                 },
             };
         }

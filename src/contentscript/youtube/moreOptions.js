@@ -1,4 +1,4 @@
-import { Errors, handleSendMessageError } from "../../errors.js";
+import { Errors } from "../../errors.js";
 import { getSearchParam } from "../searchParam.js";
 import { waitForElm } from "../utils.js";
 import { setLoadingState } from "./extraOptionsView.js";
@@ -107,7 +107,9 @@ function onExtraOptionClick(e) {
             }
         );
     } catch (error) {
-        if (!handleSendMessageError(error)) {
+        if (error.message === "Extension context invalidated.") {
+            showToastMessage(Errors.EXTENSION_CONTEXT_INVALIDATED.message);
+        } else {
             console.error("sendMessage setPrompt Error:", error);
             showToastMessage(`Unknown Error: ${error.message}`);
         }
@@ -139,19 +141,22 @@ function onSetPrompt(response, element) {
         const errorMessage = `Error - ${
             chrome.runtime.lastError.message || chrome.runtime.lastError
         }`;
-        console.error("Error setting prompt.", chrome.runtime.lastError);
+        console.error(
+            "onSetPrompt chrome.runtime.lastError:",
+            chrome.runtime.lastError
+        );
         showToastMessage(errorMessage);
         return;
     }
 
     if (response.error) {
         const { code, message } = response.error;
-        if (code === "TRANSCRIPT_NOT_FOUND") {
-            showToastMessage(message);
+        const error = Errors[code];
+        if (error) {
+            showToastMessage(error.message);
         } else {
-            const errorMessage = `Error - code: ${code}`;
-            console.error("Error setting prompt.", response.error);
-            showToastMessage(errorMessage);
+            console.error("onSetPrompt Response Error:", response.error);
+            showToastMessage(message);
         }
         return;
     }

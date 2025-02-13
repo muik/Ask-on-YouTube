@@ -1,5 +1,3 @@
-import { showToastMessage } from "./contentscript/youtube/toast.js";
-
 const appName = "Ask on YouTube";
 
 export const Errors = {
@@ -11,6 +9,10 @@ export const Errors = {
     INVALID_RESPONSE: {
         message: "Invalid response, please try again later.",
         code: "INVALID_RESPONSE",
+    },
+    TRANSCRIPT_NOT_FOUND: {
+        message: "Transcript not found.",
+        code: "TRANSCRIPT_NOT_FOUND",
     },
 };
 
@@ -28,11 +30,3 @@ export const Info = {
         code: "GOOGLE_CLOUD_API_KEY_NOT_VALID",
     },
 };
-
-export function handleSendMessageError(error) {
-    if (error.message === "Extension context invalidated.") {
-        showToastMessage(Errors.EXTENSION_CONTEXT_INVALIDATED.message);
-        return true;
-    }
-    return false;
-}
