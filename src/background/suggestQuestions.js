@@ -3,6 +3,7 @@ import {
     GoogleGenerativeAIFetchError,
 } from "@google/generative-ai";
 import { Errors } from "../errors.js";
+import { Config } from "./config.js";
 import { generateJsonContent } from "./geminiApi.js";
 
 export async function getSuggestedQuestions(
@@ -42,7 +43,7 @@ const systemInstructions = {
     default: `You are an AI assistant designed to help users quickly **discover what they are curious about or get desired information** from YouTube videos **before watching them**. You will suggest questions based on the video's title and thumbnail to help users **easily and quickly ask questions to satisfy their curiosity or find necessary information**.
 
 Your response should include the following:
-* **\`"questions"\`: An array of strings, each representing a question in Korean. You should suggest between 1 and 3 questions. These questions should be:
+* **\`"questions"\`: An array of strings, each representing a question in Korean. You should suggest between 1 and ${Config.MAX_QUESTIONS_COUNT} questions. These questions should be:
     * **Relevant:** Directly related to the content implied by the video title and thumbnail.
     * **Insightful for pre-viewing:** Help users quickly grasp the main topic, purpose, or key takeaways of the video *before* watching.
     * **Targeted for curiosity/information:** Address what a user might be curious about or what specific information they might want to know quickly.

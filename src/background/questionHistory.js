@@ -1,3 +1,5 @@
+import { Config } from "./config.js";
+
 const MAX_HISTORY_SIZE = 10;
 const STORAGE_KEY = "questionHistory";
 
@@ -34,7 +36,12 @@ export async function saveQuestionHistory(videoInfo, question) {
 
 export async function getRecentQuestions() {
     const result = await chrome.storage.sync.get([STORAGE_KEY]);
+    const recentItems = (result[STORAGE_KEY] || [])
+        .reverse()
+        .map((item) => item.question)
+        .filter((item, index, self) => self.indexOf(item) === index);
+
     return {
-        history: (result[STORAGE_KEY] || []).reverse(),
+        questions: recentItems.slice(0, Config.MAX_QUESTIONS_COUNT),
     };
 }

@@ -77,16 +77,13 @@ function requestRecentQuestions() {
                     const error = chrome.runtime.lastError || response.error;
                     setQuestionsError(error);
                 } else {
-                    if (!response.history) {
+                    if (!response.questions) {
                         console.error("recent questions response:", response);
                         setQuestionsError(Errors.INVALID_RESPONSE);
-                    } else if (response.history.length < 1) {
+                    } else if (response.questions.length < 1) {
                         setQuestionsError(Errors.NO_RECENT_QUESTIONS);
                     } else {
-                        const questions = response.history.map(
-                            (item) => item.question
-                        );
-                        setQuestions(questions);
+                        setQuestions(response.questions);
                     }
                 }
                 hideProgressSpinner();
