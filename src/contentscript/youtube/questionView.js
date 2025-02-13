@@ -32,18 +32,25 @@ export function showQuestionDialog(videoInfo) {
         .querySelector(".question-options .title.active")
         .getAttribute("data-option");
 
-    requestQuestions(selectedQuestionOption, videoInfo);
+    requestQuestions(
+        { option: selectedQuestionOption, videoInfo },
+        containerElement
+    );
 }
 
-function requestQuestions(selectedQuestionOption, videoInfo = null) {
-    showProgressSpinner();
+function requestQuestions(
+    { option, videoInfo = null },
+    containerElement = null
+) {
+    showProgressSpinner(containerElement);
+    setQuestionsError(null, containerElement);
 
     // set dialog position in the center of the screen
     repositionDialog();
 
-    if (selectedQuestionOption === "recent") {
+    if (option === "recent") {
         requestRecentQuestions();
-    } else if (selectedQuestionOption === "suggestions") {
+    } else if (option === "suggestions") {
         videoInfo = videoInfo || getVideoInfoFromExtraOptions();
         requestSuggestedQuestions(videoInfo);
     }
@@ -123,8 +130,8 @@ function requestSuggestedQuestions(videoInfo) {
     }
 }
 
-function showProgressSpinner() {
-    const containerElement = getContainerElement();
+function showProgressSpinner(containerElement = null) {
+    containerElement = containerElement || getContainerElement();
     const spinnerElement = containerElement.querySelector("#spinner");
     spinnerElement.removeAttribute("hidden");
     const paperSpinnerElement = spinnerElement.querySelector(
@@ -210,11 +217,17 @@ function textToInputClickListener(e) {
     }
 }
 
-function setQuestionsError(error) {
-    const containerElement = getContainerElement();
+function setQuestionsError(error, containerElement = null) {
+    containerElement = containerElement || getContainerElement();
     const messageElement = containerElement.querySelector(
         "#question-suggestions-error"
     );
+
+    if (!error) {
+        messageElement.innerHTML = "";
+        messageElement.removeAttribute("type");
+        return;
+    }
 
     const info = Info[error.code];
     if (info) {
@@ -297,8 +310,8 @@ function onQuestionOptionClick(e) {
 
     resetQuestions();
 
-    const selectedQuestionOption = optionElement.getAttribute("data-option");
-    requestQuestions(selectedQuestionOption);
+    const option = optionElement.getAttribute("data-option");
+    requestQuestions({ option });
 }
 
 function onRequestButtonClick(event) {
@@ -460,5 +473,8 @@ function hideQuestionDialog() {
     }
 
     resetQuestions(containerElement);
+    setQuestionsError(null, containerElement);
+
     resetRequesting(containerElement);
+    setInputError({}, containerElement);
 }
