@@ -32,7 +32,9 @@ export async function getChatGPTCustomPrompt(videoInfo, transcript, prompt) {
     const captionInline = videoInfo.caption
         ? `Caption: \`${videoInfo.caption
               .replace(/`/g, "\\`")
-              .replace(/\n/g, "\\n")}\`\n`
+              .replace(/\n/g, " ")
+              .replace("  ", ", ")
+              .trim()}\`\n`
         : "";
 
     return `Title: ${title}

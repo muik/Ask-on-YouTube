@@ -204,7 +204,10 @@ function setQuestions(questions, containerElement = null) {
 }
 
 function textToInputClickListener(e) {
-    const text = e.target.textContent;
+    const text = e.target.textContent
+        .replace(/\n/g, " ")
+        .replace("  ", ", ")
+        .trim();
     if (text) {
         const containerElement = e.target.closest(`#${containerId}`);
         const inputElement =
