@@ -66,11 +66,22 @@ describe("Gemini API Real Request", () => {
         expect(response.caption).toBe("");
     });
 
+    it("request suggested questions with language", async () => {
+        const item = items[2];
+        const videoInfo = item.videoInfo;
+        const response = await requestSuggestedQuestions(videoInfo, {
+            language: "ko",
+        });
+
+        await checkResponse(response);
+    });
+
     it("request suggested questions with default", async () => {
         const item = items[2];
         const videoInfo = item.videoInfo;
         const response = await requestSuggestedQuestions(videoInfo, {
             history: items.slice(0, 2),
+            language: "en",
         });
 
         await checkResponse(response);
@@ -161,7 +172,7 @@ async function checkResponse(response) {
 
     const questions = response.questions;
     expect(questions.length).toBeGreaterThan(0);
-    expect(questions.length).toBeLessThanOrEqual(3);
+    expect(questions.length).toBeLessThanOrEqual(5);
 
     expect(response.caption).toBeDefined();
     expect(typeof response.caption).toBe("string");

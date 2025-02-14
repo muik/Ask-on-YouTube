@@ -83,7 +83,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     } else if (request.message === "getSuggestedQuestions") {
         validateVideoInfo(request.videoInfo);
 
-        getSuggestedQuestions(request.videoInfo, settings, questionCache)
+        const language = chrome.i18n.getUILanguage();
+        getSuggestedQuestions(request.videoInfo, settings, questionCache, language)
             .then(sendResponse)
             .catch(handleError(sendResponse));
         return true;

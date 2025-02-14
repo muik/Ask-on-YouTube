@@ -5,11 +5,13 @@ import {
 import { Config } from "../config.js";
 import { Errors } from "../errors.js";
 import { generateJsonContent } from "./geminiApi.js";
+import { getQuestionHistory } from "./questionHistory.js";
 
 export async function getSuggestedQuestions(
     videoInfo,
     settings,
-    questionCache
+    questionCache,
+    language
 ) {
     if (!settings.googleCloudAPIKey) {
         const error = new Error("googleCloudAPIKey settings not set.");
@@ -22,8 +24,13 @@ export async function getSuggestedQuestions(
         return questionCache.get(cacheKey);
     }
 
+    const history = await getQuestionHistory();
     const response = await requestSuggestedQuestions(videoInfo, {
+        history,
         apiKey: settings.googleCloudAPIKey,
+
+        // If no history, use the language from the user
+        language: history.length === 0 ? language : undefined,
     });
     questionCache.put(cacheKey, response);
 
@@ -43,7 +50,7 @@ const systemInstructions = {
     default: `You are an AI assistant designed to help users quickly **discover what they are curious about or get desired information** from YouTube videos **before watching them**. You will suggest questions based on the video's title and thumbnail to help users **easily and quickly ask questions to satisfy their curiosity or find necessary information**.
 
 Your response should include the following:
-* **\`"questions"\`: An array of strings, each representing a question in Korean. You should suggest between 1 and ${Config.MAX_QUESTIONS_COUNT} questions. These questions should be:
+* **\`"questions"\`: An array of strings, each representing a question. You should suggest between 1 and ${Config.MAX_QUESTIONS_COUNT} questions. These questions should be:
     * **Relevant:** Directly related to the content implied by the video title and thumbnail.
     * **Insightful for pre-viewing:** Help users quickly grasp the main topic, purpose, or key takeaways of the video *before* watching.
     * **Targeted for curiosity/information:** Address what a user might be curious about or what specific information they might want to know quickly.
@@ -60,7 +67,9 @@ The title of the youtube video: \`{title}\`
 Your second task is to analyze the provided YouTube video title, thumbnail image, and the user's recent question history. Based on this information, you should suggest questions that a user might naturally ask to **quickly understand what the video is about, determine if it's relevant to their interests, or extract specific information without having to watch the entire video.**
 
 The user's recent question history:
-{history}`;
+{history}
+
+{postPrompt}`;
 
 export async function requestSuggestedQuestions(
     videoInfo,
@@ -71,6 +80,7 @@ export async function requestSuggestedQuestions(
         responseSchema = defaultResponseSchema,
         imageUrl = undefined,
         apiKey = undefined,
+        language = undefined,
     } = {}
 ) {
     const { id, title } = videoInfo;
@@ -87,11 +97,13 @@ export async function requestSuggestedQuestions(
     }
 
     const historyInline = getHistoryText(history);
+    const postPrompt = language ? `The user's language: ${language}` : "";
     const prompt =
         promptText ||
         promptFormat
             .replace("{title}", title)
-            .replace("{history}", historyInline);
+            .replace("{history}", historyInline)
+            .replace("{postPrompt}", postPrompt);
 
     console.debug("prompt:", prompt);
     try {

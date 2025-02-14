@@ -34,6 +34,16 @@ export async function saveQuestionHistory(videoInfo, question) {
     });
 }
 
+export async function getQuestionHistory() {
+    const result = await chrome.storage.sync.get([STORAGE_KEY]);
+    return result[STORAGE_KEY] || [];
+}
+
+/**
+ * Get the recent questions from the history.
+ * @returns {Object} - The recent questions.
+ * @property {Array} questions - The recent questions.
+ */
 export async function getRecentQuestions() {
     const result = await chrome.storage.sync.get([STORAGE_KEY]);
     const recentItems = (result[STORAGE_KEY] || [])
