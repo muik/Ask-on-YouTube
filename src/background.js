@@ -2,6 +2,7 @@
 
 import { LRUCache } from "./background/lruCache.js";
 import {
+    getFavoriteQuestions,
     getRecentQuestions,
     saveQuestionHistory,
 } from "./background/questionHistory.js";
@@ -45,11 +46,17 @@ chrome.storage.sync.get(
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     console.debug("Received message:", request);
 
-    if (request.action === "getRecentQuestions") {
-        getRecentQuestions()
-            .then(sendResponse)
-            .catch(handleError(sendResponse));
-        return true;
+    switch (request.action) {
+        case "getRecentQuestions":
+            getRecentQuestions()
+                .then(sendResponse)
+                .catch(handleError(sendResponse));
+            return true;
+        case "getFavoriteQuestions":
+            getFavoriteQuestions()
+                .then(sendResponse)
+                .catch(handleError(sendResponse));
+            return true;
     }
 
     if (request.message === "setPrompt") {

@@ -45,3 +45,59 @@ export async function getRecentQuestions() {
         questions: recentItems.slice(0, Config.MAX_QUESTIONS_COUNT),
     };
 }
+
+const defaultFavoriteQuestions = [
+    "What is the main idea of this content?",
+    "Summarize this content in 5-10 bullet points",
+    "What're the key points briefly?",
+];
+
+/**
+ * Get the favorite questions from the history.
+ * @returns {Object} - The favorite questions.
+ * @property {Array} questions - The favorite questions.
+ */
+export async function getFavoriteQuestions() {
+    const result = await chrome.storage.sync.get([STORAGE_KEY]);
+    const counter = {};
+
+    // group the questions by question and video id
+    result[STORAGE_KEY].forEach((item) => {
+        const videoId = item.videoInfo.id;
+        const question = item.question.trim();
+        if (counter[question]) {
+            counter[question].videoIds.add(videoId);
+            counter[question].timestamp = Math.max(
+                counter[question].timestamp,
+                item.timestamp
+            );
+        } else {
+            counter[question] = {
+                videoIds: new Set([videoId]),
+                timestamp: item.timestamp,
+            };
+        }
+    });
+
+    Object.values(counter).forEach((item) => {
+        item.count = item.videoIds.size;
+    });
+
+    defaultFavoriteQuestions.forEach((question) => {
+        if (counter[question]) {
+            counter[question].count = Math.max(counter[question].count, 2);
+        } else {
+            counter[question] = { count: 2, timestamp: 0 };
+        }
+    });
+
+    // sort by count and timestamp, descending
+    const favoriteItems = Object.keys(counter).sort((a, b) => {
+        return (
+            counter[b].count - counter[a].count ||
+            counter[b].timestamp - counter[a].timestamp
+        );
+    });
+
+    return { questions: favoriteItems.slice(0, Config.MAX_QUESTIONS_COUNT) };
+}

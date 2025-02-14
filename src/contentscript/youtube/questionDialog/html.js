@@ -31,7 +31,7 @@ export function getQuestionHtml() {
       <p id="question-input-error" class="message"></p>
       <div class="question-suggestions">
         <div class="question-options">
-          <span class="title active" data-option="recent">Recent</span>
+          <span class="title active" data-option="favorites">Favorites</span>
           <span class="title" data-option="suggestions">Suggestions</span>
         </div>
         <ul class="suggestions"></ul>

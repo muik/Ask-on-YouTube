@@ -29,9 +29,13 @@ export function showQuestionDialog(videoInfo) {
 
     setQuestionDialogContent(videoInfo);
 
-    const selectedQuestionOption = containerElement
-        .querySelector(".question-options .title.active")
-        .getAttribute("data-option");
+    const selectedQuestionOption =
+        containerElement
+            .querySelector(".question-options .title.active")
+            ?.getAttribute("data-option") ||
+        containerElement
+            .querySelector(".question-options .title:first-child")
+            .getAttribute("data-option");
 
     requestQuestions(
         { option: selectedQuestionOption, videoInfo },
@@ -49,8 +53,8 @@ function requestQuestions(
     // set dialog position in the center of the screen
     repositionDialog();
 
-    if (option === "recent") {
-        requestRecentQuestions();
+    if (option === "favorites") {
+        requestFavoriteQuestions();
     } else if (option === "suggestions") {
         videoInfo = videoInfo || getVideoInfoFromExtraOptions();
         requestSuggestedQuestions(videoInfo);
@@ -69,20 +73,21 @@ function resetQuestions(containerElement = null) {
     messageElement.removeAttribute("type");
 }
 
-function requestRecentQuestions() {
+function requestFavoriteQuestions() {
     try {
         chrome.runtime.sendMessage(
-            { action: "getRecentQuestions" },
+            { action: "getFavoriteQuestions" },
             (response) => {
                 if (chrome.runtime.lastError || response.error) {
                     const error = chrome.runtime.lastError || response.error;
                     setQuestionsError(error);
                 } else {
                     if (!response.questions) {
-                        console.error("recent questions response:", response);
+                        console.error("favorite questions response:", response);
                         setQuestionsError(Errors.INVALID_RESPONSE);
                     } else if (response.questions.length < 1) {
-                        setQuestionsError(Errors.NO_RECENT_QUESTIONS);
+                        console.error("favorite questions response:", response);
+                        setQuestionsError(Errors.INVALID_RESPONSE);
                     } else {
                         setQuestions(response.questions);
                     }
