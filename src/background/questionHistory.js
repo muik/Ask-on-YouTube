@@ -1,4 +1,4 @@
-import { Config } from "./config.js";
+import { Config } from "../config.js";
 
 const MAX_HISTORY_SIZE = 10;
 const STORAGE_KEY = "questionHistory";

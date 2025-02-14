@@ -1,3 +1,4 @@
+import { Config } from "../../../config.js";
 import { containerId } from "../questionView.js";
 
 const defaultQuestion = "주요 요점이 무엇인가요?";
@@ -46,8 +47,10 @@ export function getDialogBackgoundHtml() {
     return `<tp-yt-iron-overlay-backdrop opened="" class="opened"></tp-yt-iron-overlay-backdrop>`;
 }
 
+const SPINNER_HEIGHT = 37 * Config.MAX_QUESTIONS_COUNT;
+
 const spinnerHtml = `
-<div id="spinner" class="style-scope ytd-unified-share-panel-renderer" style="height: 111px">
+<div id="spinner" class="style-scope ytd-unified-share-panel-renderer" style="height: ${SPINNER_HEIGHT}px">
 <tp-yt-paper-spinner class="style-scope ytd-unified-share-panel-renderer" aria-label="loading" active=""><div id="spinnerContainer" class="active  style-scope tp-yt-paper-spinner">
   <div class="spinner-layer layer-1 style-scope tp-yt-paper-spinner">
     <div class="circle-clipper left style-scope tp-yt-paper-spinner">

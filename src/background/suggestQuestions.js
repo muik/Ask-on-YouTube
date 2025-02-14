@@ -2,8 +2,8 @@ import {
     GoogleGenerativeAIError,
     GoogleGenerativeAIFetchError,
 } from "@google/generative-ai";
+import { Config } from "../config.js";
 import { Errors } from "../errors.js";
-import { Config } from "./config.js";
 import { generateJsonContent } from "./geminiApi.js";
 
 export async function getSuggestedQuestions(
