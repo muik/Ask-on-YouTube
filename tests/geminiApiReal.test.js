@@ -3,6 +3,7 @@ import {
     getHistoryText,
     requestSuggestedQuestions,
 } from "../src/background/suggestQuestions.js";
+import { getVideoThumbnailUrl } from "../src/data.js";
 
 const items = [
     {
@@ -120,7 +121,8 @@ Your response should include the following:
         const history = items.slice(0, 2);
 
         const startTime = Date.now();
-        const caption = await requestOCR(videoInfo.thumbnail);
+        const thumbnailUrl = getVideoThumbnailUrl(videoInfo.id);
+        const caption = await requestOCR(thumbnailUrl);
         console.log("ocr request time sec:", (Date.now() - startTime) / 1000);
         console.log("caption:", caption);
 

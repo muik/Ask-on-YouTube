@@ -50,7 +50,6 @@ function updateExtraOptions(dropDownElement, videoInfo) {
     const containerElement = dropDownElement.querySelector(containerSelector);
     containerElement.setAttribute("video-id", videoInfo.id);
     containerElement.setAttribute("video-title", videoInfo.title);
-    containerElement.setAttribute("video-thumbnail", videoInfo.thumbnail);
     containerElement.removeAttribute("aria-hidden");
 }
 
@@ -64,7 +63,6 @@ export function getVideoInfoFromExtraOptions(containerElement = null) {
     return {
         id: containerElement.getAttribute("video-id"),
         title: containerElement.getAttribute("video-title"),
-        thumbnail: containerElement.getAttribute("video-thumbnail"),
     };
 }
 
@@ -254,22 +252,14 @@ function getVideoInfoFromItemVideoOptionMenu(target) {
         return; // Exit if no video title is identified
     }
 
-    const thumbnailElement = videoContainer.querySelector("#thumbnail img");
-    if (!thumbnailElement) {
-        console.debug("No thumbnail found", videoContainer);
-        return;
-    }
-
     // Extract the video ID from the URL (e.g., https://www.youtube.com/watch?v=VIDEO_ID)
     const url = new URL(linkElement.href);
     const id = url.searchParams.get("v");
     const title = titleElement.textContent.trim();
-    const thumbnail = thumbnailElement.getAttribute("src");
 
     return {
         id: id,
         title: title,
-        thumbnail: thumbnail,
     };
 }
 
@@ -306,16 +296,10 @@ export function getVideoInfoFromVideoDetail() {
         id = id.split("#")[0];
     }
     const title = titleElement.textContent.trim();
-    const thumbnail =
-        document
-            .querySelector("head > link[as=image][rel=preload]")
-            ?.getAttribute("href") ||
-        `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
 
     return {
         id,
         title,
-        thumbnail,
     };
 }
 

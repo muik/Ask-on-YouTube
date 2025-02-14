@@ -1,3 +1,4 @@
+import { getVideoThumbnailUrl } from "../../data.js";
 import { Errors, Info } from "../../errors.js";
 import { getVideoInfoFromExtraOptions } from "./moreOptions.js";
 import {
@@ -160,7 +161,7 @@ function setQuestionDialogContent(videoInfo) {
     titleTokens.forEach(setTitleToken(titleElement, inputElement));
 
     const thumbnailElement = containerElement.querySelector("img.thumbnail");
-    thumbnailElement.setAttribute("src", videoInfo.thumbnail);
+    thumbnailElement.setAttribute("src", getVideoThumbnailUrl(videoInfo.id));
 
     // cursor focus on the input field
     inputElement.focus();

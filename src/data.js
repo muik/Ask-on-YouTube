@@ -9,3 +9,7 @@ export function validateVideoInfo(videoInfo) {
         throw new Error("No videoTitle received.");
     }
 }
+
+export function getVideoThumbnailUrl(videoId) {
+    return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+}
