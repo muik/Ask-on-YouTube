@@ -1,8 +1,9 @@
 {
-    "name": "Ask on YouTube using ChatGPT",
+    "name": "__MSG_extensionName__",
     "version": "1.0.0",
     "manifest_version": 3,
-    "description": "Use ChatGPT to ask or summarize YouTube videos",
+    "description": "__MSG_extensionDescription__",
+    "default_locale": "en",
     "permissions": ["storage"],
     "host_permissions": ["https://i.ytimg.com/*"],
     "background": {

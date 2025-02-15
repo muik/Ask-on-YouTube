@@ -21,6 +21,10 @@ const plugins = [
                 from: "manifest.json",
             },
             {
+                from: "_locales",
+                to: "_locales",
+            },
+            {
                 from: "src/images",
                 to: "images",
             },
