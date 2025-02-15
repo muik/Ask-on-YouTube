@@ -5,28 +5,32 @@ const webpack = require("webpack"),
     WriteFilePlugin = require("write-file-webpack-plugin");
 
 if (process.env.NODE_ENV == null) {
-    process.env.NODE_ENV = 'development';
+    process.env.NODE_ENV = "development";
 }
-const ENV = process.env.ENV = process.env.NODE_ENV;
+const ENV = (process.env.ENV = process.env.NODE_ENV);
 
 const plugins = [
     new webpack.DefinePlugin({
-        'process.env': {
-            'ENV': JSON.stringify(ENV)
-        }
+        "process.env": {
+            ENV: JSON.stringify(ENV),
+        },
     }),
     new CopyWebpackPlugin({
-        patterns: [{
-            from: "manifest.json"
-        },{
-            from: "src/images",
-            to: "images"
-        },{
-            from: "src/css/*.css",
-            to() {
-                return "contentscript/[name][ext]";
-            }
-        }]
+        patterns: [
+            {
+                from: "manifest.json",
+            },
+            {
+                from: "src/images",
+                to: "images",
+            },
+            {
+                from: "src/css/*.css",
+                to() {
+                    return "contentscript/[name][ext]";
+                },
+            },
+        ],
     }),
     new HtmlWebpackPlugin({
         filename: "settings.html", // Output filename
@@ -34,57 +38,83 @@ const plugins = [
         chunks: ["settings"], // Include only the 'settings' entry
         inject: "body",
     }),
-    new WriteFilePlugin()
+    new WriteFilePlugin(),
 ];
 
-const fileExtensions = ["jpg", "jpeg", "png", "gif", "eot", "otf", "svg", "ttf", "woff", "woff2"];
+const fileExtensions = [
+    "jpg",
+    "jpeg",
+    "png",
+    "gif",
+    "eot",
+    "otf",
+    "svg",
+    "ttf",
+    "woff",
+    "woff2",
+];
 const moduleRules = [
     {
         test: /\.css$/,
         use: ["style-loader", "css-loader"],
-        exclude: /node_modules/
+        exclude: /node_modules/,
     },
     {
-        test: new RegExp('.(' + fileExtensions.join('|') + ')$'),
+        test: new RegExp(".(" + fileExtensions.join("|") + ")$"),
         use: "file-loader?name=[name].[ext]",
-        exclude: /node_modules/
+        exclude: /node_modules/,
     },
     {
         test: /\.html$/,
         use: {
             loader: "html-loader",
             options: {
-                sources: false
-            }
+                sources: false,
+            },
         },
-        exclude: /node_modules/
-    }
+        exclude: /node_modules/,
+    },
 ];
 
 const config = {
-    target: 'web',
+    target: "web",
     devtool: "cheap-module-source-map",
     mode: process.env.NODE_ENV || "development",
     entry: {
-        'contentscript/index': path.join(__dirname, "src", "contentscript", "index.js"),
-        'contentscript/gemini': path.join(__dirname, "src", "contentscript", "gemini.js"),
-        'contentscript/chatgpt': path.join(__dirname, "src", "contentscript", "chatgpt.js"),
-        'background': path.join(__dirname, "src", "background.js"),
+        "contentscript/index": path.join(
+            __dirname,
+            "src",
+            "contentscript",
+            "index.js"
+        ),
+        "contentscript/gemini": path.join(
+            __dirname,
+            "src",
+            "contentscript",
+            "gemini.js"
+        ),
+        "contentscript/chatgpt": path.join(
+            __dirname,
+            "src",
+            "contentscript",
+            "chatgpt.js"
+        ),
+        background: path.join(__dirname, "src", "background.js"),
         settings: path.join(__dirname, "src", "options", "settings.js"),
     },
     output: {
         path: path.join(__dirname, "dist"),
         filename: "[name].bundle.js",
-        clean: true
+        clean: true,
     },
     module: {
-        rules: moduleRules
+        rules: moduleRules,
     },
-    plugins: plugins
+    plugins: plugins,
 };
 
 if (ENV === "development") {
-    config.devtool = 'cheap-module-source-map';
+    config.devtool = "cheap-module-source-map";
 }
 
 module.exports = config;
