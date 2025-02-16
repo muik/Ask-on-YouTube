@@ -1,6 +1,5 @@
 import { getVideoThumbnailUrl } from "../../data.js";
 import { Errors, Info } from "../../errors.js";
-import { getVideoInfoFromExtraOptions } from "./moreOptions.js";
 import {
     getDialogBackgoundHtml,
     getQuestionHtml,
@@ -8,14 +7,17 @@ import {
 import { getTitleTokens, setTitleToken } from "./questionDialog/titleToken.js";
 
 export const containerId = "dialog-container";
+const dialogData = {};
 
 function getContainerElement() {
     return document.querySelector(`ytd-popup-container #${containerId}`);
 }
 
 export function showQuestionDialog(videoInfo) {
+    dialogData.videoInfo = videoInfo;
     const containerElement = getContainerElement() || insertQuestionDialog();
     containerElement.style.display = "block";
+    containerElement.style.zIndex = 9999;
 
     document.body.insertAdjacentHTML("beforeend", getDialogBackgoundHtml());
 
@@ -56,7 +58,7 @@ function requestQuestions(
     if (option === "favorites") {
         requestFavoriteQuestions();
     } else if (option === "suggestions") {
-        videoInfo = videoInfo || getVideoInfoFromExtraOptions();
+        videoInfo = dialogData.videoInfo;
         requestSuggestedQuestions(videoInfo);
     }
 }
@@ -322,10 +324,9 @@ function onQuestionOptionClick(e) {
 
 function onRequestButtonClick(event) {
     const buttonElement = event.target;
-    const containerElement = buttonElement.closest(`#${containerId}`);
-    const inputElement = containerElement.querySelector(
-        "#contents input[type='text']"
-    );
+    const formElement = buttonElement.closest(".ytq-form");
+    const containerElement = formElement.closest(`#${containerId}`);
+    const inputElement = formElement.querySelector("input[type='text']");
     const question = inputElement.value || inputElement.placeholder;
     const thumbnailElement = containerElement.querySelector("img.thumbnail");
     const videoInfo = {

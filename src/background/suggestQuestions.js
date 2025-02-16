@@ -159,9 +159,6 @@ export function getHistoryText(items) {
             if (!title) {
                 throw new Error("title is undefined");
             }
-            if (caption === undefined) {
-                throw new Error("caption is undefined");
-            }
             if (question === undefined) {
                 throw new Error("question is undefined");
             }

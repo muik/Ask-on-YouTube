@@ -1,10 +1,10 @@
 "use strict";
 
-import { insertSummaryBtn } from "./youtube.js";
 import {
     detectVideoOptionClick,
     insertExtraOptions,
 } from "./youtube/moreOptions.js";
+import { injectElements } from "./youtube/videoDetail.js";
 
 let oldHref = "";
 
@@ -14,7 +14,7 @@ window.onload = async () => {
             window.location.search !== "" &&
             window.location.search.includes("v=")
         ) {
-            insertSummaryBtn();
+            injectElements();
         }
 
         const bodyList = document.querySelector("body");
@@ -22,7 +22,7 @@ window.onload = async () => {
             mutations.forEach(() => {
                 if (oldHref !== document.location.href) {
                     oldHref = document.location.href;
-                    insertSummaryBtn();
+                    injectElements();
                 }
             });
         });

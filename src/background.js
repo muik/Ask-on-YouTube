@@ -70,7 +70,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
             .then(handleSetPromptResult(sendResponse))
             .catch(handleError(sendResponse));
 
-        if (request.question) {
+        if (request.question && request.type !== "placeholder") {
             saveQuestionHistory(request.videoInfo, request.question).catch(
                 (error) => {
                     console.error("saveQuestionHistory error:", error);
@@ -84,7 +84,12 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         validateVideoInfo(request.videoInfo);
 
         const language = chrome.i18n.getUILanguage();
-        getSuggestedQuestions(request.videoInfo, settings, questionCache, language)
+        getSuggestedQuestions(
+            request.videoInfo,
+            settings,
+            questionCache,
+            language
+        )
             .then(sendResponse)
             .catch(handleError(sendResponse));
         return true;

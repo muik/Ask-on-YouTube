@@ -24,11 +24,13 @@ export function getQuestionHtml() {
           <span class="caption inputable"></span>
         </div>
       </div>
-      <div class="question-input-container">
-        <input type="text" value="" placeholder="${defaultQuestion}">
-        <button class="question-button"><span class="default-text">요청</span><span class="loading-text">요청 중..</span></button>
+      <div class="ytq-form">
+        <div class="question-input-container">
+          <input type="text" value="" placeholder="${defaultQuestion}">
+          <button class="question-button"><span class="default-text">요청</span><span class="loading-text">요청 중..</span></button>
+        </div>
+        <p id="question-input-error" class="message"></p>
       </div>
-      <p id="question-input-error" class="message"></p>
       <div class="question-suggestions">
         <div class="question-options">
           <span class="title active" data-option="favorites">Favorites</span>
