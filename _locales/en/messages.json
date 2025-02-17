@@ -11,6 +11,12 @@
     "settings": {
         "message": "Settings"
     },
+    "geminiAPIDescription": {
+        "message": "Set Gemini API to get suggested questions in the ask dialog. <a href='https://aistudio.google.com/app/apikey' target='_blank'>Get API Key</a> for free!"
+    },
+    "geminiAPIKeyPlaceholder": {
+        "message": "Enter your Gemini API key"
+    },
     "requestButtonName": {
         "message": "Ask"
     },

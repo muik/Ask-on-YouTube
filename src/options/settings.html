@@ -10,23 +10,22 @@
             <h1 msg="shortExtensionName">Ask on YouTube</h1>
             <h2 msg="settings">Settings</h2>
 
-            <!-- API Key for Google Cloud Vision API -->
-            <h3>Google Cloud API</h3>
-            <p class="description">
-                Ask on YouTube uses the Google Cloud Vision API to extract text
-                from images.
+            <!-- API Key for Gemini API -->
+            <h3>Gemini API</h3>
+            <p class="description" msg="geminiAPIDescription">
+                Ask on YouTube uses the Gemini API to extract text from images.
             </p>
             <div>
                 <div class="inline-label-input">
-                    <label for="googleCloudAPIKey">API Key</label>
+                    <label for="geminiAPIKey">API Key</label>
                     <input
                         type="text"
-                        id="googleCloudAPIKey"
+                        id="geminiAPIKey"
                         placeholder="Enter your API key"
                     />
                 </div>
                 <div
-                    id="statusMessageGoogleCloudAPIKey"
+                    id="statusMessageGeminiAPIKey"
                     class="status-message"
                 ></div>
             </div>

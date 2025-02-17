@@ -33,8 +33,8 @@ export const transcriptCache = new LRUCache(10);
 const questionCache = new LRUCache(10);
 
 // load settings from storage on startup
-chrome.storage.sync.get([Keys.GOOGLE_CLOUD_API_KEY], (result) => {
-    settings.googleCloudAPIKey = result.googleCloudAPIKey;
+chrome.storage.sync.get([Keys.GEMINI_API_KEY], (result) => {
+    settings.geminiAPIKey = result.geminiAPIKey;
     console.debug("Settings loaded:", settings);
 });
 
@@ -83,13 +83,13 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         console.debug(
             "getSuggestedQuestions",
             request.videoInfo,
-            settings,
+            settings[Keys.GEMINI_API_KEY],
             questionCache,
             language
         );
         getSuggestedQuestions(
             request.videoInfo,
-            settings,
+            settings[Keys.GEMINI_API_KEY],
             questionCache,
             language
         )

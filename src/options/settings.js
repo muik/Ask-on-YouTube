@@ -4,17 +4,20 @@ import { Keys } from "../storage.js";
 document.addEventListener("DOMContentLoaded", () => {
     setMessages();
 
-    const googleCloudAPIKeyInput = document.getElementById("googleCloudAPIKey");
+    const geminiAPIKeyInput = document.getElementById("geminiAPIKey");
+    const statusMessageGeminiAPIKey = document.getElementById(
+        "statusMessageGeminiAPIKey"
+    );
 
-    const statusMessageGoogleCloudAPIKey = document.getElementById(
-        "statusMessageGoogleCloudAPIKey"
+    geminiAPIKeyInput.placeholder = chrome.i18n.getMessage(
+        "geminiAPIKeyPlaceholder"
     );
 
     console.debug("Extension settings page loaded");
 
     // Load the saved prompt text when the page is loaded
-    chrome.storage.sync.get([Keys.GOOGLE_CLOUD_API_KEY], (result) => {
-        googleCloudAPIKeyInput.value = result.googleCloudAPIKey || "";
+    chrome.storage.sync.get([Keys.GEMINI_API_KEY], (result) => {
+        geminiAPIKeyInput.value = result.geminiAPIKey || "";
     });
 
     // Function to save settings and display status
@@ -53,11 +56,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 500);
 
     // Auto-save with debounced input
-    googleCloudAPIKeyInput.addEventListener("input", () => {
+    geminiAPIKeyInput.addEventListener("input", () => {
         debouncedSaveSetting(
-            Keys.GOOGLE_CLOUD_API_KEY,
-            googleCloudAPIKeyInput.value,
-            statusMessageGoogleCloudAPIKey
+            Keys.GEMINI_API_KEY,
+            geminiAPIKeyInput.value,
+            statusMessageGeminiAPIKey
         );
     });
 });
@@ -67,7 +70,11 @@ function setMessages() {
     const elements = document.querySelectorAll("[msg]");
     elements.forEach((element) => {
         console.debug("Setting message:", element.getAttribute("msg"));
-        element.textContent = messages(element.getAttribute("msg"));
+        element.innerHTML = messages(element.getAttribute("msg"));
         console.debug("Message set:", element.textContent);
     });
+
+    document.title = `${messages("settings")} - ${messages(
+        "shortExtensionName"
+    )}`;
 }

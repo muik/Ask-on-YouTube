@@ -3,17 +3,17 @@ import {
     GoogleGenerativeAIFetchError,
 } from "@google/generative-ai";
 import { Config } from "../config.js";
-import { Errors, Info } from "../errors.js";
+import { Info } from "../errors.js";
 import { generateJsonContent } from "./geminiApi.js";
 import { getQuestionHistory } from "./questionHistory.js";
 
 export async function getSuggestedQuestions(
     videoInfo,
-    settings,
+    apiKey,
     questionCache,
     language
 ) {
-    if (!settings.googleCloudAPIKey) {
+    if (!apiKey) {
         throw Info.GEMINI_API_KEY_NOT_SET;
     }
 
@@ -25,7 +25,7 @@ export async function getSuggestedQuestions(
     const history = await getQuestionHistory();
     const response = await requestSuggestedQuestions(videoInfo, {
         history,
-        apiKey: settings.googleCloudAPIKey,
+        apiKey,
 
         // If no history, use the language from the user
         language: history.length === 0 ? language : undefined,
@@ -125,7 +125,7 @@ function handleError(error) {
                 error.errorDetails[0].reason === "API_KEY_INVALID"
             ) {
                 const newError = new Error(error.errorDetails[1].message);
-                newError.code = Errors.GEMINI_API_KEY_NOT_VALID.code;
+                newError.code = Info.GEMINI_API_KEY_NOT_VALID.code;
                 throw newError;
             }
             console.error(

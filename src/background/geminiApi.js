@@ -43,7 +43,9 @@ export async function generateJsonContent(
     };
 
     const genAI = new GoogleGenerativeAI(
-        apiKey || process.env.GOOGLE_CLOUD_API_KEY
+        apiKey ||
+            process.env.GEMINI_API_KEY ||
+            process.env.GOOGLE_CLOUD_API_KEY
     );
     const model = genAI.getGenerativeModel({
         model: "gemini-2.0-flash-lite-preview-02-05",
