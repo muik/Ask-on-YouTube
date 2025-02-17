@@ -103,14 +103,10 @@ async function requestFavoriteQuestions() {
 
         setDefaultQuestion(response);
 
-        const selectedQuestionOption = getSelectedQuestionOption();
-        if (selectedQuestionOption !== "favorites") {
+        if (!isQuestionOptionActive("favorites")) {
             return;
         }
-
-        if (chrome.runtime.lastError || response.error) {
-            const error = chrome.runtime.lastError || response.error;
-            setQuestionsError(error);
+        if (handleQuestionsResponseError(response)) {
             return;
         }
         if (!response.questions || response.questions.length === 0) {
@@ -121,11 +117,7 @@ async function requestFavoriteQuestions() {
 
         setQuestions(response.questions);
     } catch (error) {
-        if (error.message === "Extension context invalidated.") {
-            setQuestionsError(Errors.EXTENSION_CONTEXT_INVALIDATED);
-        } else {
-            setQuestionsError(error);
-        }
+        setRequestQuestionsError(error);
     } finally {
         hideProgressSpinner();
         repositionDialog();
@@ -138,13 +130,11 @@ async function requestRecentQuestions() {
             action: "getRecentQuestions",
         });
 
-        const selectedQuestionOption = getSelectedQuestionOption();
-        if (selectedQuestionOption !== "recents") {
+        if (!isQuestionOptionActive("recents")) {
             return;
         }
 
-        if (chrome.runtime.lastError || response.error) {
-            setQuestionsError(Errors.FAILED_TO_LOAD_QUESTIONS);
+        if (handleQuestionsResponseError(response)) {
             return;
         }
 
@@ -155,11 +145,7 @@ async function requestRecentQuestions() {
 
         setQuestions(response.questions);
     } catch (error) {
-        if (error.message === "Extension context invalidated.") {
-            setQuestionsError(Errors.EXTENSION_CONTEXT_INVALIDATED);
-        } else {
-            setQuestionsError(error);
-        }
+        setRequestQuestionsError(error);
     } finally {
         hideProgressSpinner();
         repositionDialog();
@@ -198,27 +184,41 @@ async function requestSuggestedQuestions(videoInfo) {
             videoInfo,
         });
 
-        const selectedQuestionOption = getSelectedQuestionOption();
-        if (selectedQuestionOption !== "suggestions") {
+        if (!isQuestionOptionActive("suggestions")) {
             return;
         }
-
-        if (chrome.runtime.lastError || response.error) {
-            const error = chrome.runtime.lastError || response.error;
-            setQuestionsError(error);
+        if (handleQuestionsResponseError(response)) {
             return;
         }
 
         setSuggestedQuestions(response);
     } catch (error) {
-        if (error.message === "Extension context invalidated.") {
-            setQuestionsError(Errors.EXTENSION_CONTEXT_INVALIDATED);
-        } else {
-            setQuestionsError(error);
-        }
+        setRequestQuestionsError(error);
     } finally {
         hideProgressSpinner();
         repositionDialog();
+    }
+}
+
+function isQuestionOptionActive(option) {
+    const selectedQuestionOption = getSelectedQuestionOption();
+    return selectedQuestionOption === option;
+}
+
+function handleQuestionsResponseError(response) {
+    if (chrome.runtime.lastError || response.error) {
+        const error = chrome.runtime.lastError || response.error;
+        setQuestionsError(error);
+        return true;
+    }
+    return false;
+}
+
+function setRequestQuestionsError(error) {
+    if (error.message === "Extension context invalidated.") {
+        setQuestionsError(Errors.EXTENSION_CONTEXT_INVALIDATED);
+    } else {
+        setQuestionsError(error);
     }
 }
 
