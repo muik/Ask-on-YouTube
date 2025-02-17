@@ -1,11 +1,9 @@
 import { Config } from "../../../config.js";
 import { containerId } from "../questionView.js";
 
-const defaultQuestion = "주요 요점이 무엇인가요?";
-
 export function getQuestionHtml() {
     return `
-<div id="${containerId}" role="dialog" class="style-scope ytd-popup-container ytq-dialog" style="position: fixed;">
+<div id="${containerId}" role="dialog" class="style-scope ytd-popup-container ytq ytq-dialog" style="position: fixed;">
   <ytd-unified-share-panel-renderer class="style-scope ytd-popup-container" tabindex="-1" links-only="true" can-post="">
     <yt-icon-button id="close-button" class="style-scope ytd-unified-share-panel-renderer" role="button" aria-label="취소"><button id="button" class="style-scope yt-icon-button" aria-label="취소">
       <yt-icon icon="close" class="style-scope ytd-unified-share-panel-renderer"><span class="yt-icon-shape style-scope yt-icon yt-spec-icon-shape"><div style="width: 100%; height: 100%; display: block; fill: currentcolor;"><svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24" viewBox="0 0 24 24" width="24" focusable="false" aria-hidden="true" style="pointer-events: none; display: inherit; width: 100%; height: 100%;"><path d="m12.71 12 8.15 8.15-.71.71L12 12.71l-8.15 8.15-.71-.71L11.29 12 3.15 3.85l.71-.71L12 11.29l8.15-8.15.71.71L12.71 12z"></path></svg></div></span></yt-icon>
@@ -26,7 +24,7 @@ export function getQuestionHtml() {
       </div>
       <div class="ytq-form">
         <div class="question-input-container">
-          <input type="text" value="" placeholder="${defaultQuestion}">
+          <input type="text" value="">
           <button class="question-button"><span class="default-text">요청</span><span class="loading-text">요청 중..</span></button>
         </div>
         <p id="question-input-error" class="message"></p>

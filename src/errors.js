@@ -14,6 +14,10 @@ export const Errors = {
         message: "Video transcript not found. Required to ask the AI.",
         code: "TRANSCRIPT_NOT_FOUND",
     },
+    FAILED_TO_LOAD_DEFAULT_QUESTION: {
+        message: "Failed to load default question, please try again later.",
+        code: "FAILED_TO_LOAD_DEFAULT_QUESTION",
+    },
 };
 
 export const Info = {

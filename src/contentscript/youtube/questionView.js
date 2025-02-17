@@ -31,17 +31,27 @@ export function showQuestionDialog(videoInfo) {
 
     setQuestionDialogContent(videoInfo);
 
-    const selectedQuestionOption =
+    const selectedQuestionOption = getSelectedQuestionOption();
+    requestQuestions(
+        { option: selectedQuestionOption, videoInfo },
+        containerElement
+    );
+
+    // for loading default question
+    if (selectedQuestionOption !== "favorites") {
+        requestFavoriteQuestions();
+    }
+}
+
+function getSelectedQuestionOption() {
+    const containerElement = getContainerElement();
+    return (
         containerElement
             .querySelector(".question-options .title.active")
             ?.getAttribute("data-option") ||
         containerElement
             .querySelector(".question-options .title:first-child")
-            .getAttribute("data-option");
-
-    requestQuestions(
-        { option: selectedQuestionOption, videoInfo },
-        containerElement
+            .getAttribute("data-option")
     );
 }
 
@@ -80,14 +90,21 @@ function requestFavoriteQuestions() {
         chrome.runtime.sendMessage(
             { action: "getFavoriteQuestions" },
             (response) => {
+                setDefaultQuestion(response);
+
+                const selectedQuestionOption = getSelectedQuestionOption();
+                if (selectedQuestionOption !== "favorites") {
+                    return;
+                }
+
                 if (chrome.runtime.lastError || response.error) {
                     const error = chrome.runtime.lastError || response.error;
                     setQuestionsError(error);
                 } else {
-                    if (!response.questions) {
-                        console.error("favorite questions response:", response);
-                        setQuestionsError(Errors.INVALID_RESPONSE);
-                    } else if (response.questions.length < 1) {
+                    if (
+                        !response.questions ||
+                        response.questions.length === 0
+                    ) {
                         console.error("favorite questions response:", response);
                         setQuestionsError(Errors.INVALID_RESPONSE);
                     } else {
@@ -109,11 +126,41 @@ function requestFavoriteQuestions() {
     }
 }
 
+function setDefaultQuestion(response) {
+    const containerElement = getContainerElement();
+    const inputElement = containerElement.querySelector("input[type='text']");
+    if (inputElement.getAttribute("placeholder")) {
+        // already set
+        return;
+    }
+
+    if (chrome.runtime.lastError || response.error) {
+        console.error("setDefaultQuestion Error:", response);
+        setInputError(Errors.FAILED_TO_LOAD_DEFAULT_QUESTION);
+        return;
+    }
+
+    if (!response.questions || response.questions.length === 0) {
+        console.error("setDefaultQuestion Error:", response);
+        setInputError(Errors.FAILED_TO_LOAD_DEFAULT_QUESTION);
+        return;
+    }
+
+    const question = response.questions[0];
+
+    inputElement.setAttribute("placeholder", question);
+}
+
 function requestSuggestedQuestions(videoInfo) {
     try {
         chrome.runtime.sendMessage(
             { message: "getSuggestedQuestions", videoInfo },
             (response) => {
+                const selectedQuestionOption = getSelectedQuestionOption();
+                if (selectedQuestionOption !== "suggestions") {
+                    return;
+                }
+
                 if (chrome.runtime.lastError || response.error) {
                     const error = chrome.runtime.lastError || response.error;
                     setQuestionsError(error);
@@ -471,6 +518,7 @@ function hideQuestionDialog() {
         "#contents input[type='text']"
     );
     inputElement.value = "";
+    inputElement.placeholder = "";
 
     const backgroundElement = document.querySelector(
         "tp-yt-iron-overlay-backdrop"

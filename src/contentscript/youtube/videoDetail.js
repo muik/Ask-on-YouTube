@@ -12,6 +12,7 @@ export function injectElements() {
 
             const containerElement = document.createElement("div");
             containerElement.id = containerId;
+            containerElement.className = "ytq";
 
             const inputForm = createQuestionInputForm();
             containerElement.appendChild(inputForm);

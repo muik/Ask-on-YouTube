@@ -2,7 +2,6 @@ import { Errors } from "../../errors.js";
 import { getVideoInfoFromVideoDetail } from "./moreOptions.js";
 import { showQuestionDialog } from "./questionView.js";
 
-const defaultQuestion = "주요 요점이 무엇인가요?";
 const containerId = "ytq-simple-question";
 
 function getContainerElement() {
@@ -25,6 +24,8 @@ export function createQuestionInputForm() {
         showQuestionDialog(videoInfo);
     });
 
+    loadDefaultQuestion(inputElement);
+
     const requestButton = containerElement.querySelector(
         ".question-input-container button"
     );
@@ -33,9 +34,33 @@ export function createQuestionInputForm() {
     return containerElement;
 }
 
+async function loadDefaultQuestion(inputElement) {
+    try {
+        const response = await chrome.runtime.sendMessage({
+            action: "getFavoriteQuestions",
+        });
+
+        if (handleError(response.error)) {
+            return;
+        }
+
+        if (!response.questions || response.questions.length === 0) {
+            console.error("loadDefaultQuestion Error: No questions found");
+            setInputError(Errors.FAILED_TO_LOAD_DEFAULT_QUESTION);
+            return;
+        }
+
+        const question = response.questions[0];
+        inputElement.setAttribute("placeholder", question);
+    } catch (error) {
+        console.error("loadDefaultQuestion Error:", error);
+        setInputError(Errors.FAILED_TO_LOAD_DEFAULT_QUESTION);
+    }
+}
+
 function getQuestionInputFormHtml() {
     return `<div class="question-input-container">
-    <input type="text" value="" placeholder="${defaultQuestion}">
+    <input type="text" value="">
     <button class="question-button"><span class="default-text">요청</span><span class="loading-text">요청 중..</span></button>
 </div>
 <p id="question-input-error" class="message"></p>`;
@@ -91,7 +116,7 @@ function setInputError(
     inputErrorElement.setAttribute("type", type);
 }
 
-function onPromptSet(response) {
+function handleError(error) {
     if (chrome.runtime.lastError) {
         console.error(
             "onPromptSet chrome.runtime.lastError:",
@@ -101,18 +126,26 @@ function onPromptSet(response) {
             chrome.runtime.lastError.message || chrome.runtime.lastError
         }`;
         setInputError({ message });
-        return;
+        return true;
     }
 
-    if (response.error) {
-        const { code, message } = response.error;
-        const error = Errors[code];
-        if (error) {
-            setInputError(error);
+    if (error) {
+        const { code, message } = error;
+        const knownError = Errors[code];
+        if (knownError) {
+            setInputError(knownError);
         } else {
-            console.error("onPromptSet Response Error:", response.error);
+            console.error("onPromptSet Response Error:", error);
             setInputError({ message });
         }
+        return true;
+    }
+
+    return false;
+}
+
+function onPromptSet(response) {
+    if (handleError(response.error)) {
         return;
     }
 
