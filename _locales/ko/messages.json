@@ -1,1 +1,59 @@
-{}
+{
+    "extensionDescription": {
+        "message": "YouTube 영상에 대한 궁금한 점을 ChatGPT로 질문하거나 요약합니다."
+    },
+    "requestButtonName": {
+        "message": "요청"
+    },
+    "requestingButtonName": {
+        "message": "요청 중.."
+    },
+    "questionDialogTitle": {
+        "message": "ChatGPT에 질문하기"
+    },
+    "favorites": {
+        "message": "즐겨찾기"
+    },
+    "suggestions": {
+        "message": "제안"
+    },
+    "recents": {
+        "message": "최근"
+    },
+    "defaultFavoriteQuestion1": {
+        "message": "여기서 말하는 주요 요점이 무엇인가요? 결론만 간단히 설명해주세요."
+    },
+    "defaultFavoriteQuestion2": {
+        "message": "핵심 사항 중심으로 간단히 요약 정리해주세요."
+    },
+    "defaultFavoriteQuestion3": {
+        "message": "제목에서 말하는 것이 무엇인지 간단히 알려주세요."
+    },
+    "extensionContextInvalidatedError": {
+        "message": "Chrome 확장 프로그램이 업데이트되었습니다. 이 페이지를 다시 새로고침하여 사용해주세요."
+    },
+    "invalidResponseError": {
+        "message": "유효하지 않은 응답입니다. 나중에 다시 시도해주세요."
+    },
+    "invalidRequestError": {
+        "message": "유효하지 않은 요청입니다. 나중에 다시 시도해주세요."
+    },
+    "transcriptNotFoundError": {
+        "message": "영상 자막을 찾을 수 없습니다. AI로 질문하기 위해 필요합니다."
+    },
+    "failedToLoadDefaultQuestionError": {
+        "message": "기본 질문을 불러오는데 실패했습니다. 나중에 다시 시도해주세요."
+    },
+    "failedToLoadQuestionsError": {
+        "message": "질문 목록을 불러오는데 실패했습니다. 나중에 다시 시도해주세요."
+    },
+    "noRecentQuestionsError": {
+        "message": "최근 질문이 없습니다."
+    },
+    "geminiApiKeyNotSetError": {
+        "message": "Gemini API 키가 설정되지 않았습니다. Ask on YouTube의 <a href='#' class='settings'>설정</a>에 유효한 Gemini API 키를 설정해주세요."
+    },
+    "geminiApiKeyNotValidError": {
+        "message": "유효하지 않은 Gemini API 키입니다. Ask on YouTube의 <a href='#' class='settings'>설정</a>에 유효한 Gemini API 키를 설정해주세요."
+    }
+}

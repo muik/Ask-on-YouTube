@@ -56,10 +56,10 @@ export async function getRecentQuestions() {
     };
 }
 
-const defaultFavoriteQuestions = [
-    "What is the main idea of this content?",
-    "Summarize this content in 5-10 bullet points",
-    "What're the key points briefly?",
+const getDefaultFavoriteQuestions = () => [
+    chrome.i18n.getMessage("defaultFavoriteQuestion1"),
+    chrome.i18n.getMessage("defaultFavoriteQuestion2"),
+    chrome.i18n.getMessage("defaultFavoriteQuestion3"),
 ];
 
 /**
@@ -93,7 +93,7 @@ export async function getFavoriteQuestions() {
         item.count = item.videoIds.size;
     });
 
-    defaultFavoriteQuestions.forEach((question) => {
+    getDefaultFavoriteQuestions().forEach((question) => {
         if (counter[question]) {
             counter[question].count = Math.max(counter[question].count, 2);
         } else {

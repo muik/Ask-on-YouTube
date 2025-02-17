@@ -4,5 +4,59 @@
     },
     "extensionDescription": {
         "message": "Use ChatGPT to ask or summarize YouTube videos"
+    },
+    "requestButtonName": {
+        "message": "Ask"
+    },
+    "requestingButtonName": {
+        "message": "Asking.."
+    },
+    "questionDialogTitle": {
+        "message": "Ask to ChatGPT"
+    },
+    "favorites": {
+        "message": "Favorites"
+    },
+    "suggestions": {
+        "message": "Suggestions"
+    },
+    "recents": {
+        "message": "Recents"
+    },
+    "defaultFavoriteQuestion1": {
+        "message": "What is the main idea of this content? Just the conclusion briefly."
+    },
+    "defaultFavoriteQuestion2": {
+        "message": "Please summarize briefly, focusing on the key points."
+    },
+    "defaultFavoriteQuestion3": {
+        "message": "What’s the title talking about? Just a quick explanation."
+    },
+    "extensionContextInvalidatedError": {
+        "message": "The Chrome extension has been updated. Please reload this page to use it."
+    },
+    "invalidResponseError": {
+        "message": "Invalid response, please try again later."
+    },
+    "invalidRequestError": {
+        "message": "Invalid request, please try again later."
+    },
+    "transcriptNotFoundError": {
+        "message": "Video transcript not found. Required to ask the AI."
+    },
+    "failedToLoadDefaultQuestionError": {
+        "message": "Failed to load default question, please try again later."
+    },
+    "failedToLoadQuestionsError": {
+        "message": "Failed to load questions, please try again later."
+    },
+    "noRecentQuestionsError": {
+        "message": "No recent questions"
+    },
+    "geminiApiKeyNotSetError": {
+        "message": "Gemini API key not set. Please set a valid Gemini API key on <a href='#' class='settings'>Settings</a> of Ask on YouTube!"
+    },
+    "geminiApiKeyNotValidError": {
+        "message": "Invalid Gemini API key. Please set a valid Gemini API key on <a href='#' class='settings'>Settings</a> of Ask on YouTube!"
     }
 }

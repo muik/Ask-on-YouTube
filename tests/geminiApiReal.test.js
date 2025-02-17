@@ -49,7 +49,7 @@ describe("Gemini API Real Request", () => {
             });
             throw new Error("should not reach here");
         } catch (error) {
-            expect(error.code).toBe("GOOGLE_CLOUD_API_KEY_NOT_VALID");
+            expect(error.code).toBe("GEMINI_API_KEY_NOT_VALID");
         }
     });
 

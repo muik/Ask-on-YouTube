@@ -14,7 +14,7 @@ export async function getSuggestedQuestions(
     language
 ) {
     if (!settings.googleCloudAPIKey) {
-        throw Info.GOOGLE_CLOUD_API_KEY_NOT_SET;
+        throw Info.GEMINI_API_KEY_NOT_SET;
     }
 
     const cacheKey = videoInfo.id;
@@ -125,7 +125,7 @@ function handleError(error) {
                 error.errorDetails[0].reason === "API_KEY_INVALID"
             ) {
                 const newError = new Error(error.errorDetails[1].message);
-                newError.code = Errors.GOOGLE_CLOUD_API_KEY_NOT_VALID.code;
+                newError.code = Errors.GEMINI_API_KEY_NOT_VALID.code;
                 throw newError;
             }
             console.error(

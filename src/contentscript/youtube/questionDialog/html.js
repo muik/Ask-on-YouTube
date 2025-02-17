@@ -2,6 +2,13 @@ import { Config } from "../../../config.js";
 import { containerId } from "../questionView.js";
 
 export function getQuestionHtml() {
+    const requestButtonName = chrome.i18n.getMessage("requestButtonName");
+    const requestingButtonName = chrome.i18n.getMessage("requestingButtonName");
+    const questionDialogTitle = chrome.i18n.getMessage("questionDialogTitle");
+    const favorites = chrome.i18n.getMessage("favorites");
+    const suggestions = chrome.i18n.getMessage("suggestions");
+    const recents = chrome.i18n.getMessage("recents");
+
     return `
 <div id="${containerId}" role="dialog" class="style-scope ytd-popup-container ytq ytq-dialog" style="position: fixed;">
   <ytd-unified-share-panel-renderer class="style-scope ytd-popup-container" tabindex="-1" links-only="true" can-post="">
@@ -10,8 +17,11 @@ export function getQuestionHtml() {
     </button><yt-interaction id="interaction" class="circular style-scope yt-icon-button"><div class="stroke style-scope yt-interaction"></div><div class="fill style-scope yt-interaction"></div></yt-interaction></yt-icon-button>
     <yt-share-panel-header-renderer id="share-panel-header" class="style-scope ytd-unified-share-panel-renderer">
     <div id="title-bar" class="style-scope yt-share-panel-header-renderer">
-      <div id="title" class="style-scope yt-share-panel-header-renderer"><yt-share-panel-title-v15-renderer class="style-scope yt-share-panel-header-renderer"><h2 id="title" class="style-scope yt-share-panel-title-v15-renderer">Ask to AI</h2>
-    </yt-share-panel-title-v15-renderer></div>
+      <div id="title" class="style-scope yt-share-panel-header-renderer">
+        <yt-share-panel-title-v15-renderer class="style-scope yt-share-panel-header-renderer">
+          <h2 id="title" class="style-scope yt-share-panel-title-v15-renderer">${questionDialogTitle}</h2>
+        </yt-share-panel-title-v15-renderer>
+      </div>
     </div>
     </yt-share-panel-header-renderer>
     <div id="contents" class="style-scope ytd-unified-share-panel-renderer">
@@ -25,15 +35,15 @@ export function getQuestionHtml() {
       <div class="ytq-form">
         <div class="question-input-container">
           <input type="text" value="">
-          <button class="question-button"><span class="default-text">요청</span><span class="loading-text">요청 중..</span></button>
+          <button class="question-button"><span class="default-text">${requestButtonName}</span><span class="loading-text">${requestingButtonName}</span></button>
         </div>
         <p id="question-input-error" class="message"></p>
       </div>
       <div class="question-suggestions">
         <div class="question-options">
-          <span class="title active" data-option="favorites">Favorites</span>
-          <span class="title" data-option="suggestions">Suggestions</span>
-          <span class="title" data-option="recents">Recents</span>
+          <span class="title active" data-option="favorites">${favorites}</span>
+          <span class="title" data-option="suggestions">${suggestions}</span>
+          <span class="title" data-option="recents">${recents}</span>
         </div>
         <ul class="suggestions"></ul>
         <p id="question-suggestions-error" class="message"></p>
