@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.debug(`Saving setting: ${key} =`, value);
         chrome.storage.sync.set({ [key]: value }, () => {
             console.debug(`Successfully saved: ${key}`);
-            statusMessageElement.textContent = "Saved!";
+            statusMessageElement.textContent = chrome.i18n.getMessage("saved");
             statusMessageElement.classList.add("visible");
             setTimeout(
                 () => statusMessageElement.classList.remove("visible"),

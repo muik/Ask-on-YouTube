@@ -11,6 +11,9 @@
     "settings": {
         "message": "Settings"
     },
+    "saved": {
+        "message": "Saved!"
+    },
     "geminiAPIDescription": {
         "message": "Set Gemini API to get suggested questions in the ask dialog. <a href='https://aistudio.google.com/app/apikey' target='_blank'>Get API Key</a> for free!"
     },
