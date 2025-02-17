@@ -1,8 +1,5 @@
 import "../css/settings.css";
-
-export const Keys = {
-    GOOGLE_CLOUD_API_KEY: "googleCloudAPIKey",
-};
+import { Keys } from "../storage.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     setMessages();

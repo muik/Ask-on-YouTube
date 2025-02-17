@@ -9,7 +9,7 @@ import {
 import { setPrompt } from "./background/setPrompt.js";
 import { getSuggestedQuestions } from "./background/suggestQuestions.js";
 import { validateVideoInfo } from "./data.js";
-import { Keys } from "./options/settings.js";
+import { Keys } from "./storage.js";
 
 console.log("connected...");
 // const onInstallURL = "https://glasp.co/youtube-summary";
