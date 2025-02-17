@@ -3,7 +3,7 @@ import {
     GoogleGenerativeAIFetchError,
 } from "@google/generative-ai";
 import { Config } from "../config.js";
-import { Errors } from "../errors.js";
+import { Errors, Info } from "../errors.js";
 import { generateJsonContent } from "./geminiApi.js";
 import { getQuestionHistory } from "./questionHistory.js";
 
@@ -14,9 +14,7 @@ export async function getSuggestedQuestions(
     language
 ) {
     if (!settings.googleCloudAPIKey) {
-        const error = new Error("googleCloudAPIKey settings not set.");
-        error.code = "GOOGLE_CLOUD_API_KEY_NOT_SET";
-        throw error;
+        throw Info.GOOGLE_CLOUD_API_KEY_NOT_SET;
     }
 
     const cacheKey = videoInfo.id;

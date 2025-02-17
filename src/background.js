@@ -84,6 +84,13 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         validateVideoInfo(request.videoInfo);
 
         const language = chrome.i18n.getUILanguage();
+        console.debug(
+            "getSuggestedQuestions",
+            request.videoInfo,
+            settings,
+            questionCache,
+            language
+        );
         getSuggestedQuestions(
             request.videoInfo,
             settings,
