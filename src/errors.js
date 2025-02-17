@@ -10,6 +10,10 @@ export const Errors = {
         message: "Invalid response, please try again later.",
         code: "INVALID_RESPONSE",
     },
+    INVALID_REQUEST: {
+        message: "Invalid request, please try again later.",
+        code: "INVALID_REQUEST",
+    },
     TRANSCRIPT_NOT_FOUND: {
         message: "Video transcript not found. Required to ask the AI.",
         code: "TRANSCRIPT_NOT_FOUND",

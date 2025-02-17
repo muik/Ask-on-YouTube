@@ -65,13 +65,21 @@ function requestQuestions(
     // set dialog position in the center of the screen
     repositionDialog();
 
-    if (option === "favorites") {
-        requestFavoriteQuestions();
-    } else if (option === "suggestions") {
-        videoInfo = dialogData.videoInfo;
-        requestSuggestedQuestions(videoInfo);
-    } else if (option === "recents") {
-        requestRecentQuestions();
+    switch (option) {
+        case "favorites":
+            requestFavoriteQuestions();
+            break;
+        case "suggestions":
+            videoInfo = dialogData.videoInfo;
+            requestSuggestedQuestions(videoInfo);
+            break;
+        case "recents":
+            requestRecentQuestions();
+            break;
+        default:
+            console.error("Invalid question option:", option);
+            setQuestionsError(Errors.INVALID_REQUEST);
+            break;
     }
 }
 
@@ -87,42 +95,38 @@ function resetQuestions(containerElement = null) {
     messageElement.removeAttribute("type");
 }
 
-function requestFavoriteQuestions() {
+async function requestFavoriteQuestions() {
     try {
-        chrome.runtime.sendMessage(
-            { action: "getFavoriteQuestions" },
-            (response) => {
-                setDefaultQuestion(response);
+        const response = await chrome.runtime.sendMessage({
+            action: "getFavoriteQuestions",
+        });
 
-                const selectedQuestionOption = getSelectedQuestionOption();
-                if (selectedQuestionOption !== "favorites") {
-                    return;
-                }
+        setDefaultQuestion(response);
 
-                if (chrome.runtime.lastError || response.error) {
-                    const error = chrome.runtime.lastError || response.error;
-                    setQuestionsError(error);
-                } else {
-                    if (
-                        !response.questions ||
-                        response.questions.length === 0
-                    ) {
-                        console.error("favorite questions response:", response);
-                        setQuestionsError(Errors.INVALID_RESPONSE);
-                    } else {
-                        setQuestions(response.questions);
-                    }
-                }
-                hideProgressSpinner();
-                repositionDialog();
-            }
-        );
+        const selectedQuestionOption = getSelectedQuestionOption();
+        if (selectedQuestionOption !== "favorites") {
+            return;
+        }
+
+        if (chrome.runtime.lastError || response.error) {
+            const error = chrome.runtime.lastError || response.error;
+            setQuestionsError(error);
+            return;
+        }
+        if (!response.questions || response.questions.length === 0) {
+            console.error("favorite questions response:", response);
+            setQuestionsError(Errors.INVALID_RESPONSE);
+            return;
+        }
+
+        setQuestions(response.questions);
     } catch (error) {
         if (error.message === "Extension context invalidated.") {
             setQuestionsError(Errors.EXTENSION_CONTEXT_INVALIDATED);
         } else {
             setQuestionsError(error);
         }
+    } finally {
         hideProgressSpinner();
         repositionDialog();
     }
@@ -187,32 +191,32 @@ function setDefaultQuestion(response) {
     inputElement.setAttribute("placeholder", question);
 }
 
-function requestSuggestedQuestions(videoInfo) {
+async function requestSuggestedQuestions(videoInfo) {
     try {
-        chrome.runtime.sendMessage(
-            { message: "getSuggestedQuestions", videoInfo },
-            (response) => {
-                const selectedQuestionOption = getSelectedQuestionOption();
-                if (selectedQuestionOption !== "suggestions") {
-                    return;
-                }
+        const response = await chrome.runtime.sendMessage({
+            message: "getSuggestedQuestions",
+            videoInfo,
+        });
 
-                if (chrome.runtime.lastError || response.error) {
-                    const error = chrome.runtime.lastError || response.error;
-                    setQuestionsError(error);
-                } else {
-                    setSuggestedQuestions(response);
-                }
-                hideProgressSpinner();
-                repositionDialog();
-            }
-        );
+        const selectedQuestionOption = getSelectedQuestionOption();
+        if (selectedQuestionOption !== "suggestions") {
+            return;
+        }
+
+        if (chrome.runtime.lastError || response.error) {
+            const error = chrome.runtime.lastError || response.error;
+            setQuestionsError(error);
+            return;
+        }
+
+        setSuggestedQuestions(response);
     } catch (error) {
         if (error.message === "Extension context invalidated.") {
             setQuestionsError(Errors.EXTENSION_CONTEXT_INVALIDATED);
         } else {
             setQuestionsError(error);
         }
+    } finally {
         hideProgressSpinner();
         repositionDialog();
     }
