@@ -18,6 +18,10 @@ export const Errors = {
         message: "Failed to load default question, please try again later.",
         code: "FAILED_TO_LOAD_DEFAULT_QUESTION",
     },
+    FAILED_TO_LOAD_QUESTIONS: {
+        message: "Failed to load questions, please try again later.",
+        code: "FAILED_TO_LOAD_QUESTIONS",
+    },
 };
 
 export const Info = {

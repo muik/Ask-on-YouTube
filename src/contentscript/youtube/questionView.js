@@ -70,6 +70,8 @@ function requestQuestions(
     } else if (option === "suggestions") {
         videoInfo = dialogData.videoInfo;
         requestSuggestedQuestions(videoInfo);
+    } else if (option === "recents") {
+        requestRecentQuestions();
     }
 }
 
@@ -121,6 +123,40 @@ function requestFavoriteQuestions() {
         } else {
             setQuestionsError(error);
         }
+        hideProgressSpinner();
+        repositionDialog();
+    }
+}
+
+async function requestRecentQuestions() {
+    try {
+        const response = await chrome.runtime.sendMessage({
+            action: "getRecentQuestions",
+        });
+
+        const selectedQuestionOption = getSelectedQuestionOption();
+        if (selectedQuestionOption !== "recents") {
+            return;
+        }
+
+        if (chrome.runtime.lastError || response.error) {
+            setQuestionsError(Errors.FAILED_TO_LOAD_QUESTIONS);
+            return;
+        }
+
+        if (!response.questions || response.questions.length === 0) {
+            setQuestionsError(Info.NO_RECENT_QUESTIONS);
+            return;
+        }
+
+        setQuestions(response.questions);
+    } catch (error) {
+        if (error.message === "Extension context invalidated.") {
+            setQuestionsError(Errors.EXTENSION_CONTEXT_INVALIDATED);
+        } else {
+            setQuestionsError(error);
+        }
+    } finally {
         hideProgressSpinner();
         repositionDialog();
     }

@@ -33,6 +33,7 @@ export function getQuestionHtml() {
         <div class="question-options">
           <span class="title active" data-option="favorites">Favorites</span>
           <span class="title" data-option="suggestions">Suggestions</span>
+          <span class="title" data-option="recents">Recents</span>
         </div>
         <ul class="suggestions"></ul>
         <p id="question-suggestions-error" class="message"></p>
