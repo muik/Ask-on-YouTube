@@ -2,8 +2,14 @@
     "extensionName": {
         "message": "Ask on YouTube using ChatGPT"
     },
+    "shortExtensionName": {
+        "message": "Ask on YouTube"
+    },
     "extensionDescription": {
         "message": "Use ChatGPT to ask or summarize YouTube videos"
+    },
+    "settings": {
+        "message": "Settings"
     },
     "requestButtonName": {
         "message": "Ask"

@@ -5,6 +5,8 @@ export const Keys = {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
+    setMessages();
+
     const googleCloudAPIKeyInput = document.getElementById("googleCloudAPIKey");
 
     const statusMessageGoogleCloudAPIKey = document.getElementById(
@@ -62,3 +64,13 @@ document.addEventListener("DOMContentLoaded", () => {
         );
     });
 });
+
+function setMessages() {
+    const messages = chrome.i18n.getMessage;
+    const elements = document.querySelectorAll("[msg]");
+    elements.forEach((element) => {
+        console.debug("Setting message:", element.getAttribute("msg"));
+        element.textContent = messages(element.getAttribute("msg"));
+        console.debug("Message set:", element.textContent);
+    });
+}
