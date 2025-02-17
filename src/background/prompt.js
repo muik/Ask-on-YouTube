@@ -1,4 +1,3 @@
-import { getPromptChatGPT, getPromptGemini } from "../storage.js";
 import { getTranscriptParagraphised } from "./transcript.js";
 
 export async function loadTranscript(videoId) {
@@ -11,18 +10,6 @@ export async function loadTranscript(videoId) {
     const transcript = await getTranscriptParagraphised(link);
 
     return transcript;
-}
-
-export async function getChatGPTPrompt(videoInfo, transcript, settings) {
-    if (settings.promptChatGPT == null) {
-        settings.promptChatGPT = await getPromptChatGPT();
-    }
-
-    const prompt = settings.promptChatGPT;
-    const title = videoInfo.title.trim();
-    const transcriptRevised = transcript.trim();
-
-    return `${prompt}\nTitle: "${title}"\nTranscript: "${transcriptRevised}"`;
 }
 
 export async function getChatGPTCustomPrompt(videoInfo, transcript, prompt) {
@@ -45,12 +32,7 @@ ${transcriptRevised}
 ${prompt}`;
 }
 
-export async function getGeminiPrompt(videoId, settings) {
-    if (settings.promptGemini == null) {
-        settings.promptGemini = await getPromptGemini();
-    }
-
-    const prompt = settings.promptGemini;
+export async function getGeminiPrompt(videoId, prompt) {
     const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
     return prompt ? `${prompt}\n${videoUrl}` : videoUrl;

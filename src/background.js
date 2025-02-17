@@ -9,6 +9,7 @@ import {
 import { setPrompt } from "./background/setPrompt.js";
 import { getSuggestedQuestions } from "./background/suggestQuestions.js";
 import { validateVideoInfo } from "./data.js";
+import { Keys } from "./options/settings.js";
 
 console.log("connected...");
 // const onInstallURL = "https://glasp.co/youtube-summary";
@@ -32,15 +33,10 @@ export const transcriptCache = new LRUCache(10);
 const questionCache = new LRUCache(10);
 
 // load settings from storage on startup
-chrome.storage.sync.get(
-    ["promptChatGPT", "promptGemini", "googleCloudAPIKey"],
-    (result) => {
-        for (const key in result) {
-            settings[key] = result[key];
-        }
-        console.debug("Settings loaded:", settings);
-    }
-);
+chrome.storage.sync.get([Keys.GOOGLE_CLOUD_API_KEY], (result) => {
+    settings.googleCloudAPIKey = result.googleCloudAPIKey;
+    console.debug("Settings loaded:", settings);
+});
 
 // On Message
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {

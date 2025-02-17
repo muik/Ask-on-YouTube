@@ -1,13 +1,8 @@
 "use strict";
-import { settings, transcriptCache } from "../background.js";
+import { transcriptCache } from "../background.js";
 import { config } from "../contentscript/config.js";
 import { Errors } from "../errors.js";
-import {
-    getChatGPTCustomPrompt,
-    getChatGPTPrompt,
-    getGeminiPrompt,
-    loadTranscript,
-} from "./prompt.js";
+import { getChatGPTCustomPrompt, loadTranscript } from "./prompt.js";
 
 export async function setPrompt({ videoInfo, target, question }) {
     if (target === "chatgpt") {
@@ -32,24 +27,32 @@ export async function setPrompt({ videoInfo, target, question }) {
             };
         }
 
-        let prompt;
-        if (question) {
-            prompt = await getChatGPTCustomPrompt(
-                videoInfo,
-                transcript,
-                question
-            );
-        } else {
-            prompt = await getChatGPTPrompt(videoInfo, transcript, settings);
+        if (!question) {
+            console.error("No question provided", { videoInfo, target });
+            return {
+                error: Errors.INVALID_REQUEST,
+            };
         }
+
+        const prompt = await getChatGPTCustomPrompt(
+            videoInfo,
+            transcript,
+            question
+        );
         return {
             prompt: prompt,
             response: { targetUrl: getTargetUrl(target) },
         };
     } else if (target === "gemini") {
-        const prompt = await getGeminiPrompt(videoInfo.id, settings);
+        if (!question) {
+            console.error("No question provided", { videoInfo, target });
+            return {
+                error: Errors.INVALID_REQUEST,
+            };
+        }
+
         return {
-            prompt: prompt,
+            prompt: question,
             response: { targetUrl: getTargetUrl(target) },
         };
     } else {

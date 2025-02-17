@@ -1,15 +1,12 @@
 import "../css/settings.css";
-import { defaultSettings } from "../storage.js";
+
+export const Keys = {
+    GOOGLE_CLOUD_API_KEY: "googleCloudAPIKey",
+};
 
 document.addEventListener("DOMContentLoaded", () => {
-    const promptAreaChatGPT = document.getElementById("promptChatGPT");
-    const promptAreaGemini = document.getElementById("promptGemini");
     const googleCloudAPIKeyInput = document.getElementById("googleCloudAPIKey");
 
-    const statusMessageChatGPT = document.getElementById(
-        "statusMessageChatGPT"
-    );
-    const statusMessageGemini = document.getElementById("statusMessageGemini");
     const statusMessageGoogleCloudAPIKey = document.getElementById(
         "statusMessageGoogleCloudAPIKey"
     );
@@ -17,20 +14,9 @@ document.addEventListener("DOMContentLoaded", () => {
     console.debug("Extension settings page loaded");
 
     // Load the saved prompt text when the page is loaded
-    chrome.storage.sync.get(
-        [
-            "promptChatGPT",
-            "promptGemini",
-            "googleCloudAPIKey",
-        ],
-        (result) => {
-            promptAreaChatGPT.value =
-                result.promptChatGPT || defaultSettings.promptChatGPT;
-            promptAreaGemini.value =
-                result.promptGemini || defaultSettings.promptGemini;
-            googleCloudAPIKeyInput.value = result.googleCloudAPIKey || "";
-        }
-    );
+    chrome.storage.sync.get([Keys.GOOGLE_CLOUD_API_KEY], (result) => {
+        googleCloudAPIKeyInput.value = result.googleCloudAPIKey || "";
+    });
 
     // Function to save settings and display status
     const saveSetting = (key, value, statusMessageElement) => {
@@ -68,25 +54,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 500);
 
     // Auto-save with debounced input
-    promptAreaChatGPT.addEventListener("input", () => {
-        debouncedSaveSetting(
-            "promptChatGPT",
-            promptAreaChatGPT.value,
-            statusMessageChatGPT
-        );
-    });
-
-    promptAreaGemini.addEventListener("input", () => {
-        debouncedSaveSetting(
-            "promptGemini",
-            promptAreaGemini.value,
-            statusMessageGemini
-        );
-    });
-
     googleCloudAPIKeyInput.addEventListener("input", () => {
         debouncedSaveSetting(
-            "googleCloudAPIKey",
+            Keys.GOOGLE_CLOUD_API_KEY,
             googleCloudAPIKeyInput.value,
             statusMessageGoogleCloudAPIKey
         );
