@@ -84,6 +84,9 @@
 }
 
 .ytq-form .question-button {
+    display: flex;
+    align-items: center;
+    gap: 4px;
     white-space: nowrap;
     padding: 0 16px;
     height: 36px;
