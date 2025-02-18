@@ -86,7 +86,7 @@
 .ytq-form .question-button {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     white-space: nowrap;
     padding: 0 16px;
     height: 36px;
@@ -99,6 +99,9 @@
     border: none;
     margin: 6px;
     cursor: pointer;
+}
+.ytq-form .question-button svg {
+    fill: var(--yt-spec-text-primary);
 }
 .ytq-form .question-button .default-text {
     display: block;
@@ -124,7 +127,7 @@
 }
 
 .ytq-dialog .question-suggestions {
-    margin-top: 8px;
+    margin-top: 16px;
 }
 .ytq-dialog .question-suggestions ul {
     display: flex;
