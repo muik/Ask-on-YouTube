@@ -1,6 +1,7 @@
 "use strict";
 import { transcriptCache } from "../background.js";
 import { config } from "../contentscript/config.js";
+import { validateVideoInfo } from "../data.js";
 import { Errors } from "../errors.js";
 import {
     getChatGPTCustomPrompt,
@@ -10,6 +11,8 @@ import {
 import { getDefaultQuestion } from "./questionHistory.js";
 
 export async function setPrompt({ videoInfo, target, question }) {
+    validateVideoInfo(videoInfo);
+
     if (target === "chatgpt") {
         const transcript = await getTranscriptCached(videoInfo.id);
         if (!transcript) {

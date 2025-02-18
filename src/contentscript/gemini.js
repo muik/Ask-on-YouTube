@@ -1,5 +1,6 @@
 "use strict";
 
+import { BackgroundActions } from "../constants.js";
 import { config } from "./config.js";
 import { waitForElm } from "./utils.js";
 
@@ -38,14 +39,17 @@ function runOnGeminiPage() {
 function insertPrompt() {
     waitForElm("rich-textarea div.ql-editor.textarea.new-input-ui").then(
         (element) => {
-            chrome.runtime.sendMessage({ message: "getPrompt" }, (response) => {
-                element.innerText = response.prompt;
+            chrome.runtime.sendMessage(
+                { action: BackgroundActions.GET_PROMPT },
+                (response) => {
+                    element.innerText = response.prompt;
 
-                // submit the prompt
-                setTimeout(() => {
-                    document.querySelector("button.send-button").click();
-                }, 100);
-            });
+                    // submit the prompt
+                    setTimeout(() => {
+                        document.querySelector("button.send-button").click();
+                    }, 100);
+                }
+            );
         }
     );
 }

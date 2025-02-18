@@ -1,5 +1,5 @@
+import { BackgroundActions, StorageKeys } from "../constants.js";
 import "../css/settings.css";
-import { Keys } from "../storage.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     setMessages();
@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.debug("Extension settings page loaded");
 
     // Load the saved prompt text when the page is loaded
-    chrome.storage.sync.get([Keys.GEMINI_API_KEY], (result) => {
+    chrome.storage.sync.get([StorageKeys.GEMINI_API_KEY], (result) => {
         geminiAPIKeyInput.value = result.geminiAPIKey || "";
     });
 
@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
             chrome.runtime.sendMessage(
-                { message: "settingsUpdated", key: key, value: value },
+                { action: BackgroundActions.SETTINGS_UPDATED, key, value },
                 (response) => {
                     // TODO handle errors
                     console.debug("Settings updated:", response);
@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Auto-save with debounced input
     geminiAPIKeyInput.addEventListener("input", () => {
         debouncedSaveSetting(
-            Keys.GEMINI_API_KEY,
+            StorageKeys.GEMINI_API_KEY,
             geminiAPIKeyInput.value,
             statusMessageGeminiAPIKey
         );

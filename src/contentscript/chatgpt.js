@@ -1,5 +1,6 @@
 "use strict";
 
+import { BackgroundActions } from "../constants.js";
 import { config } from "./config.js";
 import { waitForElm } from "./utils.js";
 
@@ -14,7 +15,7 @@ window.onload = async () => {
 
     // get prompt from background.js
     chrome.runtime.sendMessage(
-        { message: "getPrompt", target: "chatgpt" },
+        { action: BackgroundActions.GET_PROMPT, target: "chatgpt" },
         (response) => {
             waitForElm("#prompt-textarea").then((promptTextarea) => {
                 const lines = response.prompt.split("\n");

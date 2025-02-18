@@ -1,3 +1,4 @@
+import { BackgroundActions } from "../../constants.js";
 import { Errors } from "../../errors.js";
 import { getSearchParam } from "../searchParam.js";
 import { waitForElm } from "../utils.js";
@@ -102,7 +103,7 @@ function onExtraOptionClick(e) {
 
     try {
         chrome.runtime.sendMessage(
-            { message: "setPrompt", target: target, videoInfo },
+            { action: BackgroundActions.SET_PROMPT, target: target, videoInfo },
             (response) => {
                 onSetPrompt(response, element);
             }

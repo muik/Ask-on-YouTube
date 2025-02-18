@@ -1,15 +1,11 @@
 "use strict";
 
 import { LRUCache } from "./background/lruCache.js";
-import {
-    getFavoriteQuestions,
-    getRecentQuestions,
-    saveQuestionHistory
-} from "./background/questionHistory.js";
+import { saveQuestionHistory } from "./background/questionHistory.js";
+import { getQuestions } from "./background/questions.js";
 import { setPrompt } from "./background/setPrompt.js";
-import { getSuggestedQuestions } from "./background/suggestQuestions.js";
-import { validateVideoInfo } from "./data.js";
-import { Keys } from "./storage.js";
+import { BackgroundActions, StorageKeys } from "./constants.js";
+import { Errors } from "./errors.js";
 
 console.log("connected...");
 // const onInstallURL = "https://glasp.co/youtube-summary";
@@ -30,34 +26,27 @@ chrome.action.onClicked.addListener(() => {
 let promptTemp = "";
 export const settings = {};
 export const transcriptCache = new LRUCache(10);
-const questionCache = new LRUCache(10);
-
 // load settings from storage on startup
-chrome.storage.sync.get([Keys.GEMINI_API_KEY], (result) => {
-    settings.geminiAPIKey = result.geminiAPIKey;
-    console.debug("Settings loaded:", settings);
-});
+chrome.storage.sync.get(
+    [StorageKeys.GEMINI_API_KEY, StorageKeys.LAST_QUESTION_OPTION],
+    (result) => {
+        Object.keys(result).forEach((key) => {
+            settings[key] = result[key];
+        });
+        console.debug("Settings loaded:", settings);
+    }
+);
 
 // On Message
+// Returning true ensures the response is asynchronous
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     console.debug("Received message:", request);
 
-    switch (request.action) {
-        case "getRecentQuestions":
-            getRecentQuestions()
-                .then(sendResponse)
-                .catch(handleError(sendResponse));
-            return true;
-        case "getFavoriteQuestions":
-            getFavoriteQuestions()
-                .then(sendResponse)
-                .catch(handleError(sendResponse));
-            return true;
+    if (request.action === BackgroundActions.GET_QUESTIONS) {
+        return getQuestions(request, sendResponse);
     }
 
-    if (request.message === "setPrompt") {
-        validateVideoInfo(request.videoInfo);
-
+    if (request.action === BackgroundActions.SET_PROMPT) {
         setPrompt({
             videoInfo: request.videoInfo,
             target: request.target,
@@ -74,42 +63,22 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
             );
         }
 
-        // Returning true ensures the response is asynchronous
-        return true;
-    } else if (request.message === "getSuggestedQuestions") {
-        validateVideoInfo(request.videoInfo);
-
-        const language = chrome.i18n.getUILanguage();
-        console.debug(
-            "getSuggestedQuestions",
-            request.videoInfo,
-            settings[Keys.GEMINI_API_KEY],
-            questionCache,
-            language
-        );
-        getSuggestedQuestions(
-            request.videoInfo,
-            settings[Keys.GEMINI_API_KEY],
-            questionCache,
-            language
-        )
-            .then(sendResponse)
-            .catch(handleError(sendResponse));
         return true;
     }
 
-    if (request.message === "getPrompt") {
+    if (request.action === BackgroundActions.GET_PROMPT) {
         sendResponse({ prompt: promptTemp });
         promptTemp = ""; // Reset prompt
-    } else if (request.message === "settingsUpdated") {
+    } else if (request.action === BackgroundActions.SETTINGS_UPDATED) {
         console.debug("Settings updated:", request);
         settings[request.key] = request.value;
         sendResponse({ status: "success", message: "Settings updated." });
-    } else if (request.message === "openSettingsPage") {
+    } else if (request.action === BackgroundActions.OPEN_SETTINGS_PAGE) {
         chrome.runtime.openOptionsPage();
     } else {
+        console.error("Invalid action:", request);
         sendResponse({
-            error: { message: `Invalid message: ${request.message}` },
+            error: Errors.INVALID_REQUEST,
         });
     }
 });
@@ -127,7 +96,7 @@ function handleSetPromptResult(sendResponse) {
     };
 }
 
-function handleError(sendResponse) {
+export function handleError(sendResponse) {
     return (error) => {
         if (!error.code) {
             error.code = "UNKNOWN_ERROR";

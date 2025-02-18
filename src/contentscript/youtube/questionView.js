@@ -1,3 +1,4 @@
+import { BackgroundActions, QuestionOptionKeys } from "../../constants.js";
 import { getVideoThumbnailUrl } from "../../data.js";
 import { Errors, Info } from "../../errors.js";
 import {
@@ -98,12 +99,13 @@ function resetQuestions(containerElement = null) {
 async function requestFavoriteQuestions() {
     try {
         const response = await chrome.runtime.sendMessage({
-            action: "getFavoriteQuestions",
+            action: BackgroundActions.GET_QUESTIONS,
+            option: QuestionOptionKeys.FAVORITES,
         });
 
         setDefaultQuestion(response);
 
-        if (!isQuestionOptionActive("favorites")) {
+        if (!isQuestionOptionActive(QuestionOptionKeys.FAVORITES)) {
             return;
         }
         if (handleQuestionsResponseError(response)) {
@@ -119,7 +121,7 @@ async function requestFavoriteQuestions() {
     } catch (error) {
         setRequestQuestionsError(error);
     } finally {
-        if (isQuestionOptionActive("favorites")) {
+        if (isQuestionOptionActive(QuestionOptionKeys.FAVORITES)) {
             hideProgressSpinner();
             repositionDialog();
         }
@@ -129,10 +131,11 @@ async function requestFavoriteQuestions() {
 async function requestRecentQuestions() {
     try {
         const response = await chrome.runtime.sendMessage({
-            action: "getRecentQuestions",
+            action: BackgroundActions.GET_QUESTIONS,
+            option: QuestionOptionKeys.RECENTS,
         });
 
-        if (!isQuestionOptionActive("recents")) {
+        if (!isQuestionOptionActive(QuestionOptionKeys.RECENTS)) {
             return;
         }
 
@@ -149,7 +152,7 @@ async function requestRecentQuestions() {
     } catch (error) {
         setRequestQuestionsError(error);
     } finally {
-        if (isQuestionOptionActive("recents")) {
+        if (isQuestionOptionActive(QuestionOptionKeys.RECENTS)) {
             hideProgressSpinner();
             repositionDialog();
         }
@@ -184,11 +187,12 @@ function setDefaultQuestion(response) {
 async function requestSuggestedQuestions(videoInfo) {
     try {
         const response = await chrome.runtime.sendMessage({
-            message: "getSuggestedQuestions",
+            action: BackgroundActions.GET_QUESTIONS,
+            option: QuestionOptionKeys.SUGGESTIONS,
             videoInfo,
         });
 
-        if (!isQuestionOptionActive("suggestions")) {
+        if (!isQuestionOptionActive(QuestionOptionKeys.SUGGESTIONS)) {
             return;
         }
         if (handleQuestionsResponseError(response)) {
@@ -199,7 +203,7 @@ async function requestSuggestedQuestions(videoInfo) {
     } catch (error) {
         setRequestQuestionsError(error);
     } finally {
-        if (isQuestionOptionActive("suggestions")) {
+        if (isQuestionOptionActive(QuestionOptionKeys.SUGGESTIONS)) {
             hideProgressSpinner();
             repositionDialog();
         }
@@ -436,7 +440,12 @@ function onRequestButtonClick(event) {
 
     try {
         chrome.runtime.sendMessage(
-            { message: "setPrompt", target: target, videoInfo, question },
+            {
+                action: BackgroundActions.SET_PROMPT,
+                target: target,
+                videoInfo,
+                question,
+            },
             (response) => {
                 onPromptSet(response);
                 resetRequesting();

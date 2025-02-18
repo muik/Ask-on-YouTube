@@ -1,3 +1,4 @@
+import { BackgroundActions, QuestionOptionKeys } from "../../constants.js";
 import { Errors } from "../../errors.js";
 import { getVideoInfoFromVideoDetail } from "./moreOptions.js";
 import { showQuestionDialog } from "./questionView.js";
@@ -37,7 +38,8 @@ export function createQuestionInputForm() {
 async function loadDefaultQuestion(inputElement) {
     try {
         const response = await chrome.runtime.sendMessage({
-            action: "getFavoriteQuestions",
+            action: BackgroundActions.GET_QUESTIONS,
+            option: QuestionOptionKeys.FAVORITES,
         });
 
         if (handleError(response.error)) {
@@ -85,7 +87,7 @@ function onRequestButtonClick(event) {
     try {
         chrome.runtime.sendMessage(
             {
-                message: "setPrompt",
+                action: BackgroundActions.SET_PROMPT,
                 target: target,
                 videoInfo,
                 question,

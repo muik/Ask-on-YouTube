@@ -1,5 +1,6 @@
 "use strict";
 
+import { BackgroundActions } from "../constants.js";
 import {
     detectVideoOptionClick,
     insertExtraOptions,
@@ -33,7 +34,9 @@ window.onload = async () => {
 
             if (event.target.matches("a.settings")) {
                 event.preventDefault();
-                chrome.runtime.sendMessage({ message: "openSettingsPage" });
+                chrome.runtime.sendMessage({
+                    action: BackgroundActions.OPEN_SETTINGS_PAGE,
+                });
             }
         });
 
