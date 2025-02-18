@@ -4,7 +4,7 @@ import { LRUCache } from "./background/lruCache.js";
 import {
     getFavoriteQuestions,
     getRecentQuestions,
-    saveQuestionHistory,
+    saveQuestionHistory
 } from "./background/questionHistory.js";
 import { setPrompt } from "./background/setPrompt.js";
 import { getSuggestedQuestions } from "./background/suggestQuestions.js";

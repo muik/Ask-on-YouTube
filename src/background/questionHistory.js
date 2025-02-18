@@ -111,3 +111,8 @@ export async function getFavoriteQuestions() {
 
     return { questions: favoriteItems.slice(0, Config.MAX_QUESTIONS_COUNT) };
 }
+
+export async function getDefaultQuestion() {
+    const questions = await getFavoriteQuestions();
+    return questions.questions[0];
+}
