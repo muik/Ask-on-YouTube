@@ -119,8 +119,10 @@ async function requestFavoriteQuestions() {
     } catch (error) {
         setRequestQuestionsError(error);
     } finally {
-        hideProgressSpinner();
-        repositionDialog();
+        if (isQuestionOptionActive("favorites")) {
+            hideProgressSpinner();
+            repositionDialog();
+        }
     }
 }
 
@@ -147,8 +149,10 @@ async function requestRecentQuestions() {
     } catch (error) {
         setRequestQuestionsError(error);
     } finally {
-        hideProgressSpinner();
-        repositionDialog();
+        if (isQuestionOptionActive("recents")) {
+            hideProgressSpinner();
+            repositionDialog();
+        }
     }
 }
 
@@ -195,8 +199,10 @@ async function requestSuggestedQuestions(videoInfo) {
     } catch (error) {
         setRequestQuestionsError(error);
     } finally {
-        hideProgressSpinner();
-        repositionDialog();
+        if (isQuestionOptionActive("suggestions")) {
+            hideProgressSpinner();
+            repositionDialog();
+        }
     }
 }
 
