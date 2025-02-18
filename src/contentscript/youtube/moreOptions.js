@@ -3,6 +3,7 @@ import { getSearchParam } from "../searchParam.js";
 import { waitForElm } from "../utils.js";
 import { setLoadingState } from "./extraOptionsView.js";
 import { showQuestionDialog } from "./questionView.js";
+import { getQuestionMarkSvg } from "./simpleQuestion.js";
 import { showToastMessage } from "./toast.js";
 
 const extraOptionsContainerId = "extra-options";
@@ -15,14 +16,14 @@ export function insertExtraOptions() {
     waitForElm(dropdownSelector).then((dropDownElement) => {
         console.debug("Add extra options container.");
         const optionItemClassName = "option-item";
+        const questionText = chrome.i18n.getMessage("questionButtonText");
         const extraOptionsHTML = `
-                        <div id="${extraOptionsContainerId}">
-                            <div class="horizontal-menu">
-                                <div class="${optionItemClassName}" target-value="chatgpt">ChatGPT</div>
-                                <div class="${optionItemClassName}" target-value="gemini">Gemini</div>
-                                <div class="${optionItemClassName}" target-value="question">Question</div>
-                            </div>
-                        </div>`;
+            <div id="${extraOptionsContainerId}" class="ytq">
+                <div class="vertical-menu ${optionItemClassName}" target-value="question">
+                    <div class="icon">${getQuestionMarkSvg()}</div>
+                    <span class="text">${questionText}</span>
+                </div>
+            </div>`.trim();
 
         const footerElement = dropDownElement.querySelector("#footer");
         footerElement.insertAdjacentHTML("beforeend", extraOptionsHTML);
@@ -74,7 +75,9 @@ function onExtraOptionClick(e) {
     e.stopPropagation();
     const element = e.target;
 
-    const target = element.getAttribute("target-value");
+    const target =
+        element.getAttribute("target-value") ||
+        element.closest("[target-value]").getAttribute("target-value");
 
     const targets = ["chatgpt", "gemini", "question"];
     if (!targets.includes(target)) {

@@ -14,6 +14,9 @@
     "geminiAPIKeyPlaceholder": {
         "message": "Gemini API 키 입력"
     },
+    "questionButtonText": {
+        "message": "질문하기"
+    },
     "requestButtonName": {
         "message": "요청"
     },

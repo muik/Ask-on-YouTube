@@ -20,6 +20,9 @@
     "geminiAPIKeyPlaceholder": {
         "message": "Enter your Gemini API key"
     },
+    "questionButtonText": {
+        "message": "Question"
+    },
     "requestButtonName": {
         "message": "Ask"
     },
