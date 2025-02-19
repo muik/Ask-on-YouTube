@@ -43,4 +43,4 @@ To use this extension:
 
 ## Feedback & Contribution
 
-If you have any questions or feedback, please open an issue. Contributions are welcome—feel free to submit a pull request!
+If you have any questions or feedback, please open [an issue](https://github.com/muik/Ask-on-YouTube/issues). Contributions are welcome—feel free to submit [a pull request](https://github.com/muik/Ask-on-YouTube/pulls)!
