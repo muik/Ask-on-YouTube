@@ -26,8 +26,9 @@
             "matches": ["https://www.youtube.com/*"],
             "js": ["contentscript/index.bundle.js"],
             "css": [
-                "contentscript/yt_ai_summary.css",
-                "contentscript/dialog.css"
+                "contentscript/extraOptions.css",
+                "contentscript/dialog.css",
+                "contentscript/common.css"
             ],
             "all_frames": false
         },

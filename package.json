@@ -8,7 +8,7 @@
     "clean": "rimraf dist/*",
     "lint": "eslint src/ --fix",
     "build": "npm run lint && npm run clean && webpack",
-    "build-release": "npm run lint && npm run clean && NODE_ENV=production webpack",
+    "build-release": "npm run lint && npm run clean && NODE_ENV=production webpack && npm run zip",
     "watch": "nodemon --watch src/ --watch webpack.config.cjs --watch manifest.json --watch _locales --ext js,html,css,json --exec 'npm run build'",
     "test": "NODE_OPTIONS=--experimental-vm-modules npx jest",
     "zip": "tar -a -c -f ask_on_youtube.zip dist"
