@@ -32,12 +32,36 @@ export function showQuestionDialog(videoInfo) {
 
     setQuestionDialogContent(videoInfo);
 
-    const selectedQuestionOption = getSelectedQuestionOption();
-    requestQuestions(selectedQuestionOption, containerElement);
+    const questionOption = getSelectedQuestionOption();
+    requestQuestions(questionOption, containerElement);
 
-    // for loading default question
-    if (selectedQuestionOption !== "favorites") {
-        executeRequestQuestions(QuestionOptionKeys.FAVORITES);
+    loadDefaultQuestion();
+}
+
+async function loadDefaultQuestion() {
+    try {
+        const response = await chrome.runtime.sendMessage({
+            action: BackgroundActions.GET_DEFAULT_QUESTION,
+        });
+
+        if (chrome.runtime.lastError || response.error) {
+            console.error("setDefaultQuestion Error:", response);
+            setInputError(Errors.FAILED_TO_LOAD_DEFAULT_QUESTION);
+            return;
+        }
+
+        if (!response.question) {
+            console.error("loadDefaultQuestion Error:", response);
+            setInputError(Errors.FAILED_TO_LOAD_DEFAULT_QUESTION);
+            return;
+        }
+
+        const inputElement =
+            getContainerElement().querySelector("input[type='text']");
+        inputElement.setAttribute("placeholder", response.question);
+    } catch (error) {
+        console.error("loadDefaultQuestion Error:", error);
+        setInputError(Errors.FAILED_TO_LOAD_DEFAULT_QUESTION);
     }
 }
 
@@ -61,7 +85,11 @@ function requestQuestions(option = null, containerElement = null) {
     // set dialog position in the center of the screen
     repositionDialog();
 
-    executeRequestQuestions(option);
+    if (option) {
+        executeRequestQuestionsByOption(option);
+    } else {
+        executeRequestQuestions();
+    }
 }
 
 function resetQuestions(containerElement = null) {
@@ -76,22 +104,9 @@ function resetQuestions(containerElement = null) {
     messageElement.removeAttribute("type");
 }
 
-/**
- * Request questions from the background script
- * @param {string} option - The question option to request, if not provided, the default question option will be used
- */
-async function executeRequestQuestions(option = null) {
-    let targetOption = option;
-
+async function executeRequestQuestionsByOption(option) {
     try {
-        // validate option
-        if (
-            option &&
-            Object.values(QuestionOptionKeys).includes(option) === false
-        ) {
-            console.error("Invalid question option:", option);
-            throw Errors.INVALID_REQUEST;
-        }
+        validateQuestionOption(option);
 
         const response = await chrome.runtime.sendMessage({
             action: BackgroundActions.GET_QUESTIONS,
@@ -99,38 +114,70 @@ async function executeRequestQuestions(option = null) {
             videoInfo: dialogData.videoInfo,
         });
 
-        if (response.option === QuestionOptionKeys.FAVORITES) {
-            setDefaultQuestion(response);
-        }
-
-        const selectedOption = getSelectedQuestionOption();
-        if (!selectedOption) {
-            setQuestionOptionActive(response.option);
-            targetOption = response.option;
-        } else if (selectedOption !== response.option) {
+        if (!isQuestionOptionActive(option)) {
+            // stop, when the option is changed
             return;
         }
 
-        if (handleQuestionsResponseError(response)) {
-            return;
-        }
-        if (!response.questions || response.questions.length === 0) {
-            console.error("questions response:", option, response);
-            setQuestionsError(Errors.INVALID_RESPONSE);
-            return;
-        }
-
-        if (response.caption) {
-            setCaption(response.caption);
-        }
-        setQuestions(response.questions);
+        handleQuestionsResponse(response);
     } catch (error) {
         setRequestQuestionsError(error);
     } finally {
-        if (isQuestionOptionActive(targetOption)) {
+        if (isQuestionOptionActive(option)) {
             hideProgressSpinner();
             repositionDialog();
         }
+    }
+}
+
+async function executeRequestQuestions() {
+    let lastOption = null;
+
+    try {
+        const response = await chrome.runtime.sendMessage({
+            action: BackgroundActions.GET_LAST_QUESTIONS,
+            videoInfo: dialogData.videoInfo,
+        });
+
+        if (getSelectedQuestionOption()) {
+            // stop, when the option is changed
+            return;
+        }
+
+        setQuestionOptionActive(response.option);
+        lastOption = response.option;
+
+        handleQuestionsResponse(response);
+    } catch (error) {
+        setRequestQuestionsError(error);
+    } finally {
+        if (isQuestionOptionActive(lastOption)) {
+            hideProgressSpinner();
+            repositionDialog();
+        }
+    }
+}
+
+function handleQuestionsResponse(response) {
+    if (handleQuestionsResponseError(response)) {
+        return;
+    }
+    if (!response.questions || response.questions.length === 0) {
+        console.error("questions response:", response);
+        setQuestionsError(Errors.INVALID_RESPONSE);
+        return;
+    }
+
+    if (response.caption) {
+        setCaption(response.caption);
+    }
+    setQuestions(response.questions);
+}
+
+function validateQuestionOption(option) {
+    if (Object.values(QuestionOptionKeys).includes(option) === false) {
+        console.error("Invalid question option:", option);
+        throw Errors.INVALID_REQUEST;
     }
 }
 
@@ -138,31 +185,6 @@ function setQuestionOptionActive(option) {
     getContainerElement()
         .querySelector(`.question-options .title[data-option="${option}"]`)
         .classList.add("active");
-}
-
-function setDefaultQuestion(response) {
-    const containerElement = getContainerElement();
-    const inputElement = containerElement.querySelector("input[type='text']");
-    if (inputElement.getAttribute("placeholder")) {
-        // already set
-        return;
-    }
-
-    if (chrome.runtime.lastError || response.error) {
-        console.error("setDefaultQuestion Error:", response);
-        setInputError(Errors.FAILED_TO_LOAD_DEFAULT_QUESTION);
-        return;
-    }
-
-    if (!response.questions || response.questions.length === 0) {
-        console.error("setDefaultQuestion Error:", response);
-        setInputError(Errors.FAILED_TO_LOAD_DEFAULT_QUESTION);
-        return;
-    }
-
-    const question = response.questions[0];
-
-    inputElement.setAttribute("placeholder", question);
 }
 
 function isQuestionOptionActive(option) {
@@ -237,7 +259,6 @@ function setCaption(caption) {
 
     thumbnailElement.setAttribute("title", caption);
     captionElement.textContent = caption;
-
     captionElement.addEventListener("click", textToInputClickListener);
 }
 
@@ -253,9 +274,9 @@ function setQuestions(questions, containerElement = null) {
     questions.forEach((question) => {
         const li = document.createElement("li");
         li.textContent = question;
-        suggestionsElement.appendChild(li);
-
         li.addEventListener("click", textToInputClickListener);
+
+        suggestionsElement.appendChild(li);
     });
 }
 

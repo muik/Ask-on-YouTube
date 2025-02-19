@@ -5,6 +5,7 @@ export const BackgroundActions = {
     SETTINGS_UPDATED: "settingsUpdated",
     OPEN_SETTINGS_PAGE: "openSettingsPage",
     GET_DEFAULT_QUESTION: "getDefaultQuestion",
+    GET_LAST_QUESTIONS: "getLastQuestions",
 };
 
 export const StorageKeys = {

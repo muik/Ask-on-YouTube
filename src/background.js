@@ -2,7 +2,11 @@
 
 import { LRUCache } from "./background/lruCache.js";
 import { saveQuestionHistory } from "./background/questionHistory.js";
-import { getDefaultQuestion, getQuestions } from "./background/questions.js";
+import {
+    getDefaultQuestion,
+    getLastQuestions,
+    getQuestions,
+} from "./background/questions.js";
 import { setPrompt } from "./background/setPrompt.js";
 import { BackgroundActions, StorageKeys } from "./constants.js";
 import { Errors } from "./errors.js";
@@ -46,6 +50,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         return getQuestions(request, sendResponse);
     } else if (request.action === BackgroundActions.GET_DEFAULT_QUESTION) {
         return getDefaultQuestion(sendResponse);
+    } else if (request.action === BackgroundActions.GET_LAST_QUESTIONS) {
+        return getLastQuestions(request, sendResponse);
     }
 
     if (request.action === BackgroundActions.SET_PROMPT) {

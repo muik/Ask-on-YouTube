@@ -7,13 +7,35 @@ import { getSuggestedQuestions } from "./suggestQuestions.js";
 
 const questionCache = new LRUCache(10);
 
-export function getQuestions(request, sendResponse) {
-    if (!request.option) {
-        request.option =
-            settings[StorageKeys.LAST_QUESTION_OPTION] ||
-            Object.keys(QuestionOptionKeys)[0];
-    }
+export function getLastQuestions(request, sendResponse) {
+    request.option =
+        settings[StorageKeys.LAST_QUESTION_OPTION] ||
+        Object.keys(QuestionOptionKeys)[0];
 
+    getQuestionsRequest(request)
+        .then((result) => {
+            return {
+                option: request.option,
+                ...result,
+            };
+        })
+        .then(sendResponse)
+        .catch(handleError(sendResponse));
+
+    return true;
+}
+
+export function getQuestions(request, sendResponse) {
+    getQuestionsRequest(request)
+        .then(sendResponse)
+        .catch(handleError(sendResponse));
+
+    updateLastQuestionOption(request.option);
+
+    return true;
+}
+
+function getQuestionsRequest(request) {
     let getQuestionsRequest;
 
     switch (request.option) {
@@ -32,27 +54,13 @@ export function getQuestions(request, sendResponse) {
             });
             break;
         default:
-            sendResponse({
-                error: {
-                    code: Errors.INVALID_REQUEST.code,
-                    message: "No option provided.",
-                },
-            });
-            return;
+            throw {
+                code: Errors.INVALID_REQUEST.code,
+                message: "No option provided.",
+            };
     }
 
-    getQuestionsRequest
-        .then((result) => {
-            return {
-                option: request.option,
-                ...result,
-            };
-        })
-        .then(sendResponse)
-        .catch(handleError(sendResponse));
-
-    updateLastQuestionOption(request.option);
-    return true;
+    return getQuestionsRequest;
 }
 
 function updateLastQuestionOption(option) {
