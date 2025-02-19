@@ -7,7 +7,7 @@
     "permissions": ["storage"],
     "host_permissions": ["https://i.ytimg.com/*"],
     "background": {
-        "service_worker": "background.bundle.js",
+        "service_worker": "background.min.js",
         "type": "module"
     },
     "action": {
@@ -24,21 +24,17 @@
     "content_scripts": [
         {
             "matches": ["https://www.youtube.com/*"],
-            "js": ["contentscript/index.bundle.js"],
-            "css": [
-                "contentscript/extraOptions.css",
-                "contentscript/dialog.css",
-                "contentscript/common.css"
-            ],
+            "js": ["contentscript/youtube.min.js"],
+            "css": ["contentscript/youtube.min.css"],
             "all_frames": false
         },
         {
             "matches": ["https://gemini.google.com/*"],
-            "js": ["contentscript/gemini.bundle.js"]
+            "js": ["contentscript/gemini.min.js"]
         },
         {
             "matches": ["https://chatgpt.com/*"],
-            "js": ["contentscript/chatgpt.bundle.js"]
+            "js": ["contentscript/chatgpt.min.js"]
         }
     ],
     "content_security_policy": {

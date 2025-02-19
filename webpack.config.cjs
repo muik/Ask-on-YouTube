@@ -2,7 +2,10 @@ const webpack = require("webpack"),
     path = require("path"),
     CopyWebpackPlugin = require("copy-webpack-plugin"),
     HtmlWebpackPlugin = require("html-webpack-plugin"),
-    WriteFilePlugin = require("write-file-webpack-plugin");
+    WriteFilePlugin = require("write-file-webpack-plugin"),
+    MiniCssExtractPlugin = require("mini-css-extract-plugin"),
+    CssMinimizerPlugin = require("css-minimizer-webpack-plugin"),
+    TerserPlugin = require("terser-webpack-plugin");
 
 if (process.env.NODE_ENV == null) {
     process.env.NODE_ENV = "development";
@@ -28,12 +31,6 @@ const plugins = [
                 from: "src/images",
                 to: "images",
             },
-            {
-                from: "src/css/*.css",
-                to() {
-                    return "contentscript/[name][ext]";
-                },
-            },
         ],
     }),
     new HtmlWebpackPlugin({
@@ -43,6 +40,9 @@ const plugins = [
         inject: "body",
     }),
     new WriteFilePlugin(),
+    new MiniCssExtractPlugin({
+        filename: "[name].min.css",
+    }),
 ];
 
 const fileExtensions = [
@@ -59,8 +59,8 @@ const fileExtensions = [
 ];
 const moduleRules = [
     {
-        test: /\.css$/,
-        use: ["style-loader", "css-loader"],
+        test: /\.css$/i,
+        use: [MiniCssExtractPlugin.loader, "css-loader"],
         exclude: /node_modules/,
     },
     {
@@ -85,12 +85,12 @@ const config = {
     devtool: "cheap-module-source-map",
     mode: process.env.NODE_ENV || "development",
     entry: {
-        "contentscript/index": path.join(
-            __dirname,
-            "src",
-            "contentscript",
-            "index.js"
-        ),
+        "contentscript/youtube": [
+            path.join(__dirname, "src", "contentscript", "youtube.js"),
+            path.join(__dirname, "src", "css", "common.css"),
+            path.join(__dirname, "src", "css", "dialog.css"),
+            path.join(__dirname, "src", "css", "extraOptions.css"),
+        ],
         "contentscript/gemini": path.join(
             __dirname,
             "src",
@@ -104,17 +104,24 @@ const config = {
             "chatgpt.js"
         ),
         background: path.join(__dirname, "src", "background.js"),
-        settings: path.join(__dirname, "src", "options", "settings.js"),
+        settings: [
+            path.join(__dirname, "src", "options", "settings.js"),
+            path.join(__dirname, "src", "css", "settings.css"),
+        ],
     },
     output: {
         path: path.join(__dirname, "dist"),
-        filename: "[name].bundle.js",
+        filename: "[name].min.js",
         clean: true,
     },
     module: {
         rules: moduleRules,
     },
     plugins: plugins,
+    optimization: {
+        minimize: ENV === "production",
+        minimizer: [new CssMinimizerPlugin(), new TerserPlugin()],
+    },
 };
 
 if (ENV === "development") {
