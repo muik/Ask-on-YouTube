@@ -11,6 +11,7 @@ export const BackgroundActions = {
 export const StorageKeys = {
     GEMINI_API_KEY: "geminiAPIKey",
     LAST_QUESTION_OPTION: "lastQuestionOption",
+    QUESTION_HISTORY: "questionHistory",
 };
 
 export const QuestionOptionKeys = {

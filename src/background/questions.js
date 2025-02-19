@@ -10,7 +10,7 @@ const questionCache = new LRUCache(10);
 export function getLastQuestions(request, sendResponse) {
     request.option =
         settings[StorageKeys.LAST_QUESTION_OPTION] ||
-        Object.keys(QuestionOptionKeys)[0];
+        Object.values(QuestionOptionKeys)[0];
 
     getQuestionsRequest(request)
         .then((result) => {

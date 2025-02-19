@@ -1,7 +1,8 @@
 import { Config } from "../config.js";
+import { StorageKeys } from "../constants.js";
 
 const MAX_HISTORY_SIZE = 10;
-const STORAGE_KEY = "questionHistory";
+const STORAGE_KEY = StorageKeys.QUESTION_HISTORY;
 
 /**
  * Save the question history to the storage.
@@ -72,7 +73,7 @@ export async function getFavoriteQuestions() {
     const counter = {};
 
     // group the questions by question and video id
-    result[STORAGE_KEY].forEach((item) => {
+    (result[STORAGE_KEY] || []).forEach((item) => {
         const videoId = item.videoInfo.id;
         const question = item.question.trim();
         if (counter[question]) {

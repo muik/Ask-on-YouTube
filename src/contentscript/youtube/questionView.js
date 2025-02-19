@@ -162,9 +162,15 @@ function handleQuestionsResponse(response) {
     if (handleQuestionsResponseError(response)) {
         return;
     }
+
     if (!response.questions || response.questions.length === 0) {
-        console.error("questions response:", response);
-        setQuestionsError(Errors.INVALID_RESPONSE);
+        const questionOption = getSelectedQuestionOption();
+        if (questionOption === QuestionOptionKeys.RECENTS) {
+            setQuestionsError(Info.NO_RECENT_QUESTIONS);
+        } else {
+            console.error("questions response:", response);
+            setQuestionsError(Errors.INVALID_RESPONSE);
+        }
         return;
     }
 
