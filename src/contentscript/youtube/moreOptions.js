@@ -1,7 +1,6 @@
 import { BackgroundActions } from "../../constants.js";
 import { Errors } from "../../errors.js";
-import { getSearchParam } from "../searchParam.js";
-import { waitForElm } from "../utils.js";
+import { getSearchParam, waitForElm } from "../utils.js";
 import { setLoadingState } from "./extraOptionsView.js";
 import { showQuestionDialog } from "./questionView.js";
 import { getQuestionMarkSvg } from "./simpleQuestion.js";
