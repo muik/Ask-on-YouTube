@@ -1,4 +1,4 @@
-import { BackgroundActions, QuestionOptionKeys } from "../../constants.js";
+import { BackgroundActions } from "../../constants.js";
 import { Errors } from "../../errors.js";
 import { getVideoInfoFromVideoDetail } from "./moreOptions.js";
 import { showQuestionDialog } from "./questionView.js";
@@ -38,22 +38,20 @@ export function createQuestionInputForm() {
 async function loadDefaultQuestion(inputElement) {
     try {
         const response = await chrome.runtime.sendMessage({
-            action: BackgroundActions.GET_QUESTIONS,
-            option: QuestionOptionKeys.FAVORITES,
+            action: BackgroundActions.GET_DEFAULT_QUESTION,
         });
 
         if (handleError(response.error)) {
             return;
         }
 
-        if (!response.questions || response.questions.length === 0) {
-            console.error("loadDefaultQuestion Error: No questions found");
+        if (!response.question) {
+            console.error("loadDefaultQuestion Error: No question found");
             setInputError(Errors.FAILED_TO_LOAD_DEFAULT_QUESTION);
             return;
         }
 
-        const question = response.questions[0];
-        inputElement.setAttribute("placeholder", question);
+        inputElement.setAttribute("placeholder", response.question);
     } catch (error) {
         console.error("loadDefaultQuestion Error:", error);
         setInputError(Errors.FAILED_TO_LOAD_DEFAULT_QUESTION);

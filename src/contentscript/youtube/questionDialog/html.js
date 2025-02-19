@@ -41,7 +41,7 @@ export function getQuestionHtml() {
       </div>
       <div class="question-suggestions">
         <div class="question-options">
-          <span class="title active" data-option="favorites">${favorites}</span>
+          <span class="title" data-option="favorites">${favorites}</span>
           <span class="title" data-option="suggestions">${suggestions}</span>
           <span class="title" data-option="recents">${recents}</span>
         </div>

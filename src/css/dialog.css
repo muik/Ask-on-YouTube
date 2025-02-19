@@ -136,7 +136,6 @@
 }
 .ytq-dialog .question-suggestions li {
     padding: 8px 12px;
-    background-color: var(--yt-spec-general-background-a);
     cursor: pointer;
     font-size: 12px;
     list-style-type: none;

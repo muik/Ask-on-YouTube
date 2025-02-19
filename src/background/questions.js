@@ -54,7 +54,8 @@ export function getQuestions(request, sendResponse) {
     updateLastQuestionOption(request.option);
     return true;
 }
-export function updateLastQuestionOption(option) {
+
+function updateLastQuestionOption(option) {
     if (settings[StorageKeys.LAST_QUESTION_OPTION] === option) {
         return;
     }
@@ -65,5 +66,23 @@ export function updateLastQuestionOption(option) {
     }
 
     settings[StorageKeys.LAST_QUESTION_OPTION] = option;
-    chrome.storage.sync.set({ [StorageKeys.LAST_QUESTION_OPTION]: option });
+    chrome.storage.sync.set(
+        { [StorageKeys.LAST_QUESTION_OPTION]: option },
+        () => {
+            console.debug("Last question option updated:", option);
+        }
+    );
+}
+
+export function getDefaultQuestion(sendResponse) {
+    getFavoriteQuestions()
+        .then((result) => {
+            return {
+                question: result.questions[0],
+            };
+        })
+        .then(sendResponse)
+        .catch(handleError(sendResponse));
+
+    return true;
 }

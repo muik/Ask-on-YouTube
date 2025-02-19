@@ -4,6 +4,7 @@ export const BackgroundActions = {
     GET_PROMPT: "getPrompt",
     SETTINGS_UPDATED: "settingsUpdated",
     OPEN_SETTINGS_PAGE: "openSettingsPage",
+    GET_DEFAULT_QUESTION: "getDefaultQuestion",
 };
 
 export const StorageKeys = {

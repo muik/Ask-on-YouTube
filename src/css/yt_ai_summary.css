@@ -192,6 +192,7 @@
 #extra-options .vertical-menu .icon svg {
     width: 14px;
     height: 14px;
+    fill: var(--yt-spec-text-primary);
 }
 #extra-options .vertical-menu .text {
     margin-right: 24px;

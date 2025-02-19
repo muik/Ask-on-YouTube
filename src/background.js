@@ -2,7 +2,7 @@
 
 import { LRUCache } from "./background/lruCache.js";
 import { saveQuestionHistory } from "./background/questionHistory.js";
-import { getQuestions } from "./background/questions.js";
+import { getDefaultQuestion, getQuestions } from "./background/questions.js";
 import { setPrompt } from "./background/setPrompt.js";
 import { BackgroundActions, StorageKeys } from "./constants.js";
 import { Errors } from "./errors.js";
@@ -44,6 +44,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
     if (request.action === BackgroundActions.GET_QUESTIONS) {
         return getQuestions(request, sendResponse);
+    } else if (request.action === BackgroundActions.GET_DEFAULT_QUESTION) {
+        return getDefaultQuestion(sendResponse);
     }
 
     if (request.action === BackgroundActions.SET_PROMPT) {
@@ -56,11 +58,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
             .catch(handleError(sendResponse));
 
         if (request.question && request.type !== "placeholder") {
-            saveQuestionHistory(request.videoInfo, request.question).catch(
-                (error) => {
-                    console.error("saveQuestionHistory error:", error);
-                }
-            );
+            saveQuestionHistory(request.videoInfo, request.question);
         }
 
         return true;

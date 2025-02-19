@@ -8,7 +8,7 @@ const STORAGE_KEY = "questionHistory";
  * @param {Object} videoInfo - The video info object.
  * @param {string} question - The question to save.
  */
-export async function saveQuestionHistory(videoInfo, question) {
+export function saveQuestionHistory(videoInfo, question) {
     console.debug("Saving question history:", videoInfo, question);
 
     const item = {
