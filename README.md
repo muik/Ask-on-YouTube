@@ -41,6 +41,6 @@ To use this extension:
 
 -   Originally a fork of [YouTube Summary with ChatGPT](https://github.com/kazuki-sf/chatgpt-youtube-summary), this project has been significantly modified to let users ask questions on YouTube.
 
-## Feedback & Support
+## Feedback & Contribution
 
 If you have any questions or feedback, please open an issue. Contributions are welcome—feel free to submit a pull request!
