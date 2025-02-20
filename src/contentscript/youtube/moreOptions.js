@@ -13,8 +13,9 @@ const dropdownSelector = "tp-yt-iron-dropdown.ytd-popup-container";
  * Insert extra options ui into the footer of more options dropdown
  */
 export function insertExtraOptions() {
-    waitForElm(dropdownSelector).then((dropDownElement) => {
+    waitForElm(`${dropdownSelector} #footer`).then((footerElement) => {
         console.debug("Add extra options container.");
+        const dropDownElement = footerElement.closest(dropdownSelector);
         const optionItemClassName = "option-item";
         const questionText = chrome.i18n.getMessage("questionButtonText");
         const extraOptionsHTML = `
@@ -25,7 +26,6 @@ export function insertExtraOptions() {
                 </div>
             </div>`.trim();
 
-        const footerElement = dropDownElement.querySelector("#footer");
         footerElement.insertAdjacentHTML("beforeend", extraOptionsHTML);
 
         // Click event listener for the "View in Gemini" button
