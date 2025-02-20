@@ -1,7 +1,15 @@
 body {
     font-family: Arial, sans-serif;
     margin: 20px;
+    background-color: #f9f9f9; /* Light background */
+    color: #333; /* Dark text */
 }
+
+body.dark-mode {
+    background-color: #121212; /* Dark background */
+    color: #eee; /* Light text */
+}
+
 .container {
     max-width: 600px;
     margin: 0 auto;
@@ -20,7 +28,7 @@ button {
 .prompt p {
     margin-top: 5px;
     margin-bottom: 0px;
-    font-size: 12px;
+    font-size: 14px;
     color: #666;
 }
 .label-header {
@@ -38,6 +46,9 @@ button {
 .status-message.visible {
     display: block; /* Display when visible */
 }
+body.dark-mode .status-message {
+    color: #69f0ae; /* Lighter green in dark mode */
+}
 .toggle {
     display: flex;
     align-items: center;
@@ -47,14 +58,18 @@ button {
     font-size: 14px;
 }
 .description {
-    font-size: 12px;
+    font-size: 14px;
     color: #666;
     margin-top: 5px;
+}
+body.dark-mode .description {
+    color: #bbb; /* Lighter description text in dark mode */
 }
 .inline-label-input {
     display: flex;
     align-items: center;
     gap: 10px;
+    font-size: 14px;
 }
 .inline-label-input label {
     width: 100px;
@@ -62,14 +77,25 @@ button {
 .inline-label-input input {
     width: 100%;
     line-height: 1.2;
+    border: 1px solid #ccc; /* Default border */
+    background-color: white; /* Default input background */
+    color: #333; /* Default input text color */
+    font-size: 14px;
+    padding: 4px;
+    border-radius: 4px;
+}
+body.dark-mode .inline-label-input input {
+    border-color: #666; /* Darker border in dark mode */
+    background-color: #333; /* Dark input background in dark mode */
+    color: #eee; /* Light input text color in dark mode */
 }
 .inline-label-input + .status-message {
     margin-top: 5px;
 }
 
 h1 {
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 18px;
+    font-weight: 500;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -78,11 +104,32 @@ h1 img {
     height: 24px;
 }
 h2 {
-    font-size: 20px;
-    font-weight: bold;
+    font-size: 24px;
+    font-weight: 500;
 }
 h3 {
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 18px;
+    font-weight: 500;
     margin: 16px 0 12px 0;
+}
+body.dark-mode h3,
+body.dark-mode h2,
+body.dark-mode h1 {
+    color: #eee; /* Light headings in dark mode */
+}
+
+a {
+    color: #333; /* Default link color */
+}
+
+a:visited {
+    color: #333; /* Visited link color */
+}
+
+body.dark-mode a {
+    color: #eee; /* Default link color in dark mode */
+}
+
+body.dark-mode a:visited {
+    color: #eee; /* Visited link color in dark mode */
 }

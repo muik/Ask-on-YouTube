@@ -63,6 +63,21 @@ document.addEventListener("DOMContentLoaded", () => {
             statusMessageGeminiAPIKey
         );
     });
+
+    // Function to update the theme based on system preference
+    function updateTheme() {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.classList.add('dark-mode');
+        } else {
+            document.body.classList.remove('dark-mode');
+        }
+    }
+
+    // Set initial theme on page load
+    updateTheme();
+
+    // Listen for changes in system theme
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateTheme);
 });
 
 function setMessages() {
