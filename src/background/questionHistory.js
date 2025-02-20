@@ -1,7 +1,8 @@
 import { Config } from "../config.js";
 import { StorageKeys } from "../constants.js";
 
-const MAX_HISTORY_SIZE = 10;
+const { MAX_HISTORY_SIZE, MAX_HISTORY_SIZE_IN_PROMPT } = Config;
+
 const STORAGE_KEY = StorageKeys.QUESTION_HISTORY;
 
 /**
@@ -35,9 +36,9 @@ export function saveQuestionHistory(videoInfo, question) {
     });
 }
 
-export async function getQuestionHistory() {
+export async function getQuestionHistory(count = MAX_HISTORY_SIZE_IN_PROMPT) {
     const result = await chrome.storage.sync.get([STORAGE_KEY]);
-    return result[STORAGE_KEY] || [];
+    return (result[STORAGE_KEY] || []).slice(-count);
 }
 
 /**
