@@ -3,7 +3,7 @@ import { DOMParser } from "xmldom";
 /**
  * Get transcript paragraphised
  * @param {string} link transcript link
- * @param {float} intervalTimeSec
+ * @param {float} intervalTimeSec interval time in seconds between paragraphs
  * @returns {Promise<string>} paragraphised transcript
  */
 export async function getTranscriptParagraphised(link, intervalTimeSec = 1.5) {
