@@ -6,65 +6,90 @@ import { showQuestionDialog } from "./questionView.js";
 import { getQuestionMarkSvg } from "./simpleQuestion.js";
 import { showToastMessage } from "./toast.js";
 
-const extraOptionsContainerId = "extra-options";
+const ClickElementType = {
+    OTHER: 1, // not dropdown click
+    NO_EXTRA_OPTIONS: 2, // the dropdown from this click should not show extra options
+    UNEXPECTED: 3, // unexpected click type, should not happen
+};
+
+/**
+ * @typedef {Object} VideoInfo
+ * @property {string} id - The video ID
+ * @property {string} title - The video title
+ */
+
+/**
+ * @typedef {Object} ClickResult
+ * @property {ClickElementType} [type] - The type of click event
+ * @property {VideoInfo} [videoInfo] - The video information if available
+ */
+
+const extraOptionsClassName = "ytq-extra-options";
 const dropdownSelector = "tp-yt-iron-dropdown.ytd-popup-container";
+const focused = {};
 
 /**
  * Insert extra options ui into the footer of more options dropdown
  */
 export function insertExtraOptions() {
-    waitForElm(`${dropdownSelector} #footer`).then((footerElement) => {
-        console.debug("Add extra options container.");
-        const dropDownElement = footerElement.closest(dropdownSelector);
-        const optionItemClassName = "option-item";
-        const questionText = chrome.i18n.getMessage("questionButtonText");
-        const extraOptionsHTML = `
-            <div id="${extraOptionsContainerId}" class="ytq">
+    // for video item
+    waitForElm(`${dropdownSelector} #footer`).then(insertExtraOptionsToFooter);
+
+    // for shorts item
+    waitForElm(
+        `${dropdownSelector} .yt-contextual-sheet-layout-wiz__footer-container`
+    ).then(insertExtraOptionsToFooter);
+}
+
+function insertExtraOptionsToFooter(footerElement) {
+    console.debug("Insert extra options to footer", footerElement);
+    const dropDownElement = footerElement.closest(dropdownSelector);
+    const optionItemClassName = "option-item";
+    const questionText = chrome.i18n.getMessage("questionButtonText");
+    const extraOptionsHTML = `
+            <div class="ytq ${extraOptionsClassName}">
                 <div class="vertical-menu ${optionItemClassName}" target-value="question">
                     <div class="icon">${getQuestionMarkSvg()}</div>
                     <span class="text">${questionText}</span>
                 </div>
             </div>`.trim();
 
-        footerElement.insertAdjacentHTML("beforeend", extraOptionsHTML);
+    footerElement.insertAdjacentHTML("beforeend", extraOptionsHTML);
 
-        // Click event listener for the "View in Gemini" button
-        const containerElement = dropDownElement.querySelector(
-            `#${extraOptionsContainerId}`
-        );
-        containerElement
-            .querySelectorAll(`.${optionItemClassName}`)
-            .forEach((elm) => {
-                elm.addEventListener("click", onExtraOptionClick);
-            });
-    });
+    // Click event listener for the "View in Gemini" button
+    dropDownElement
+        .querySelectorAll(`.${extraOptionsClassName} .${optionItemClassName}`)
+        .forEach((elm) => {
+            elm.addEventListener("click", onExtraOptionClick);
+        });
 }
 
 /**
- * Update extra options
+ * Show extra options
  * @param {Element} dropDownElement - The YouTube video options menu.
- * @param {VideoInfo} videoInfo - The YouTube video Info.
  */
-function updateExtraOptions(dropDownElement, videoInfo) {
-    console.debug("Update extra options:", dropDownElement, videoInfo);
-    const containerSelector = `#${extraOptionsContainerId}`;
-    const containerElement = dropDownElement.querySelector(containerSelector);
-    containerElement.setAttribute("video-id", videoInfo.id);
-    containerElement.setAttribute("video-title", videoInfo.title);
+function showExtraOptions(dropDownElement) {
+    const containerElement =
+        dropDownElement.querySelector(`.ytq-extra-options`);
+    if (!containerElement) {
+        const footerElement =
+            dropDownElement.querySelector("#footer") ||
+            dropDownElement.querySelector(
+                ".yt-contextual-sheet-layout-wiz__footer-container"
+            );
+        if (!footerElement) {
+            console.warn(
+                "No footer element found in dropDown",
+                dropDownElement
+            );
+            return;
+        }
+
+        insertExtraOptionsToFooter(footerElement);
+        return;
+    }
+
     containerElement.removeAttribute("aria-hidden");
-}
-
-export function getVideoInfoFromExtraOptions(containerElement = null) {
-    containerElement =
-        containerElement ||
-        document.querySelector(
-            `${dropdownSelector} #${extraOptionsContainerId}`
-        );
-
-    return {
-        id: containerElement.getAttribute("video-id"),
-        title: containerElement.getAttribute("video-title"),
-    };
 }
 
 /**
@@ -85,8 +110,7 @@ function onExtraOptionClick(e) {
         return;
     }
 
-    const containerElement = e.target.closest(`#${extraOptionsContainerId}`);
-    const videoInfo = getVideoInfoFromExtraOptions(containerElement);
+    const videoInfo = focused.videoInfo;
 
     if (!chrome.runtime || !chrome.runtime.sendMessage) {
         showToastMessage(Errors.EXTENSION_CONTEXT_INVALIDATED.message);
@@ -193,28 +217,33 @@ function pressEscKey() {
 }
 
 /**
- * Extracts the video ID from the YouTube video options menu.
+ * Identify the video info from the YouTube video options menu.
  * @param {Element} target - The clicked element.
- * @returns {VideoInfo} The YouTube video Info.
+ * @returns {ClickResult | undefined} - The click result. If undefined, this is not the correct type of element and other options need to be considered.
  */
 function getVideoInfoFromItemVideoOptionMenu(target) {
     if (
-        target.tagName != "DIV" ||
         !target.parentElement ||
         !target.parentElement.classList.contains("yt-icon")
     ) {
+        // not this type of element, need to find other options
         return;
     }
 
     if (!target.closest("yt-icon-button.dropdown-trigger")) {
-        return;
+        return {
+            type: ClickElementType.OTHER,
+        };
     }
 
     // Locate the actual menu button on YouTube, often identified by certain attributes or classes.
     const menuButton = target.closest("ytd-menu-renderer");
     if (!menuButton) {
         console.debug("No menu button found", target);
-        return; // Exit if the click did not occur on an options menu
+        // Exit if the click did not occur on an options menu
+        return {
+            type: ClickElementType.OTHER,
+        };
     }
 
     const skipClassNames = [
@@ -225,7 +254,10 @@ function getVideoInfoFromItemVideoOptionMenu(target) {
 
     for (const className of skipClassNames) {
         if (menuButton.classList.contains(className)) {
-            return;
+            console.debug("Skip extra options", className);
+            return {
+                type: ClickElementType.NO_EXTRA_OPTIONS,
+            }; // extra options should not be shown
         }
     }
 
@@ -239,20 +271,26 @@ function getVideoInfoFromItemVideoOptionMenu(target) {
         menuButton.closest("ytd-grid-video-renderer");
     if (!videoContainer) {
         console.debug("No video container found", menuButton);
-        return; // Exit if no video container is identified
+        return {
+            type: ClickElementType.OTHER,
+        }; // Exit if no video container is identified
     }
 
     // Locate an <a> tag within the container that links to the video
     const linkElement = videoContainer.querySelector("a#thumbnail");
     if (!linkElement || !linkElement.href) {
         console.debug("No video link found", videoContainer);
-        return;
+        return {
+            type: ClickElementType.OTHER,
+        };
     }
 
     const titleElement = videoContainer.querySelector("#video-title");
     if (!titleElement || !titleElement.textContent) {
         console.debug("No video title found", videoContainer);
-        return; // Exit if no video title is identified
+        return {
+            type: ClickElementType.OTHER,
+        }; // Exit if no video title is identified
     }
 
     // Extract the video ID from the URL (e.g., https://www.youtube.com/watch?v=VIDEO_ID)
@@ -261,23 +299,32 @@ function getVideoInfoFromItemVideoOptionMenu(target) {
     const title = titleElement.textContent.trim();
 
     return {
-        id: id,
-        title: title,
+        videoInfo: {
+            id: id,
+            title: title,
+        },
     };
 }
 
 /**
  * Extracts the video ID from the main YouTube video options menu.
  * @param {Element} target - The clicked element.
- * @returns {VideoInfo} The YouTube video Info.
+ * @returns {ClickResult | undefined} - The click result. If undefined, this is not the correct type of element and other options need to be considered.
  */
 function getVideoInfoFromMainVideoOptionMenu(target) {
-    if (
-        target.tagName != "DIV" ||
-        !target.classList.contains("yt-spec-touch-feedback-shape__fill") ||
-        !target.closest("#button-shape")
-    ) {
+    if (!target.classList.contains("yt-spec-touch-feedback-shape__fill")) {
+        // not this type of element, need to find other options
         return;
+    }
+
+    if (target.closest("div.shortsLockupViewModelHostOutsideMetadataMenu")) {
+        return getVideoInfoFromShortsItem(target);
+    }
+
+    if (!target.closest("#button-shape")) {
+        return {
+            type: ClickElementType.OTHER,
+        };
     }
 
     // check if the url is a shorts detail page like https://www.youtube.com/shorts/VIDEO_ID
@@ -288,32 +335,72 @@ function getVideoInfoFromMainVideoOptionMenu(target) {
     return getVideoInfoFromVideoDetail();
 }
 
+/**
+ * Extracts the video ID from the shorts item.
+ * @param {Element} target - The clicked element.
+ * @returns {ClickResult | undefined} - The click result. If undefined, this is not the correct type of element and other options need to be considered.
+ */
+function getVideoInfoFromShortsItem(target) {
+    const selector = "ytm-shorts-lockup-view-model";
+    const container = target.closest(selector);
+    if (!container) {
+        console.debug(`No container found for selector ${selector}`, target);
+        return {
+            type: ClickElementType.UNEXPECTED,
+        };
+    }
+
+    const linkElement = container.querySelector("h3 a");
+    return getVideoInfoFromShortsLinkElement(linkElement);
+}
+
+/**
+ * Extracts the video ID from the shorts detail page.
+ * @param {Element} target - The clicked element.
+ * @returns {ClickResult | undefined} - The click result. If undefined, this is not the correct type of element and other options need to be considered.
+ */
 function getVideoInfoFromShortsDetail(target) {
     const linkElement = target
         .closest("ytd-reel-video-renderer")
         ?.querySelector("a.ytp-title-link");
+    return getVideoInfoFromShortsLinkElement(linkElement);
+}
+
+/**
+ * Extracts the video info from the link element.
+ * @param {Element} linkElement - The link element.
+ * @returns {ClickResult | undefined} - The click result. If undefined, this is not the correct type of element and other options need to be considered.
+ */
+function getVideoInfoFromShortsLinkElement(linkElement) {
     if (!linkElement || !linkElement.href) {
-        return;
+        console.debug("No link element found", linkElement);
+        return {
+            type: ClickElementType.UNEXPECTED,
+        };
     }
 
-    // url like https://www.youtube.com/shorts/VIDEO_ID
-    // get last pathname without query params
-    const url = new URL(linkElement.href);
-    const id = url.pathname.split("/").pop();
+    const id = getVideoIdFromShortsUrl(linkElement.href);
     const title = linkElement.textContent.trim();
 
-    return { id, title };
+    return {
+        videoInfo: {
+            id,
+            title,
+        },
+    };
 }
 
 /**
  * Extracts the video info from the YouTube video detail page.
- * @returns {VideoInfo} The YouTube video Info.
+ * @returns {ClickResult | undefined} - The click result. If undefined, this is not the correct type of element and other options need to be considered.
  */
 export function getVideoInfoFromVideoDetail() {
     const titleElement = document.querySelector("#title > h1");
     if (!titleElement || !titleElement.textContent) {
         console.error("No title element found", document);
-        return;
+        return {
+            type: ClickElementType.UNEXPECTED,
+        };
     }
 
     // url like https://www.youtube.com/watch?v=VIDEO_ID
@@ -322,40 +409,67 @@ export function getVideoInfoFromVideoDetail() {
     const id = url.searchParams.get("v");
     const title = titleElement.textContent.trim();
 
-    return { id, title };
+    return {
+        videoInfo: {
+            id,
+            title,
+        },
+    };
 }
 
 /**
  * Detects when a video option is clicked.
  */
 export function detectVideoOptionClick(target) {
-    console.debug("Detecting video option click:", target);
-    const videoInfo =
-        getVideoInfoFromItemVideoOptionMenu(target) ||
-        getVideoInfoFromMainVideoOptionMenu(target);
-
-    // for example, when the more options of comments is clicked
-    if (!videoInfo) {
-        const containerElement = document.querySelector(
-            `${dropdownSelector} #${extraOptionsContainerId}`
-        );
-        if (containerElement) {
-            containerElement.setAttribute("aria-hidden", true);
-        }
+    if (target.tagName != "DIV") {
         return;
     }
 
-    console.debug("Detecting video option click:", target, videoInfo);
+    const result =
+        getVideoInfoFromItemVideoOptionMenu(target) ||
+        getVideoInfoFromMainVideoOptionMenu(target);
+
+    if (!result) {
+        return;
+    }
+
+    const { videoInfo, type } = result;
+
+    // for example, when the more options of comments is clicked
+    if (!videoInfo) {
+        if (type === ClickElementType.NO_EXTRA_OPTIONS) {
+            const containerElement = document.querySelector(
+                `${dropdownSelector} ytd-menu-popup-renderer .${extraOptionsClassName}`
+            );
+            if (containerElement) {
+                containerElement.setAttribute("aria-hidden", true);
+            }
+        }
+        return;
+    }
 
     if (!/^[a-zA-Z0-9_-]{11}$/.test(videoInfo.id)) {
         console.warn("Invalid video ID.", videoInfo.id, target);
         return;
     }
 
+    focused.videoInfo = videoInfo;
+
     // TODO set timeout
     waitForElm(`${dropdownSelector}:not([aria-hidden='true'])`).then(
         (dropdown) => {
-            updateExtraOptions(dropdown, videoInfo);
+            showExtraOptions(dropdown);
         }
     );
+}
+
+/**
+ * Extracts the video ID from the shorts URL.
+ * get the last pathname without query params
+ * @param {string} link - The shorts URL. like https://www.youtube.com/shorts/VIDEO_ID
+ * @returns {string} The video ID.
+ */
+function getVideoIdFromShortsUrl(link) {
+    const url = new URL(link);
+    return url.pathname.split("/")[2];
 }

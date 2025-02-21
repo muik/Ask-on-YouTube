@@ -1,6 +1,7 @@
 "use strict";
 
 import { BackgroundActions } from "../constants.js";
+import { waitForElm } from "./utils.js";
 import {
     detectVideoOptionClick,
     insertExtraOptions,
@@ -41,5 +42,21 @@ window.onload = async () => {
         });
 
         insertExtraOptions();
+
+        // watch for shorts item click on home page
+        if (window.location.pathname === "/") {
+            const selector =
+                "div.shortsLockupViewModelHostOutsideMetadataMenu div.yt-spec-touch-feedback-shape__fill";
+
+            waitForElm(selector).then(() => {
+                const elements = document.querySelectorAll(selector);
+                elements.forEach((element) => {
+                    element.addEventListener("click", (event) => {
+                        console.debug("Shorts item clicked", event.target);
+                        detectVideoOptionClick(event.target);
+                    });
+                });
+            });
+        }
     }
 };
