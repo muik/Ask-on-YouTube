@@ -1,6 +1,6 @@
 import { BackgroundActions } from "../../constants.js";
 import { Errors } from "../../errors.js";
-import { getSearchParam, waitForElm } from "../utils.js";
+import { waitForElm } from "../utils.js";
 import { setLoadingState } from "./extraOptionsView.js";
 import { showQuestionDialog } from "./questionView.js";
 import { getQuestionMarkSvg } from "./simpleQuestion.js";
@@ -275,12 +275,34 @@ function getVideoInfoFromMainVideoOptionMenu(target) {
     if (
         target.tagName != "DIV" ||
         !target.classList.contains("yt-spec-touch-feedback-shape__fill") ||
-        !target.closest("#actions-inner")
+        !target.closest("#button-shape")
     ) {
         return;
     }
 
+    // check if the url is a shorts detail page like https://www.youtube.com/shorts/VIDEO_ID
+    if (window.location.pathname.startsWith("/shorts/")) {
+        return getVideoInfoFromShortsDetail(target);
+    }
+
     return getVideoInfoFromVideoDetail();
+}
+
+function getVideoInfoFromShortsDetail(target) {
+    const linkElement = target
+        .closest("ytd-reel-video-renderer")
+        ?.querySelector("a.ytp-title-link");
+    if (!linkElement || !linkElement.href) {
+        return;
+    }
+
+    // url like https://www.youtube.com/shorts/VIDEO_ID
+    // get last pathname without query params
+    const url = new URL(linkElement.href);
+    const id = url.pathname.split("/").pop();
+    const title = linkElement.textContent.trim();
+
+    return { id, title };
 }
 
 /**
@@ -294,22 +316,20 @@ export function getVideoInfoFromVideoDetail() {
         return;
     }
 
-    let id = getSearchParam(window.location.href).v;
-    if (id.indexOf("#") !== -1) {
-        id = id.split("#")[0];
-    }
+    // url like https://www.youtube.com/watch?v=VIDEO_ID
+    // get the v param from the url
+    const url = new URL(window.location.href);
+    const id = url.searchParams.get("v");
     const title = titleElement.textContent.trim();
 
-    return {
-        id,
-        title,
-    };
+    return { id, title };
 }
 
 /**
  * Detects when a video option is clicked.
  */
 export function detectVideoOptionClick(target) {
+    console.debug("Detecting video option click:", target);
     const videoInfo =
         getVideoInfoFromItemVideoOptionMenu(target) ||
         getVideoInfoFromMainVideoOptionMenu(target);
