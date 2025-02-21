@@ -62,6 +62,20 @@ function insertExtraOptionsToFooter(footerElement) {
         .forEach((elm) => {
             elm.addEventListener("click", onExtraOptionClick);
         });
+
+    const observer = new MutationObserver((mutations, observer) => {
+        mutations.forEach((mutation) => {
+            if (mutation.removedNodes.length > 0) {
+                mutation.removedNodes.forEach((node) => {
+                    if (node.classList.contains(extraOptionsClassName)) {
+                        observer.disconnect();
+                        insertExtraOptionsToFooter(footerElement);
+                    }
+                });
+            }
+        });
+    });
+    observer.observe(footerElement, { childList: true });
 }
 
 /**
@@ -69,23 +83,11 @@ function insertExtraOptionsToFooter(footerElement) {
  * @param {Element} dropDownElement - The YouTube video options menu.
  */
 function showExtraOptions(dropDownElement) {
-    const containerElement =
-        dropDownElement.querySelector(`.ytq-extra-options`);
+    const containerElement = dropDownElement.querySelector(
+        `.${extraOptionsClassName}`
+    );
     if (!containerElement) {
-        const footerElement =
-            dropDownElement.querySelector("#footer") ||
-            dropDownElement.querySelector(
-                ".yt-contextual-sheet-layout-wiz__footer-container"
-            );
-        if (!footerElement) {
-            console.warn(
-                "No footer element found in dropDown",
-                dropDownElement
-            );
-            return;
-        }
-
-        insertExtraOptionsToFooter(footerElement);
+        console.error("No extra options container found", dropDownElement);
         return;
     }
 
