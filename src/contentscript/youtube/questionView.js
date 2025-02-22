@@ -248,7 +248,7 @@ function setQuestionDialogContent(videoInfo) {
     titleTokens.forEach(setTitleToken(titleElement, inputElement));
 
     const thumbnailElement = containerElement.querySelector("img.thumbnail");
-    thumbnailElement.setAttribute("src", getVideoThumbnailUrl(videoInfo.id));
+    thumbnailElement.setAttribute("src", getVideoThumbnailUrl(videoInfo));
 
     // cursor focus on the input field
     inputElement.focus();

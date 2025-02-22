@@ -132,7 +132,7 @@ Your response should include the following:
         const history = items.slice(0, 2);
 
         const startTime = Date.now();
-        const thumbnailUrl = getVideoThumbnailUrl(videoInfo.id);
+        const thumbnailUrl = getVideoThumbnailUrl(videoInfo);
         const caption = await requestOCR(thumbnailUrl);
         console.log("ocr request time sec:", (Date.now() - startTime) / 1000);
         console.log("caption:", caption);

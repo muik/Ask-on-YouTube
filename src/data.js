@@ -10,6 +10,12 @@ export function validateVideoInfo(videoInfo) {
     }
 }
 
-export function getVideoThumbnailUrl(videoId) {
-    return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+export function getVideoThumbnailUrl(videoInfo) {
+    if (!videoInfo) {
+        throw new Error("No videoInfo received.");
+    }
+    if (videoInfo.thumbnail) {
+        return videoInfo.thumbnail;
+    }
+    return `https://i.ytimg.com/vi/${videoInfo.id}/hqdefault.jpg`;
 }

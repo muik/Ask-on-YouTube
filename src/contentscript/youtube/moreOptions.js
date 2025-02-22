@@ -42,7 +42,6 @@ export function insertExtraOptions() {
 }
 
 function insertExtraOptionsToFooter(footerElement) {
-    console.debug("Insert extra options to footer", footerElement);
     const dropDownElement = footerElement.closest(dropdownSelector);
     const optionItemClassName = "option-item";
     const questionText = chrome.i18n.getMessage("questionButtonText");
@@ -113,6 +112,11 @@ function onExtraOptionClick(e) {
     }
 
     const videoInfo = focused.videoInfo;
+    if (!videoInfo) {
+        console.error("No video info found", focused);
+        showToastMessage(Errors.UNKNOWN_ERROR.message);
+        return;
+    }
 
     if (!chrome.runtime || !chrome.runtime.sendMessage) {
         showToastMessage(Errors.EXTENSION_CONTEXT_INVALIDATED.message);
@@ -263,14 +267,19 @@ function getVideoInfoFromItemVideoOptionMenu(target) {
         }
     }
 
+    // find the class name like ytd-*-renderer
+    const rendererClassName = Array.from(menuButton.classList).find(
+        (className) => className.startsWith("ytd-")
+    );
+    if (!rendererClassName) {
+        console.debug("No renderer class name found", menuButton);
+        return {
+            type: ClickElementType.OTHER,
+        }; // Exit if no renderer class name is identified
+    }
+
     // Find the video container, which could be one of several YouTube element types
-    const videoContainer =
-        menuButton.closest("ytd-rich-item-renderer") || // Main video container
-        menuButton.closest("ytd-video-renderer") ||
-        menuButton.closest("ytd-compact-video-renderer") ||
-        menuButton.closest("ytd-playlist-panel-video-renderer") ||
-        menuButton.closest("ytd-playlist-video-renderer") ||
-        menuButton.closest("ytd-grid-video-renderer");
+    const videoContainer = menuButton.closest(rendererClassName);
     if (!videoContainer) {
         console.debug("No video container found", menuButton);
         return {
@@ -287,6 +296,11 @@ function getVideoInfoFromItemVideoOptionMenu(target) {
         };
     }
 
+    const thumbnailElement = videoContainer.querySelector("img.yt-core-image");
+    if (!thumbnailElement) {
+        console.debug("No thumbnail element found", videoContainer);
+    }
+
     const titleElement = videoContainer.querySelector("#video-title");
     if (!titleElement || !titleElement.textContent) {
         console.debug("No video title found", videoContainer);
@@ -299,11 +313,13 @@ function getVideoInfoFromItemVideoOptionMenu(target) {
     const url = new URL(linkElement.href);
     const id = url.searchParams.get("v");
     const title = titleElement.textContent.trim();
+    const thumbnail = thumbnailElement?.src;
 
     return {
         videoInfo: {
             id: id,
             title: title,
+            thumbnail: thumbnail,
         },
     };
 }
@@ -319,22 +335,49 @@ function getVideoInfoFromMainVideoOptionMenu(target) {
         return;
     }
 
-    if (target.closest("div.shortsLockupViewModelHostOutsideMetadataMenu")) {
+    // for shorts item on home page
+    if (
+        target.parentElement.parentElement.parentElement.parentElement.classList.contains(
+            "shortsLockupViewModelHostOutsideMetadataMenu"
+        )
+    ) {
         return getVideoInfoFromShortsItem(target);
     }
 
-    if (!target.closest("#button-shape")) {
+    const menuButton = target.closest("ytd-menu-renderer");
+    if (!menuButton) {
+        console.debug("No menu button found", target);
         return {
             type: ClickElementType.OTHER,
         };
     }
 
-    // check if the url is a shorts detail page like https://www.youtube.com/shorts/VIDEO_ID
-    if (window.location.pathname.startsWith("/shorts/")) {
-        return getVideoInfoFromShortsDetail(target);
+    const rendererClassName = Array.from(menuButton.classList).find(
+        (className) => className.startsWith("ytd-")
+    );
+    if (!rendererClassName) {
+        console.debug("No renderer class name found", menuButton);
+        return {
+            type: ClickElementType.OTHER,
+        };
     }
 
-    return getVideoInfoFromVideoDetail();
+    // for video detail page
+    if (rendererClassName === "ytd-watch-metadata") {
+        return getVideoInfoFromVideoDetail();
+    }
+
+    if (rendererClassName.includes("-reel-")) {
+        // check if the url is a shorts detail page like https://www.youtube.com/shorts/VIDEO_ID
+        if (window.location.pathname.startsWith("/shorts/")) {
+            return getVideoInfoFromShortsDetail(target);
+        }
+    }
+
+    console.debug("No renderer class name found", rendererClassName);
+    return {
+        type: ClickElementType.OTHER,
+    };
 }
 
 /**
