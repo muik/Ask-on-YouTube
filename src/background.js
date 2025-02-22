@@ -47,11 +47,11 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     console.debug("Received message:", request);
 
     if (request.action === BackgroundActions.GET_QUESTIONS) {
-        return getQuestions(request, sendResponse);
+        return getQuestions(request, sendResponse, settings);
     } else if (request.action === BackgroundActions.GET_DEFAULT_QUESTION) {
         return getDefaultQuestion(sendResponse);
     } else if (request.action === BackgroundActions.GET_LAST_QUESTIONS) {
-        return getLastQuestions(request, sendResponse);
+        return getLastQuestions(request, sendResponse, settings);
     }
 
     if (request.action === BackgroundActions.SET_PROMPT) {

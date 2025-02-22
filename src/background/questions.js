@@ -1,4 +1,4 @@
-import { handleError, settings } from "../background.js";
+import { handleError } from "../background.js";
 import { QuestionOptionKeys, StorageKeys } from "../constants.js";
 import { Errors } from "../errors.js";
 import { LRUCache } from "./lruCache.js";
@@ -7,12 +7,12 @@ import { getSuggestedQuestions } from "./suggestQuestions.js";
 
 const questionCache = new LRUCache(10);
 
-export function getLastQuestions(request, sendResponse) {
+export function getLastQuestions(request, sendResponse, settings) {
     request.option =
         settings[StorageKeys.LAST_QUESTION_OPTION] ||
         Object.values(QuestionOptionKeys)[0];
 
-    getQuestionsRequest(request)
+    getQuestionsRequest(request, settings)
         .then((result) => {
             return {
                 option: request.option,
@@ -25,17 +25,17 @@ export function getLastQuestions(request, sendResponse) {
     return true;
 }
 
-export function getQuestions(request, sendResponse) {
-    getQuestionsRequest(request)
+export function getQuestions(request, sendResponse, settings) {
+    getQuestionsRequest(request, settings)
         .then(sendResponse)
         .catch(handleError(sendResponse));
 
-    updateLastQuestionOption(request.option);
+    updateLastQuestionOption(request.option, settings);
 
     return true;
 }
 
-function getQuestionsRequest(request) {
+function getQuestionsRequest(request, settings) {
     let getQuestionsRequest;
 
     switch (request.option) {
@@ -63,7 +63,7 @@ function getQuestionsRequest(request) {
     return getQuestionsRequest;
 }
 
-function updateLastQuestionOption(option) {
+function updateLastQuestionOption(option, settings) {
     if (settings[StorageKeys.LAST_QUESTION_OPTION] === option) {
         return;
     }
