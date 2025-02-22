@@ -6,14 +6,12 @@ import { Config } from "../config.js";
 import { validateVideoInfo } from "../data.js";
 import { Info } from "../errors.js";
 import { generateJsonContent } from "./geminiApi.js";
+import { LRUCache } from "./lruCache.js";
 import { getQuestionHistory } from "./questionHistory.js";
 
-export async function getSuggestedQuestions({
-    videoInfo,
-    apiKey,
-    questionCache,
-    language,
-}) {
+const questionCache = new LRUCache(10);
+
+export async function getSuggestedQuestions({ videoInfo, apiKey, language }) {
     validateVideoInfo(videoInfo);
 
     if (!apiKey) {
