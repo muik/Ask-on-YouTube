@@ -279,14 +279,31 @@ function setQuestions(questions, containerElement = null) {
 
     questions.forEach((question) => {
         const li = document.createElement("li");
-        li.textContent = question;
-        li.addEventListener("click", textToInputClickListener);
+        li.innerHTML = `<span class="question">${question}</span><button class="request">&gt;</button>`;
+        li.querySelector("span.question").addEventListener(
+            "click",
+            textToInputClickListener
+        );
+        li.querySelector("button.request").addEventListener(
+            "click",
+            textRequestButtonClickListener
+        );
 
         suggestionsElement.appendChild(li);
     });
 }
 
+function textRequestButtonClickListener(e) {
+    e.preventDefault();
+    e.target.previousElementSibling.click();
+    e.target
+        .closest("#contents")
+        .querySelector(".question-input-container .question-button")
+        .click();
+}
+
 function textToInputClickListener(e) {
+    e.preventDefault();
     const text = e.target.textContent
         .replace(/\n/g, " ")
         .replace("  ", ", ")

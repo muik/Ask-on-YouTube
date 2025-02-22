@@ -135,15 +135,37 @@
     margin-top: 4px;
 }
 .ytq-dialog .question-suggestions li {
-    padding: 8px 12px;
     cursor: pointer;
     font-size: 12px;
     list-style-type: none;
     border-bottom: 1px solid var(--yt-spec-10-percent-layer);
+    display: flex;
 }
 .ytq-dialog .question-suggestions li:hover {
     background-color: var(--yt-spec-10-percent-layer);
 }
+.ytq-dialog .question-suggestions li span {
+    flex: 1;
+    line-height: 32px;
+    padding: 4px;
+}
+.ytq-dialog .question-suggestions li button {
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    border-radius: 18px;
+    padding: 0 12px;
+    line-height: 24px;
+    cursor: pointer;
+    color: var(--yt-spec-text-secondary);
+    margin: 4px;
+}
+.ytq-dialog .question-suggestions li button:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+.ytq-dialog .question-suggestions li button:active {
+    background: rgba(255, 255, 255, 0.3);
+}
+
 .ytq-dialog .question-suggestions .question-options {
     display: flex;
     font-size: 14px;
