@@ -370,7 +370,14 @@ function getVideoInfoFromMainVideoOptionMenu(target) {
     if (rendererClassName.includes("-reel-")) {
         // check if the url is a shorts detail page like https://www.youtube.com/shorts/VIDEO_ID
         if (window.location.pathname.startsWith("/shorts/")) {
-            return getVideoInfoFromShortsDetail(target);
+            const videoContainer = target.closest(rendererClassName);
+            if (!videoContainer) {
+                console.debug("No video container found", target);
+                return {
+                    type: ClickElementType.OTHER,
+                };
+            }
+            return getVideoInfoFromShortsDetail(videoContainer);
         }
     }
 
@@ -396,19 +403,21 @@ function getVideoInfoFromShortsItem(target) {
     }
 
     const linkElement = container.querySelector("h3 a");
-    return getVideoInfoFromShortsLinkElement(linkElement);
+    const thumbnailElement = container.querySelector("img.yt-core-image");
+
+    return getVideoInfoFromShortsLinkElement(linkElement, thumbnailElement);
 }
 
 /**
  * Extracts the video ID from the shorts detail page.
- * @param {Element} target - The clicked element.
+ * @param {Element} rendererElement - The renderer element.
  * @returns {ClickResult | undefined} - The click result. If undefined, this is not the correct type of element and other options need to be considered.
  */
-function getVideoInfoFromShortsDetail(target) {
-    const linkElement = target
-        .closest("ytd-reel-video-renderer")
-        ?.querySelector("a.ytp-title-link");
-    return getVideoInfoFromShortsLinkElement(linkElement);
+function getVideoInfoFromShortsDetail(videoContainer) {
+    const linkElement = videoContainer.querySelector("a.ytp-title-link");
+    const thumbnailElement = null; // no thumbnail for shorts detail page
+
+    return getVideoInfoFromShortsLinkElement(linkElement, thumbnailElement);
 }
 
 /**
@@ -416,7 +425,10 @@ function getVideoInfoFromShortsDetail(target) {
  * @param {Element} linkElement - The link element.
  * @returns {ClickResult | undefined} - The click result. If undefined, this is not the correct type of element and other options need to be considered.
  */
-function getVideoInfoFromShortsLinkElement(linkElement) {
+function getVideoInfoFromShortsLinkElement(
+    linkElement,
+    thumbnailElement = null
+) {
     if (!linkElement || !linkElement.href) {
         console.debug("No link element found", linkElement);
         return {
@@ -426,11 +438,13 @@ function getVideoInfoFromShortsLinkElement(linkElement) {
 
     const id = getVideoIdFromShortsUrl(linkElement.href);
     const title = linkElement.textContent.trim();
+    const thumbnail = thumbnailElement?.src;
 
     return {
         videoInfo: {
             id,
             title,
+            thumbnail,
         },
     };
 }
