@@ -1,6 +1,6 @@
-import { handleError } from "../background.js";
 import { QuestionOptionKeys, StorageKeys } from "../constants.js";
 import { Errors } from "../errors.js";
+import { handleError } from "./handlers.js";
 import { LRUCache } from "./lruCache.js";
 import { getFavoriteQuestions, getRecentQuestions } from "./questionHistory.js";
 import { getSuggestedQuestions } from "./suggestQuestions.js";

@@ -1,5 +1,6 @@
 "use strict";
 
+import { handleError } from "./background/handlers.js";
 import { LRUCache } from "./background/lruCache.js";
 import { saveQuestionHistory } from "./background/questionHistory.js";
 import {
@@ -89,28 +90,14 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
 function handleSetPromptResult(sendResponse) {
     return (result) => {
-        if (result.prompt) {
-            promptTemp = result.prompt;
-            sendResponse(result.response);
-        } else {
-            const error =
-                result.error || new Error("Internal server error: No prompt");
-            handleError(sendResponse)(error);
+        if (result.error) {
+            throw result.error;
         }
-    };
-}
+        if (!result.prompt) {
+            throw new Error("No prompt provided in response");
+        }
 
-export function handleError(sendResponse) {
-    return (error) => {
-        if (!error.code) {
-            error.code = "UNKNOWN_ERROR";
-            console.error("Unknown error:", error);
-        }
-        sendResponse({
-            error: {
-                message: error.message,
-                code: error.code,
-            },
-        });
+        promptTemp = result.prompt;
+        sendResponse(result.response);
     };
 }

@@ -1,4 +1,8 @@
 export const Errors = {
+    UNKNOWN_ERROR: {
+        message: chrome.i18n.getMessage("unknownError"),
+        code: "UNKNOWN_ERROR",
+    },
     EXTENSION_CONTEXT_INVALIDATED: {
         message: chrome.i18n.getMessage("extensionContextInvalidatedError"),
         code: "EXTENSION_CONTEXT_INVALIDATED",

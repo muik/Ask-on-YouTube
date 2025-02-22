@@ -76,5 +76,8 @@
     },
     "geminiApiKeyNotValidError": {
         "message": "Invalid Gemini API key. Please set a valid Gemini API key on <a href='#' class='settings'>Settings</a> of Ask on YouTube!"
+    },
+    "unknownError": {
+        "message": "An unknown error occurred. Please refresh the page and try again."
     }
 }
