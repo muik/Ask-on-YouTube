@@ -1,4 +1,4 @@
-import { BackgroundActions, StorageKeys } from "../constants.js";
+import { StorageKeys } from "../constants.js";
 import "../css/settings.css";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -31,14 +31,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 () => statusMessageElement.classList.remove("visible"),
                 2000
             );
-
-            chrome.runtime.sendMessage(
-                { action: BackgroundActions.SETTINGS_UPDATED, key, value },
-                (response) => {
-                    // TODO handle errors
-                    console.debug("Settings updated:", response);
-                }
-            );
         });
     };
 
@@ -66,10 +58,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Function to update the theme based on system preference
     function updateTheme() {
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.body.classList.add('dark-mode');
+        if (
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches
+        ) {
+            document.body.classList.add("dark-mode");
         } else {
-            document.body.classList.remove('dark-mode');
+            document.body.classList.remove("dark-mode");
         }
     }
 
@@ -77,7 +72,9 @@ document.addEventListener("DOMContentLoaded", () => {
     updateTheme();
 
     // Listen for changes in system theme
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateTheme);
+    window
+        .matchMedia("(prefers-color-scheme: dark)")
+        .addEventListener("change", updateTheme);
 });
 
 function setMessages() {

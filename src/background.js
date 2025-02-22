@@ -1,7 +1,6 @@
 "use strict";
 
 import { handleError } from "./background/handlers.js";
-import { LRUCache } from "./background/lruCache.js";
 import { saveQuestionHistory } from "./background/questionHistory.js";
 import {
     getDefaultQuestion,
@@ -9,7 +8,8 @@ import {
     getQuestions,
 } from "./background/questions.js";
 import { setPrompt } from "./background/setPrompt.js";
-import { BackgroundActions, StorageKeys } from "./constants.js";
+import { loadSettings, updateSettings } from "./background/settingsLoader.js";
+import { BackgroundActions } from "./constants.js";
 import { Errors } from "./errors.js";
 
 console.log("connected...");
@@ -29,18 +29,10 @@ chrome.action.onClicked.addListener(() => {
 });
 
 let promptTemp = "";
-export const settings = {};
-export const transcriptCache = new LRUCache(10);
+
 // load settings from storage on startup
-chrome.storage.sync.get(
-    [StorageKeys.GEMINI_API_KEY, StorageKeys.LAST_QUESTION_OPTION],
-    (result) => {
-        Object.keys(result).forEach((key) => {
-            settings[key] = result[key];
-        });
-        console.debug("Settings loaded:", settings);
-    }
-);
+loadSettings();
+chrome.storage.onChanged.addListener(updateSettings);
 
 // On Message
 // Returning true ensures the response is asynchronous
@@ -48,11 +40,11 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     console.debug("Received message:", request);
 
     if (request.action === BackgroundActions.GET_QUESTIONS) {
-        return getQuestions(request, sendResponse, settings);
+        return getQuestions(request, sendResponse);
     } else if (request.action === BackgroundActions.GET_DEFAULT_QUESTION) {
         return getDefaultQuestion(sendResponse);
     } else if (request.action === BackgroundActions.GET_LAST_QUESTIONS) {
-        return getLastQuestions(request, sendResponse, settings);
+        return getLastQuestions(request, sendResponse);
     }
 
     if (request.action === BackgroundActions.SET_PROMPT) {
@@ -74,10 +66,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.action === BackgroundActions.GET_PROMPT) {
         sendResponse({ prompt: promptTemp });
         promptTemp = ""; // Reset prompt
-    } else if (request.action === BackgroundActions.SETTINGS_UPDATED) {
-        console.debug("Settings updated:", request);
-        settings[request.key] = request.value;
-        sendResponse({ status: "success", message: "Settings updated." });
     } else if (request.action === BackgroundActions.OPEN_SETTINGS_PAGE) {
         chrome.runtime.openOptionsPage();
     } else {

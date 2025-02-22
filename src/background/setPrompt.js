@@ -1,14 +1,16 @@
 "use strict";
-import { transcriptCache } from "../background.js";
 import { config } from "../contentscript/config.js";
 import { validateVideoInfo } from "../data.js";
 import { Errors } from "../errors.js";
+import { LRUCache } from "./lruCache.js";
 import {
     getChatGPTCustomPrompt,
     getGeminiCustomPrompt,
     loadTranscript,
 } from "./prompt.js";
 import { getDefaultQuestion } from "./questionHistory.js";
+
+const transcriptCache = new LRUCache(10);
 
 export async function setPrompt({ videoInfo, target, question }) {
     validateVideoInfo(videoInfo);

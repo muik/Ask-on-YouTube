@@ -140,21 +140,22 @@
     list-style-type: none;
     border-bottom: 1px solid var(--yt-spec-10-percent-layer);
     display: flex;
+    align-items: center;
 }
 .ytq-dialog .question-suggestions li:hover {
     background-color: var(--yt-spec-10-percent-layer);
 }
 .ytq-dialog .question-suggestions li span {
     flex: 1;
-    line-height: 32px;
-    padding: 4px;
+    padding: 8px;
+    line-height: 1.5;
 }
 .ytq-dialog .question-suggestions li button {
     background: rgba(255, 255, 255, 0.05);
     border: none;
     border-radius: 18px;
     padding: 0 12px;
-    line-height: 24px;
+    line-height: 32px;
     cursor: pointer;
     color: var(--yt-spec-text-secondary);
     margin: 4px;

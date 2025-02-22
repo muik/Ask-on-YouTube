@@ -2,7 +2,6 @@ export const BackgroundActions = {
     GET_QUESTIONS: "getQuestions",
     SET_PROMPT: "setPrompt",
     GET_PROMPT: "getPrompt",
-    SETTINGS_UPDATED: "settingsUpdated",
     OPEN_SETTINGS_PAGE: "openSettingsPage",
     GET_DEFAULT_QUESTION: "getDefaultQuestion",
     GET_LAST_QUESTIONS: "getLastQuestions",
