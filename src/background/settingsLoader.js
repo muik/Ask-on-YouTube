@@ -53,7 +53,11 @@ export async function setLastQuestionOption(option) {
     console.debug("Last question option updated:", option);
 }
 
-export async function getLastQuestionOption() {
+/**
+ * Load the last question option from storage
+ * @returns {Promise<string>} The last question option
+ */
+export async function loadLastQuestionOption() {
     const settings = await loadSettings();
     return (
         settings[StorageKeys.LAST_QUESTION_OPTION] ||

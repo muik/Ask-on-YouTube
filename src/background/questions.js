@@ -4,24 +4,16 @@ import { handleError } from "./handlers.js";
 import { getFavoriteQuestions, getRecentQuestions } from "./questionHistory.js";
 import {
     getApiKey,
-    getLastQuestionOption,
+    loadLastQuestionOption,
     setLastQuestionOption,
 } from "./settingsLoader.js";
 import { getSuggestedQuestions } from "./suggestQuestions.js";
 
-export function getLastQuestions(request, sendResponse) {
-    getLastQuestionOption()
-        .then((lastQuestionOption) => {
-            request.option = lastQuestionOption;
-            return getQuestionsRequest(request);
+export function getLastQuestionOption(sendResponse) {
+    loadLastQuestionOption()
+        .then((option) => {
+            sendResponse({ option });
         })
-        .then((result) => {
-            return {
-                option: request.option,
-                ...result,
-            };
-        })
-        .then(sendResponse)
         .catch(handleError(sendResponse));
 
     return true;

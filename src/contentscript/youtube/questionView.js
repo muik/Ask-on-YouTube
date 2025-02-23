@@ -33,9 +33,53 @@ export function showQuestionDialog(videoInfo) {
     setQuestionDialogContent(videoInfo);
 
     const questionOption = getSelectedQuestionOption();
-    requestQuestions(questionOption, containerElement);
+    if (!questionOption) {
+        loadLastQuestionOption(containerElement);
+    } else {
+        loadQuestions(questionOption, containerElement);
+    }
 
     loadDefaultQuestion();
+}
+
+async function loadLastQuestionOption(containerElement) {
+    try {
+        showProgressSpinner(containerElement);
+        setQuestionsError(null, containerElement);
+        repositionDialog();
+
+        const response = await chrome.runtime.sendMessage({
+            action: BackgroundActions.GET_LAST_QUESTION_OPTION,
+        });
+
+        if (chrome.runtime.lastError) {
+            console.error(
+                "requestLastQuestionOption lastError:",
+                chrome.runtime.lastError
+            );
+            throw Errors.UNKNOWN_ERROR;
+        }
+
+        if (response.error) {
+            if (!response.error.code) {
+                console.error("requestLastQuestionOption Error:", response);
+            }
+            throw response.error;
+        }
+
+        if (!response.option) {
+            console.error(
+                "requestLastQuestionOption Error: no option",
+                response
+            );
+            throw Errors.INVALID_RESPONSE;
+        }
+
+        clickQuestionOption(response.option);
+    } catch (error) {
+        setQuestionsError(error);
+        hideProgressSpinner();
+    }
 }
 
 async function loadDefaultQuestion() {
@@ -67,7 +111,7 @@ async function loadDefaultQuestion() {
 
 /**
  * Get the selected question option from the container element
- * @returns {string} The selected question option, null when first loaded
+ * @returns {string | null} The selected question option, null when first loaded
  */
 function getSelectedQuestionOption() {
     const containerElement = getContainerElement();
@@ -78,18 +122,11 @@ function getSelectedQuestionOption() {
     );
 }
 
-function requestQuestions(option = null, containerElement = null) {
+function loadQuestions(option, containerElement = null) {
     showProgressSpinner(containerElement);
     setQuestionsError(null, containerElement);
-
-    // set dialog position in the center of the screen
     repositionDialog();
-
-    if (option) {
-        executeRequestQuestionsByOption(option);
-    } else {
-        executeRequestQuestions();
-    }
+    requestQuestions(option);
 }
 
 function resetQuestions(containerElement = null) {
@@ -104,7 +141,7 @@ function resetQuestions(containerElement = null) {
     messageElement.removeAttribute("type");
 }
 
-async function executeRequestQuestionsByOption(option) {
+async function requestQuestions(option) {
     try {
         validateQuestionOption(option);
 
@@ -124,34 +161,6 @@ async function executeRequestQuestionsByOption(option) {
         setRequestQuestionsError(error);
     } finally {
         if (isQuestionOptionActive(option)) {
-            hideProgressSpinner();
-            repositionDialog();
-        }
-    }
-}
-
-async function executeRequestQuestions() {
-    let lastOption = null;
-
-    try {
-        const response = await chrome.runtime.sendMessage({
-            action: BackgroundActions.GET_LAST_QUESTIONS,
-            videoInfo: dialogData.videoInfo,
-        });
-
-        if (getSelectedQuestionOption()) {
-            // stop, when the option is changed
-            return;
-        }
-
-        setQuestionOptionActive(response.option);
-        lastOption = response.option;
-
-        handleQuestionsResponse(response);
-    } catch (error) {
-        setRequestQuestionsError(error);
-    } finally {
-        if (isQuestionOptionActive(lastOption)) {
             hideProgressSpinner();
             repositionDialog();
         }
@@ -187,10 +196,10 @@ function validateQuestionOption(option) {
     }
 }
 
-function setQuestionOptionActive(option) {
+function clickQuestionOption(option) {
     getContainerElement()
         .querySelector(`.question-options .title[data-option="${option}"]`)
-        .classList.add("active");
+        .click();
 }
 
 function isQuestionOptionActive(option) {
@@ -408,13 +417,13 @@ function onQuestionOptionClick(e) {
     optionElement
         .closest(".question-options")
         .querySelector(".title.active")
-        .classList.remove("active");
+        ?.classList.remove("active");
     optionElement.classList.add("active");
 
     resetQuestions();
 
     const option = optionElement.getAttribute("data-option");
-    requestQuestions(option);
+    loadQuestions(option);
 }
 
 function onRequestButtonClick(event) {
@@ -527,6 +536,9 @@ function onPromptSet(response) {
     hideQuestionDialog();
 }
 
+/**
+ * Set dialog position in the center of the screen
+ */
 function repositionDialog() {
     const containerElement = getContainerElement();
     if (!containerElement || containerElement.style.display == "none") {

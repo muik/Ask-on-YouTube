@@ -4,8 +4,8 @@ import { handleError } from "./background/handlers.js";
 import { saveQuestionHistory } from "./background/questionHistory.js";
 import {
     getDefaultQuestion,
-    getLastQuestions,
-    getQuestions,
+    getLastQuestionOption,
+    getQuestions
 } from "./background/questions.js";
 import { setPrompt } from "./background/setPrompt.js";
 import { loadSettings, updateSettings } from "./background/settingsLoader.js";
@@ -43,8 +43,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         return getQuestions(request, sendResponse);
     } else if (request.action === BackgroundActions.GET_DEFAULT_QUESTION) {
         return getDefaultQuestion(sendResponse);
-    } else if (request.action === BackgroundActions.GET_LAST_QUESTIONS) {
-        return getLastQuestions(request, sendResponse);
+    } else if (request.action === BackgroundActions.GET_LAST_QUESTION_OPTION) {
+        return getLastQuestionOption(sendResponse);
     }
 
     if (request.action === BackgroundActions.SET_PROMPT) {
