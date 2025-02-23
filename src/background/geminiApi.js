@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Buffer } from "buffer";
+import { Errors } from "../errors.js";
 
 async function fetchImageData(imageUrl) {
     const imageResp = await fetch(imageUrl).then((response) =>
@@ -43,9 +44,7 @@ export async function generateJsonContent(
     };
 
     const genAI = new GoogleGenerativeAI(
-        apiKey ||
-            process.env.GEMINI_API_KEY ||
-            process.env.GOOGLE_CLOUD_API_KEY
+        apiKey || process.env.GEMINI_API_KEY || process.env.GOOGLE_CLOUD_API_KEY
     );
     const model = genAI.getGenerativeModel({
         model: "gemini-2.0-flash-lite-preview-02-05",
@@ -68,7 +67,7 @@ export async function generateJsonContent(
     try {
         return JSON.parse(responseText);
     } catch (error) {
-        console.error("Failed to parse JSON response:", error);
-        throw new Error("Invalid JSON response");
+        console.error("Failed to parse JSON response:", responseText, error);
+        throw Errors.INVALID_RESPONSE;
     }
 }
