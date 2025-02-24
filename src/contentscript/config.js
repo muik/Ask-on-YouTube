@@ -1,3 +1,3 @@
 export const config = {
-    refCode: "_glasp",
+    refCode: "ytq",
 };
