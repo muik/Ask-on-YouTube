@@ -28,7 +28,7 @@ describe("Question dialog Test", () => {
         await waitAndClick(page, moreOptionButtonSelector);
 
         const extraOptionsSelector =
-            "tp-yt-iron-dropdown.ytd-popup-container:not([aria-hidden='true']) #extra-options";
+            "tp-yt-iron-dropdown.ytd-popup-container:not([aria-hidden='true']) .ytq-extra-options";
         await page.waitForSelector(extraOptionsSelector, { timeout: 2000 });
 
         const questionButtonSelector = ".option-item[target-value=question]";
@@ -36,15 +36,6 @@ describe("Question dialog Test", () => {
 
         const questionDialogSelector = "ytd-popup-container #dialog-container";
         await page.waitForSelector(questionDialogSelector, { timeout: 2000 });
-
-        // Wait for spinner and contents
-        const spinnerSelector = `${questionDialogSelector} #spinner`;
-        await page.waitForSelector(`${spinnerSelector}:not([hidden])`, {
-            timeout: 2000,
-        });
-        await page.waitForSelector(`${spinnerSelector}[hidden]`, {
-            timeout: 3000,
-        });
 
         const contentsSelector = `${questionDialogSelector} #contents`;
         await page.waitForSelector(contentsSelector, {
@@ -101,5 +92,67 @@ describe("Question dialog Test", () => {
 
             await runCommonTestFlow(page, type.selector);
         });
+    });
+
+    it("Input question on ChatGPT from simple question form correctly", async () => {
+        const page = await browser.newPage();
+        await page.setViewport({ width: 1024, height: 768 });
+        await page.goto("https://www.youtube.com/watch?v=kSgIRBvxiDo", {
+            waitUntil: ["networkidle0", "domcontentloaded"],
+        });
+
+        await waitAndClick(
+            page,
+            "#ytq-detail-related-above .question-input-container button"
+        );
+
+        const newTarget = await browser.waitForTarget(
+            (target) => target.url().startsWith("https://chatgpt.com/"),
+            { timeout: 5000 }
+        );
+
+        expect(newTarget.url()).toContain("https://chatgpt.com/");
+        const newPage = await newTarget.page();
+        await newPage.setViewport({ width: 1024, height: 768 });
+        await newPage.waitForSelector("title", { timeout: 5000 });
+        expect(await newPage.title()).toContain("ChatGPT");
+
+        await newPage.waitForSelector('[data-message-author-role="user"]', {
+            timeout: 2000,
+        });
+    });
+
+    it("Input question on ChatGPT from question dialog correctly", async () => {
+        const page = await browser.newPage();
+        await page.setViewport({ width: 1024, height: 768 });
+        await page.goto("https://www.youtube.com/watch?v=kSgIRBvxiDo", {
+            waitUntil: ["networkidle0", "domcontentloaded"],
+        });
+
+        const moreOptionButtonSelector = moreOptionButtonTypes[0].selector;
+        await waitAndClick(page, moreOptionButtonSelector);
+
+        const extraOptionsSelector =
+            "tp-yt-iron-dropdown.ytd-popup-container:not([aria-hidden='true']) .ytq-extra-options";
+        await page.waitForSelector(extraOptionsSelector, { timeout: 2000 });
+
+        const questionButtonSelector = ".option-item[target-value=question]";
+        await waitAndClick(page, questionButtonSelector);
+
+        const questionDialogSelector = "ytd-popup-container #dialog-container";
+        await page.waitForSelector(questionDialogSelector, { timeout: 2000 });
+
+        await waitAndClick(page, "#dialog-container button.question-button");
+
+        const newTarget = await browser.waitForTarget(
+            (target) => target.url().startsWith("https://chatgpt.com/"),
+            { timeout: 5000 }
+        );
+
+        expect(newTarget.url()).toContain("https://chatgpt.com/");
+        const newPage = await newTarget.page();
+        await newPage.setViewport({ width: 1024, height: 768 });
+        await newPage.waitForSelector("title", { timeout: 5000 });
+        expect(await newPage.title()).toContain("ChatGPT");
     });
 });
