@@ -59,11 +59,14 @@ async function loadDefaultQuestion(inputElement) {
 }
 
 function getQuestionInputFormHtml() {
+    const requestButtonName = chrome.i18n.getMessage("requestButtonName");
+    const requestingButtonName = chrome.i18n.getMessage("requestingButtonName");
+
     return `<div class="question-input-container">
     <input type="text" value="">
     <button class="question-button">
         ${getQuestionMarkSvg()}
-        <span class="default-text">Ask</span><span class="loading-text">Asking..</span>
+        <span class="default-text">${requestButtonName}</span><span class="loading-text">${requestingButtonName}</span>
     </button>
 </div>
 <p id="question-input-error" class="message"></p>`;
