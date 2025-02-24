@@ -40,13 +40,13 @@ export function showQuestionDialog(videoInfo) {
     }
 
     loadDefaultQuestion();
+    repositionDialog();
 }
 
 async function loadLastQuestionOption(containerElement) {
     try {
         showProgressSpinner(containerElement);
         setQuestionsError(null, containerElement);
-        repositionDialog();
 
         const response = await chrome.runtime.sendMessage({
             action: BackgroundActions.GET_LAST_QUESTION_OPTION,
@@ -125,7 +125,6 @@ function getSelectedQuestionOption() {
 function loadQuestions(option, containerElement = null) {
     showProgressSpinner(containerElement);
     setQuestionsError(null, containerElement);
-    repositionDialog();
     requestQuestions(option);
 }
 
@@ -162,7 +161,6 @@ async function requestQuestions(option) {
     } finally {
         if (isQuestionOptionActive(option)) {
             hideProgressSpinner();
-            repositionDialog();
         }
     }
 }
@@ -548,9 +546,9 @@ function repositionDialog() {
     const screenWidth = window.innerWidth;
     const screenHeight = window.innerHeight;
     const dialogWidth = containerElement.offsetWidth;
-    const dialogHeight = containerElement.offsetHeight;
+    const dialogHeight = Math.max(containerElement.offsetHeight, 501);
     const dialogX = (screenWidth - dialogWidth) / 2;
-    const dialogY = (screenHeight - dialogHeight) / 2;
+    const dialogY = (screenHeight - dialogHeight) / 2.2;
     containerElement.style.left = `${dialogX}px`;
     containerElement.style.top = `${dialogY}px`;
 
