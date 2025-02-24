@@ -75,15 +75,37 @@ document.addEventListener("DOMContentLoaded", () => {
     window
         .matchMedia("(prefers-color-scheme: dark)")
         .addEventListener("change", updateTheme);
+
+    // Add click listener for screenshot toggle
+    addScreenshotTogglesListener();
 });
+
+function addScreenshotTogglesListener() {
+    document
+        .querySelectorAll(".screenshot-title")
+        .forEach((screenshotTitle) => {
+            screenshotTitle.addEventListener("click", () => {
+                const isOpened =
+                    screenshotTitle.parentElement.getAttribute("opened") ===
+                    "true";
+                screenshotTitle.parentElement.setAttribute("opened", !isOpened);
+            });
+        });
+}
 
 function setMessages() {
     const messages = chrome.i18n.getMessage;
     const elements = document.querySelectorAll("[msg]");
     elements.forEach((element) => {
-        console.debug("Setting message:", element.getAttribute("msg"));
-        element.innerHTML = messages(element.getAttribute("msg"));
-        console.debug("Message set:", element.textContent);
+        const msgKey = element.getAttribute("msg");
+        if (!msgKey || msgKey.length === 0) {
+            console.warn("No msg key found for element:", element);
+            return;
+        }
+        element.innerHTML = messages(msgKey);
+        if (!element.innerHTML || element.innerHTML.length === 0) {
+            console.error("No message found for msg key:", msgKey, element);
+        }
     });
 
     document.title = `${messages("settings")} - ${messages(

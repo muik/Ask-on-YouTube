@@ -79,5 +79,8 @@
     },
     "unknownError": {
         "message": "An unknown error occurred. Please refresh the page and try again."
+    },
+    "exampleScreenshot": {
+        "message": "Example screenshot"
     }
 }

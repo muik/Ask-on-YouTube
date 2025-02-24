@@ -133,3 +133,40 @@ body.dark-mode a {
 body.dark-mode a:visited {
     color: #eee; /* Visited link color in dark mode */
 }
+
+.screenshot-container {
+    opacity: 0.7;
+    margin-top: 16px;
+}
+.screenshot-title {
+    display: inline-block;
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 5px;
+    cursor: pointer;
+}
+.screenshot-container img {
+    display: none;
+    margin-top: 4px;
+}
+.screenshot-container[opened="true"] img {
+    display: block;
+    animation: fadeIn 0.2s ease-in-out;
+}
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+.screenshot-container .screenshot-title .toggle-icon {
+    display: none;
+}
+.screenshot-container[opened="false"] .screenshot-title .toggle-icon.closed {
+    display: inline;
+}
+.screenshot-container[opened="true"] .screenshot-title .toggle-icon.opened {
+    display: inline;
+}
