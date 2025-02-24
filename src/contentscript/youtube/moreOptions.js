@@ -364,7 +364,9 @@ function getVideoInfoFromMainVideoOptionMenu(target) {
 
     // for video detail page
     if (rendererClassName === "ytd-watch-metadata") {
-        return getVideoInfoFromVideoDetail();
+        return {
+            videoInfo: getVideoInfoFromVideoDetail(),
+        };
     }
 
     if (rendererClassName.includes("-reel-")) {
@@ -451,15 +453,13 @@ function getVideoInfoFromShortsLinkElement(
 
 /**
  * Extracts the video info from the YouTube video detail page.
- * @returns {ClickResult | undefined} - The click result. If undefined, this is not the correct type of element and other options need to be considered.
+ * @returns {VideoInfo} - The video info.
  */
 export function getVideoInfoFromVideoDetail() {
     const titleElement = document.querySelector("#title > h1");
     if (!titleElement || !titleElement.textContent) {
-        console.error("No title element found", document);
-        return {
-            type: ClickElementType.UNEXPECTED,
-        };
+        console.error("No title element found on video detail page", document);
+        throw Errors.UNKNOWN_ERROR;
     }
 
     // url like https://www.youtube.com/watch?v=VIDEO_ID
@@ -469,10 +469,8 @@ export function getVideoInfoFromVideoDetail() {
     const title = titleElement.textContent.trim();
 
     return {
-        videoInfo: {
-            id,
-            title,
-        },
+        id,
+        title,
     };
 }
 

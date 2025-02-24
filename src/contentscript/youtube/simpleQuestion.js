@@ -63,7 +63,7 @@ function getQuestionInputFormHtml() {
     <input type="text" value="">
     <button class="question-button">
         ${getQuestionMarkSvg()}
-        <span class="default-text">요청</span><span class="loading-text">요청 중..</span>
+        <span class="default-text">Ask</span><span class="loading-text">Asking..</span>
     </button>
 </div>
 <p id="question-input-error" class="message"></p>`;
