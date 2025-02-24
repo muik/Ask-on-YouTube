@@ -54,7 +54,7 @@
         "message": "Chrome 확장 프로그램이 업데이트되었습니다. 이 페이지를 새로고침 후 다시 시도해주세요."
     },
     "invalidResponseError": {
-        "message": "유효하지 않은 응답입니다. 나중에 다시 시도해주세요."
+        "message": "응답 처리에 문제가 발생했습니다. 나중에 다시 시도해주세요."
     },
     "invalidRequestError": {
         "message": "유효하지 않은 요청입니다. 나중에 다시 시도해주세요."

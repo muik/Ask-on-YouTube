@@ -54,7 +54,7 @@
         "message": "The Chrome extension has been updated. Please refresh the page and try again."
     },
     "invalidResponseError": {
-        "message": "Invalid response, please try again later."
+        "message": "Response processing failed. Please try again later."
     },
     "invalidRequestError": {
         "message": "Invalid request, please try again later."
