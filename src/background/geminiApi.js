@@ -67,7 +67,7 @@ export async function generateJsonContent(
     try {
         return JSON.parse(responseText);
     } catch (error) {
-        console.error("Failed to parse JSON response:", responseText, error);
+        console.warn("Failed to parse JSON response:", responseText, error);
         throw Errors.INVALID_RESPONSE;
     }
 }
