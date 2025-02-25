@@ -5,10 +5,11 @@ import { saveQuestionHistory } from "./background/questionHistory.js";
 import {
     getDefaultQuestion,
     getLastQuestionOption,
-    getQuestions
+    getQuestions,
 } from "./background/questions.js";
 import { setPrompt } from "./background/setPrompt.js";
 import { loadSettings, updateSettings } from "./background/settingsLoader.js";
+import { getQuestionMenuUsedBefore, setQuestionMenuUsedBefore } from "./background/usedBefore.js";
 import { BackgroundActions } from "./constants.js";
 import { Errors } from "./errors.js";
 
@@ -45,6 +46,14 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         return getDefaultQuestion(sendResponse);
     } else if (request.action === BackgroundActions.GET_LAST_QUESTION_OPTION) {
         return getLastQuestionOption(sendResponse);
+    }
+
+    if (request.action === BackgroundActions.GET_QUESTION_MENU_USED_BEFORE) {
+        return getQuestionMenuUsedBefore(sendResponse);
+    } else if (
+        request.action === BackgroundActions.SET_QUESTION_MENU_USED_BEFORE
+    ) {
+        return setQuestionMenuUsedBefore(sendResponse);
     }
 
     if (request.action === BackgroundActions.SET_PROMPT) {

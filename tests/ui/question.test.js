@@ -149,4 +149,44 @@ describe("Question dialog Test", () => {
         // await newPage.waitForSelector("title", { timeout: 5000 });
         // expect(await newPage.title()).toContain("ChatGPT");
     });
+
+    it("Question menu use mark is shown when first time", async () => {
+        const page = await browser.newPage();
+        await page.setViewport({ width: 1024, height: 768 });
+        await page.goto("https://www.youtube.com/watch?v=kSgIRBvxiDo");
+
+        const moreOptionButtonSelector = moreOptionButtonTypes[0].selector;
+        await waitAndClick(page, moreOptionButtonSelector);
+
+        const extraOptionsSelector =
+            "tp-yt-iron-dropdown.ytd-popup-container:not([aria-hidden='true']) .ytq-extra-options";
+        await page.waitForSelector(extraOptionsSelector, { timeout: 2000 });
+
+        const useMarkSelector = `${extraOptionsSelector} .vertical-menu .use-mark`;
+        await page.waitForSelector(useMarkSelector, { timeout: 2000 });
+
+        // click quesuseMarkElement useMarkElement tion menu
+        const questionButtonSelector = ".option-item[target-value=question]";
+        await waitAndClick(page, questionButtonSelector);
+
+        const questionDialogSelector = "ytd-popup-container #dialog-container";
+        await page.waitForSelector(questionDialogSelector, { timeout: 2000 });
+
+        // Close question dialog
+        await waitAndClick(page, `${questionDialogSelector} #close-button`);
+        await page.waitForSelector(questionDialogSelector, {
+            timeout: 2000,
+            hidden: true,
+        });
+
+        // click more option button
+        await waitAndClick(page, moreOptionButtonSelector);
+        await page.waitForSelector(extraOptionsSelector, { timeout: 2000 });
+
+        // Check if useMarkElement is removed
+        await page.waitForSelector(useMarkSelector, {
+            timeout: 2000,
+            hidden: true,
+        });
+    });
 });

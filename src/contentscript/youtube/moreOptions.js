@@ -28,6 +28,9 @@ const extraOptionsClassName = "ytq-extra-options";
 const dropdownSelector = "tp-yt-iron-dropdown.ytd-popup-container";
 const focused = {};
 
+const useMarkElements = [];
+let questionMenuUsedBefore;
+
 /**
  * Insert extra options ui into the footer of more options dropdown
  */
@@ -42,25 +45,8 @@ export function insertExtraOptions() {
 }
 
 function insertExtraOptionsToFooter(footerElement) {
-    const dropDownElement = footerElement.closest(dropdownSelector);
-    const optionItemClassName = "option-item";
-    const questionText = chrome.i18n.getMessage("questionButtonText");
-    const extraOptionsHTML = `
-            <div class="ytq ${extraOptionsClassName}">
-                <div class="vertical-menu ${optionItemClassName}" target-value="question">
-                    <div class="icon">${getQuestionMarkSvg()}</div>
-                    <span class="text">${questionText}</span>
-                </div>
-            </div>`.trim();
-
-    footerElement.insertAdjacentHTML("beforeend", extraOptionsHTML);
-
-    // Click event listener for the "View in Gemini" button
-    dropDownElement
-        .querySelectorAll(`.${extraOptionsClassName} .${optionItemClassName}`)
-        .forEach((elm) => {
-            elm.addEventListener("click", onExtraOptionClick);
-        });
+    const container = createExtraOptionsContainer();
+    footerElement.insertAdjacentElement("beforeend", container);
 
     const observer = new MutationObserver((mutations, observer) => {
         mutations.forEach((mutation) => {
@@ -75,6 +61,73 @@ function insertExtraOptionsToFooter(footerElement) {
         });
     });
     observer.observe(footerElement, { childList: true });
+
+    insertQuestionMenuUseMark(container);
+}
+
+function createExtraOptionsContainer() {
+    const optionItemClassName = "option-item";
+    const questionText = chrome.i18n.getMessage("questionButtonText");
+    const container = document.createElement("div");
+    container.classList.add("ytq");
+    container.classList.add(extraOptionsClassName);
+    container.innerHTML = `
+            <div class="vertical-menu ${optionItemClassName}" target-value="question">
+                <div class="icon">${getQuestionMarkSvg()}</div>
+                <span class="text">${questionText}</span>
+            </div>`.trim();
+
+    // Click event listener for the "View in Gemini" button
+    container.querySelectorAll(`.${optionItemClassName}`).forEach((elm) => {
+        elm.addEventListener("click", onExtraOptionClick);
+    });
+
+    return container;
+}
+
+async function insertQuestionMenuUseMark(container) {
+    if (questionMenuUsedBefore === undefined) {
+        const response = await chrome.runtime.sendMessage({
+            action: BackgroundActions.GET_QUESTION_MENU_USED_BEFORE,
+        });
+        questionMenuUsedBefore = response.usedBefore;
+    }
+
+    if (questionMenuUsedBefore) {
+        return;
+    }
+
+    const element = document.createElement("div");
+    element.classList.add("use-mark");
+
+    container
+        .querySelector(".vertical-menu")
+        .insertAdjacentElement("beforeend", element);
+
+    useMarkElements.push(element);
+}
+
+async function removeQuestionMenuUseMark() {
+    if (useMarkElements.length === 0) {
+        return;
+    }
+
+    useMarkElements.forEach((element) => {
+        element.remove();
+    });
+    useMarkElements.length = 0;
+    questionMenuUsedBefore = true;
+
+    try {
+        const response = await chrome.runtime.sendMessage({
+            action: BackgroundActions.SET_QUESTION_MENU_USED_BEFORE,
+        });
+        if (!response.success) {
+            console.error("removeQuestionMenuUseMark failed:", response);
+        }
+    } catch (error) {
+        console.error("removeQuestionMenuUseMark Error:", error);
+    }
 }
 
 /**
@@ -141,8 +194,10 @@ function onExtraOptionClick(e) {
         if (error.message === "Extension context invalidated.") {
             showToastMessage(Errors.EXTENSION_CONTEXT_INVALIDATED.message);
         } else {
-            console.error("sendMessage setPrompt Error:", error);
-            showToastMessage(`Unknown Error: ${error.message}`);
+            if (!error.code) {
+                console.error("sendMessage setPrompt Error:", error);
+            }
+            showToastMessage(error.message);
         }
         setLoadingState(element, false);
         return;
@@ -158,6 +213,7 @@ function onQuestionClick(videoInfo) {
     pressEscKey();
 
     showQuestionDialog(videoInfo);
+    removeQuestionMenuUseMark();
 }
 
 function onSetPrompt(response, element) {
