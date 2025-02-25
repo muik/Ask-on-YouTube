@@ -1,7 +1,7 @@
 import puppeteer from "puppeteer";
 
 const EXTENSION_PATH = "./dist";
-const EXTENSION_ID = "ggjafkbkebneofgnochpcefafnekbgkn";
+const EXTENSION_ID = "gdcabhbeojofokajoomgoclohimfnfjb";
 
 describe("Settings page Test", () => {
     let browser;
@@ -26,6 +26,6 @@ describe("Settings page Test", () => {
         const page = await browser.newPage();
         await page.goto(`chrome-extension://${EXTENSION_ID}/settings.html`);
         const title = await page.title();
-        expect(title).toContain("Extension Settings");
+        expect(title).toContain("Settings - Ask on YouTube");
     });
 });

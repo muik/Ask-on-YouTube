@@ -45,5 +45,6 @@
         "32": "images/icon32.png",
         "48": "images/icon48.png",
         "128": "images/icon128.png"
-    }
+    },
+    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3rXKhsbdksY2lLhmyhZGheHfyazCZ6E0zkId2SmrvK3sYkqT3pmUjkQB8udNgX1W4MnY4kJ6ZLToXeuthZrqpSoHlUa314Ew6YVSPsOClIaPIYYsyiX3Z7WIsyp+ue0qH6Q+zSAxlmExbHPFnFcZ9SFAnjWrP6uvjkqbJVQcMQkGywXcfjoOExujHKFm4fLAXmRryMIpE3LqBYxm+TJKKpJHGHNcI2o4EBKRqDik16lKGj7kea/7WPpZTtRoz2Mke2HpPYT9rwFY7XCYr96BL2ivqY9EXeCRgAwVQkbdqUmIvvaZj3js4ob3I9RrSc8tgL6ODnwVRsVRkvBkKU5WOQIDAQAB"
 }

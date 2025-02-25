@@ -7,3 +7,9 @@ global.fetch = fetch;
 // Polyfill TextDecoder, TextEncoder for Node.js
 global.TextDecoder = TextDecoder;
 global.TextEncoder = TextEncoder;
+
+global.chrome = {
+    i18n: {
+        getMessage: (message) => message,
+    },
+};

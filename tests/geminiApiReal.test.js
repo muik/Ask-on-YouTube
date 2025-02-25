@@ -54,6 +54,10 @@ describe("Gemini API Real Request", () => {
     });
 
     it("no caption", async () => {
+        if (!process.env.GEMINI_API_KEY) {
+            return;
+        }
+
         const videoInfo = {
             id: "6b4SAuzK9Ak",
             title: "New Sourdough Bread Mixing After BIG Change",
@@ -67,6 +71,10 @@ describe("Gemini API Real Request", () => {
     });
 
     it("request suggested questions with language", async () => {
+        if (!process.env.GEMINI_API_KEY) {
+            return;
+        }
+
         const item = items[2];
         const videoInfo = item.videoInfo;
         const response = await requestSuggestedQuestions(videoInfo, {
@@ -77,6 +85,10 @@ describe("Gemini API Real Request", () => {
     });
 
     it("request suggested questions with default", async () => {
+        if (!process.env.GEMINI_API_KEY) {
+            return;
+        }
+
         const item = items[2];
         const videoInfo = item.videoInfo;
         const response = await requestSuggestedQuestions(videoInfo, {
@@ -88,6 +100,10 @@ describe("Gemini API Real Request", () => {
     });
 
     it("request suggested questions with system instruction", async () => {
+        if (!process.env.GEMINI_API_KEY) {
+            return;
+        }
+
         const systemInstruction = `You are an AI assistant that helps users quickly gauge what a YouTube video is about before watching. Based on the video’s title, thumbnail, and the user’s question history, you will:
 
 1. **Suggest 1 to 3 pre-viewing questions in Korean** that:
@@ -109,6 +125,11 @@ Your goal is to help users decide if the video is relevant to them and quickly u
     });
 
     it("request suggested questions with ocr", async () => {
+        // pass if no GOOGLE_CLOUD_API_KEY env
+        if (!process.env.GOOGLE_CLOUD_API_KEY) {
+            return;
+        }
+
         const systemInstruction = `You are an AI assistant designed to help users quickly **discover what they are curious about or get desired information** from YouTube videos **before watching them**. You will suggest questions based on the video's title and thumbnail to help users **easily and quickly ask questions to satisfy their curiosity or find necessary information**.
 
 Your response should include the following:
