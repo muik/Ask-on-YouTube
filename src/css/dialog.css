@@ -183,6 +183,7 @@
 }
 .ytq p.message {
     font-size: 12px;
+    line-height: 2;
 }
 .ytq p.message[type="error"] {
     color: var(--yt-spec-error-indicator);
