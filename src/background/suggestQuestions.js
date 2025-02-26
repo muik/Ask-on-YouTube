@@ -132,9 +132,9 @@ function handleError(error) {
             console.error(
                 `Failed to generate suggested questions - status: ${
                     error.status
-                }, statusText: ${
-                    error.statusText
-                }, errorDetails: ${JSON.stringify(error.errorDetails)}`
+                }, statusText: ${error.statusText}, errorDetails: ${
+                    error.errorDetails ? JSON.stringify(error.errorDetails) : ""
+                }`
             );
         } else {
             console.error(
