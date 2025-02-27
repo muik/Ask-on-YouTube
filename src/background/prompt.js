@@ -12,26 +12,6 @@ export async function loadTranscript(videoId) {
     return transcript;
 }
 
-export async function getChatGPTCustomPrompt(videoInfo, transcript, prompt) {
-    const title = videoInfo.title.trim();
-    const transcriptRevised = transcript.trim();
-    const captionInline = videoInfo.caption
-        ? `Caption: \`${videoInfo.caption
-              .replace(/`/g, "\\`")
-              .replace(/\n/g, " ")
-              .replace("  ", ", ")
-              .trim()}\`\n`
-        : "";
-
-    return `Title: ${title}
-${captionInline}URL: https://www.youtube.com/watch?v=${videoInfo.id}
-Transcript: \`\`\`
-${transcriptRevised}
-\`\`\`
-------------
-${prompt}`;
-}
-
 export async function getGeminiCustomPrompt(videoInfo, transcript, prompt) {
     const title = videoInfo.title.trim();
     const transcriptRevised = transcript.trim();

@@ -82,5 +82,11 @@
     },
     "exampleScreenshot": {
         "message": "스크린샷 예시"
+    },
+    "chatgptLoginRequired": {
+        "message": "Ask on YouTube: 긴 텍스트를 요청하기 위해서 ChatGPT 로그인이 필요합니다. 로그인 후 다시 시도해주세요."
+    },
+    "attachFilename": {
+        "message": "자막.txt"
     }
 }

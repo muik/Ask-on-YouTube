@@ -151,7 +151,7 @@ function handleError(error) {
 }
 
 function onPromptSet(response) {
-    if (handleError(response.error)) {
+    if (handleError(response?.error)) {
         return;
     }
 

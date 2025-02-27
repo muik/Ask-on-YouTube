@@ -21,3 +21,8 @@ export const QuestionOptionKeys = {
     RECENTS: "recents",
     SUGGESTIONS: "suggestions",
 };
+
+export const Targets = {
+    CHATGPT: "chatgpt",
+    GEMINI: "gemini",
+};

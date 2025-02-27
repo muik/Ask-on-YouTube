@@ -1,15 +1,16 @@
 "use strict";
 
-import { handleError } from "./background/handlers.js";
-import { saveQuestionHistory } from "./background/questionHistory.js";
 import {
     getDefaultQuestion,
     getLastQuestionOption,
     getQuestions,
 } from "./background/questions.js";
-import { setPrompt } from "./background/setPrompt.js";
+import { getPrompt, setPrompt } from "./background/setPrompt.js";
 import { loadSettings, updateSettings } from "./background/settingsLoader.js";
-import { getQuestionMenuUsedBefore, setQuestionMenuUsedBefore } from "./background/usedBefore.js";
+import {
+    getQuestionMenuUsedBefore,
+    setQuestionMenuUsedBefore,
+} from "./background/usedBefore.js";
 import { BackgroundActions } from "./constants.js";
 import { Errors } from "./errors.js";
 
@@ -28,8 +29,6 @@ chrome.runtime.onInstalled.addListener(function (details) {
 chrome.action.onClicked.addListener(() => {
     chrome.runtime.openOptionsPage();
 });
-
-let promptTemp = "";
 
 // load settings from storage on startup
 loadSettings();
@@ -57,24 +56,11 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     }
 
     if (request.action === BackgroundActions.SET_PROMPT) {
-        setPrompt({
-            videoInfo: request.videoInfo,
-            target: request.target,
-            question: request.question,
-        })
-            .then(handleSetPromptResult(sendResponse))
-            .catch(handleError(sendResponse));
-
-        if (request.question && request.type !== "placeholder") {
-            saveQuestionHistory(request.videoInfo, request.question);
-        }
-
-        return true;
+        return setPrompt(request, sendResponse);
     }
 
     if (request.action === BackgroundActions.GET_PROMPT) {
-        sendResponse({ prompt: promptTemp });
-        promptTemp = ""; // Reset prompt
+        return getPrompt(sendResponse);
     } else if (request.action === BackgroundActions.OPEN_SETTINGS_PAGE) {
         chrome.runtime.openOptionsPage();
     } else {
@@ -84,17 +70,3 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         });
     }
 });
-
-function handleSetPromptResult(sendResponse) {
-    return (result) => {
-        if (result.error) {
-            throw result.error;
-        }
-        if (!result.prompt) {
-            throw new Error("No prompt provided in response");
-        }
-
-        promptTemp = result.prompt;
-        sendResponse(result.response);
-    };
-}

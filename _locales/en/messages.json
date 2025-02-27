@@ -82,5 +82,14 @@
     },
     "exampleScreenshot": {
         "message": "Example screenshot"
+    },
+    "chatgptLoginRequired": {
+        "message": "Ask on YouTube: ChatGPT login is required to request long text. Please log in and try again."
+    },
+    "attachFilename": {
+        "message": "transcript.txt"
+    },
+    "chatgptMorePages": {
+        "message": "Do not respond yet. There are more pages to come."
     }
 }
