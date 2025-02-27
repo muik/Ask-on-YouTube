@@ -499,12 +499,9 @@ function onPromptSet(response) {
     if (chrome.runtime.lastError) {
         console.error(
             "onPromptSet chrome.runtime.lastError:",
-            chrome.runtime.lastError
+            chrome.runtime.lastError.message
         );
-        const message = `Error - ${
-            chrome.runtime.lastError.message || chrome.runtime.lastError
-        }`;
-        setInputError({ message });
+        setInputError({ message: Errors.UNKNOWN_ERROR.message });
         return;
     }
 

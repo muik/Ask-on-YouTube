@@ -151,7 +151,7 @@
     line-height: 1.5;
 }
 .ytq-dialog .question-suggestions li button {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--yt-spec-badge-chip-background);
     border: none;
     border-radius: 18px;
     padding: 0 12px;
@@ -171,15 +171,21 @@
     display: flex;
     font-size: 14px;
     color: var(--yt-spec-text-secondary);
+    font-weight: 500;
 }
 .ytq-dialog .question-suggestions .title {
     display: inline-block;
-    margin-right: 12px;
+    margin-right: 8px;
     cursor: pointer;
+    background-color: var(--yt-spec-badge-chip-background);
+    color: var(--yt-spec-text-primary);
+    border-radius: 8px;
+    padding: 0 12px;
+    line-height: 32px;
 }
 .ytq-dialog .question-suggestions .title.active {
-    color: var(--yt-spec-text-primary);
-    font-weight: bold;
+    background-color: var(--yt-spec-text-primary);
+    color: var(--yt-spec-text-primary-inverse);
 }
 .ytq p.message {
     font-size: 12px;
@@ -218,4 +224,11 @@
 #ytq-detail-related-above .ytq-form .question-button:active {
     background-color: var(--yt-spec-text-primary);
     color: var(--yt-spec-text-primary-inverse);
+}
+#ytq-detail-related-above .ytq-form .question-button:active svg {
+    fill: var(--yt-spec-text-primary-inverse);
+}
+
+#ytq-simple-question {
+    margin-bottom: 8px;
 }
