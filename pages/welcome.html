@@ -1,15 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Welcome to Ask on YouTube</title>
+        <link
+            rel="icon"
+            type="image/png"
+            href="../src/images/icon16.png"
+            sizes="16x16"
+        />
+        <link
+            rel="icon"
+            type="image/png"
+            href="../src/images/icon32.png"
+            sizes="32x32"
+        />
+        <link
+            rel="icon"
+            type="image/png"
+            href="../src/images/icon48.png"
+            sizes="48x48"
+        />
+        <link
+            rel="icon"
+            type="image/png"
+            href="../src/images/icon128.png"
+            sizes="128x128"
+        />
         <style>
             :root {
                 --bg-color: #ffffff;
                 --text-color: #333;
                 --text-secondary: #666;
-                --heading-color: #2c3e50;
+                --heading-color: #222;
                 --border-color: #eee;
             }
 
@@ -36,6 +60,7 @@
                 max-width: 800px;
                 margin: 0 auto;
                 padding: 2rem;
+                padding-bottom: 0;
             }
 
             .welcome-header {
@@ -43,7 +68,9 @@
                 padding: 2rem 0;
             }
 
-            h1, h2, h3 {
+            h1,
+            h2,
+            h3 {
                 font-weight: 500;
             }
 
@@ -52,6 +79,9 @@
                 color: var(--heading-color);
                 margin-bottom: 1rem;
                 line-height: 1.4;
+            }
+            h1 span {
+                display: inline-block;
             }
 
             .subtitle {
@@ -65,7 +95,7 @@
                 padding-bottom: 56.25%;
                 height: 0;
                 overflow: hidden;
-                margin: 2rem 0;
+                margin: 1rem 0 4rem 0;
             }
 
             .video-container iframe {
@@ -99,7 +129,7 @@
             }
 
             .feature-item p {
-                margin-top: 1rem;
+                margin-top: 0.5rem;
                 margin-bottom: 1.5rem;
                 font-size: 1.1rem;
                 color: var(--text-secondary);
@@ -139,13 +169,13 @@
                 margin-top: 2rem;
                 padding: 1rem 0;
                 border-top: 1px solid var(--border-color);
+                font-size: 0.8rem;
             }
 
             .footer a {
                 color: var(--text-secondary);
                 text-decoration: none;
                 margin: 0 1rem;
-                font-size: 0.9rem;
             }
 
             .footer a:hover {
@@ -168,9 +198,40 @@
                 img {
                     opacity: 0.8;
                 }
-                
+
                 .video-container {
                     opacity: 0.8;
+                }
+            }
+
+            .language-select {
+                padding: 8px;
+                border: 1px solid var(--border-color);
+                border-radius: 6px;
+                background: var(--bg-color);
+                color: var(--text-secondary);
+                cursor: pointer;
+                outline: none;
+                transition: all 0.3s ease;
+                margin-left: 1rem;
+                font-size: 0.8rem;
+            }
+
+            .language-select:hover {
+                border-color: var(--text-secondary);
+            }
+
+            .language-select:focus {
+                border-color: #3498db;
+                box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+            }
+
+            @media (prefers-color-scheme: dark) {
+                .language-select {
+                    background: #2a2a2a;
+                }
+                .language-select option {
+                    background: #2a2a2a;
                 }
             }
         </style>
@@ -182,11 +243,11 @@
                     <img src="../src/images/icon48.png" />
                     <span>Ask on YouTube</span>
                 </p>
-                <h1>
+                <h1 data-i18n="heading">
                     The essential tool for effectively gathering YouTube
                     insights.
                 </h1>
-                <p class="subtitle">
+                <p class="subtitle" data-i18n="subtitle">
                     Chrome extension that allows you to ask questions about
                     YouTube videos.
                 </p>
@@ -205,47 +266,58 @@
 
             <div class="features">
                 <div class="feature-item">
-                    <h3>Easily ask questions about YouTube videos!</h3>
-                    <p>
+                    <h3 data-i18n="feature1.title">
+                        Easily ask questions about YouTube videos!
+                    </h3>
+                    <p data-i18n="feature1.desc1">
                         * The UI is added to seamlessly integrate with YouTube
                         without disruption.
                     </p>
                     <img
                         src="../resources/screenshots/detail-input-form.png"
+                        data-i18n-alt="feature1.img1.alt"
                         alt="Question form on the video detail page"
                     />
-                    <p>
+                    <p data-i18n="feature1.desc2">
                         An <strong>"Ask"</strong> button has been added to the
                         top right corner of the video page.
                     </p>
                     <img
                         src="../resources/screenshots/options-question-menu.png"
+                        data-i18n-alt="feature1.img2.alt"
                         alt="Question menu on the More options menu of a YouTube video"
                     />
-                    <p>
+                    <p data-i18n="feature1.desc3">
                         A <strong>"Question"</strong> button is available below
                         the video's <strong>"More"</strong> options.
                     </p>
                 </div>
 
                 <div class="feature-item">
-                    <h3>Ask smarter questions for clearer answers!</h3>
+                    <h3 data-i18n="feature2.title">
+                        Ask smarter questions for clearer answers!
+                    </h3>
                     <img
                         src="../resources/screenshots/question-dialog.png"
+                        data-i18n-alt="feature2.img1.alt"
                         alt="Question form on the video detail page"
                     />
-                    <p>
+                    <p data-i18n="feature2.desc1">
                         Enter your own questions or choose from various options,
                         including <strong>"favorites"</strong> and
                         <strong>"recent questions"</strong>.
                     </p>
                     <img
                         src="../resources/screenshots/dialog-suggestions.png"
+                        data-i18n-alt="feature2.img2.alt"
                         alt="Suggestions on the question dialog"
                     />
                     <p>
-                        Check out insightful question suggestions through AI<br />
-                        <small
+                        <span data-i18n="feature2.desc2"
+                            >Check out insightful question suggestions through
+                            AI</span
+                        ><br />
+                        <small data-i18n="feature2.desc3"
                             >(requires setting up a Gemini API Key, free tier
                             available)</small
                         >
@@ -253,22 +325,173 @@
                     <a
                         href="chrome-extension://gdcabhbeojofokajoomgoclohimfnfjb/settings.html"
                         class="btn"
+                        data-i18n="feature2.settings"
                         >Settings</a
                     >
                 </div>
             </div>
 
             <div class="buttons">
-                <h2>Ready to Get Started?</h2>
-                <p>Now that you can ask questions on YouTube</p>
-                <a href="https://youtube.com" class="btn youtube"
+                <h2 data-i18n="getStarted.title">Ready to Get Started?</h2>
+                <p data-i18n="getStarted.desc">
+                    Now that you can ask questions on YouTube
+                </p>
+                <a
+                    href="https://youtube.com"
+                    class="btn youtube"
+                    data-i18n="getStarted.youtube"
                     >Go to YouTube</a
                 >
             </div>
 
             <div class="footer">
-                <a href="privacy.html">Privacy Policy</a>
+                <a href="privacy.html" data-i18n="footer.privacy"
+                    >Privacy Policy</a
+                >
+                <select id="languageSelect" class="language-select">
+                    <option value="en">English</option>
+                    <option value="ko">한국어</option>
+                </select>
             </div>
         </div>
+
+        <script>
+            const translations = {
+                en: {
+                    heading:
+                        "The essential tool for effectively gathering YouTube insights.",
+                    subtitle:
+                        "Chrome extension that allows you to ask questions about YouTube videos.",
+                    feature1: {
+                        title: "Easily ask questions about YouTube videos!",
+                        desc1: "* The UI is added to seamlessly integrate with YouTube without disruption.",
+                        desc2: 'An "Ask" button has been added to the top right corner of the video page.',
+                        desc3: 'A "Question" button is available below the video\'s "More" options.',
+                        img1: {
+                            alt: "Question form on the video detail page",
+                        },
+                        img2: {
+                            alt: "Question menu on the More options menu of a YouTube video",
+                        },
+                    },
+                    feature2: {
+                        title: "Ask smarter questions for clearer answers!",
+                        desc1: 'Enter your own questions or choose from various options, including "favorites" and "recent questions".',
+                        desc2: "Check out insightful question suggestions through AI",
+                        desc3: "(requires setting up a Gemini API Key, free tier available)",
+                        img1: {
+                            alt: "Question form on the video detail page",
+                        },
+                        img2: {
+                            alt: "Suggestions on the question dialog",
+                        },
+                        settings: "Settings",
+                    },
+                    getStarted: {
+                        title: "Ready to Get Started?",
+                        desc: "Now that you can ask questions on YouTube",
+                        youtube: "Go to YouTube",
+                    },
+                    footer: {
+                        privacy: "Privacy Policy",
+                    },
+                },
+                ko: {
+                    heading:
+                        "YouTube의 정보를 효과적으로 <span>얻기 위한 필수 도구</span>",
+                    subtitle:
+                        "YouTube에서 ChatGPT로 간편히 질문할 수 있는 Chrome 확장 프로그램",
+                    feature1: {
+                        title: "YouTube 동영상에 대해 쉽게 질문하세요!",
+                        desc1: "* YouTube 사용자 경험을 해치지 않도록, 기존 UI와 자연스럽게 어우러지도록 설계",
+                        desc2: '동영상 페이지 우측 상단에 "질문하기" 버튼 추가',
+                        desc3: '동영상의 "더보기" 옵션 아래에서 "질문하기" 버튼 추가',
+                        img1: {
+                            alt: "동영상 상세 페이지의 질문 폼",
+                        },
+                        img2: {
+                            alt: "YouTube 동영상 더보기 메뉴의 질문하기 버튼",
+                        },
+                    },
+                    feature2: {
+                        title: "적절한 질문을 통해 원하는 정보를 명확히 얻으세요!",
+                        desc1: "직접 질문을 입력하거나 즐겨찾기, 최근 질문 목록에서 쉽게 선택",
+                        desc2: "AI가 제안하는 질문 추천 기능 활용",
+                        desc3: "(Gemini API 키 설정 필요, 무료 티어 이용 가능)",
+                        img1: {
+                            alt: "동영상 상세 페이지의 질문 폼",
+                        },
+                        img2: {
+                            alt: "질문 대화상자의 제안 기능",
+                        },
+                        settings: "설정",
+                    },
+                    getStarted: {
+                        title: "바로 사용해보세요!",
+                        desc: "이제 YouTube에서 질문을 할 수 있습니다",
+                        youtube: "YouTube로 이동",
+                    },
+                    footer: {
+                        privacy: "개인정보 처리방침",
+                    },
+                },
+            };
+
+            function updateLanguage(lang) {
+                // Update text content for elements with data-i18n attribute
+                document.querySelectorAll("[data-i18n]").forEach((element) => {
+                    const path = element.getAttribute("data-i18n").split(".");
+                    let translation = translations[lang];
+
+                    // Navigate through the translation object using the path
+                    path.forEach((key) => {
+                        translation = translation[key];
+                    });
+
+                    if (translation) {
+                        element.innerHTML = translation;
+                    }
+                });
+
+                // Update alt text for images
+                document
+                    .querySelectorAll("[data-i18n-alt]")
+                    .forEach((element) => {
+                        const path = element
+                            .getAttribute("data-i18n-alt")
+                            .split(".");
+                        let translation = translations[lang];
+
+                        path.forEach((key) => {
+                            translation = translation[key];
+                        });
+
+                        if (translation) {
+                            element.alt = translation;
+                        }
+                    });
+
+                localStorage.setItem("preferred_language", lang);
+            }
+
+            // Language selector event listener
+            document
+                .getElementById("languageSelect")
+                .addEventListener("change", (e) => {
+                    updateLanguage(e.target.value);
+                });
+
+            // Initialize with stored language preference or browser language
+            document.addEventListener("DOMContentLoaded", () => {
+                const storedLang = localStorage.getItem("preferred_language");
+                const browserLang = navigator.language.startsWith("ko")
+                    ? "ko"
+                    : "en";
+                const initialLang = storedLang || browserLang;
+
+                document.getElementById("languageSelect").value = initialLang;
+                updateLanguage(initialLang);
+            });
+        </script>
     </body>
 </html>
