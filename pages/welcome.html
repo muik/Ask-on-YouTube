@@ -3,15 +3,33 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Welcome to Your Extension</title>
+        <title>Welcome to Ask on YouTube</title>
         <style>
+            :root {
+                --bg-color: #ffffff;
+                --text-color: #333;
+                --text-secondary: #666;
+                --heading-color: #2c3e50;
+                --border-color: #eee;
+            }
+
+            @media (prefers-color-scheme: dark) {
+                :root {
+                    --bg-color: #1a1a1a;
+                    --text-color: #e0e0e0;
+                    --text-secondary: #aaa;
+                    --heading-color: #fff;
+                    --border-color: #333;
+                }
+            }
+
             body {
                 font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
                 line-height: 1.6;
                 margin: 0;
                 padding: 0;
-                background-color: #ffffff;
-                color: #333;
+                background-color: var(--bg-color);
+                color: var(--text-color);
             }
 
             .container {
@@ -25,16 +43,20 @@
                 padding: 2rem 0;
             }
 
+            h1, h2, h3 {
+                font-weight: 500;
+            }
+
             h1 {
                 font-size: 2.5rem;
-                color: #2c3e50;
+                color: var(--heading-color);
                 margin-bottom: 1rem;
                 line-height: 1.4;
             }
 
             .subtitle {
                 font-size: 1.2rem;
-                color: #666;
+                color: var(--text-secondary);
                 margin-bottom: 2rem;
             }
 
@@ -71,7 +93,7 @@
             }
 
             .feature-item h3 {
-                color: #2c3e50;
+                color: var(--heading-color);
                 margin-bottom: 1rem;
                 font-size: 1.8rem;
             }
@@ -80,7 +102,7 @@
                 margin-top: 1rem;
                 margin-bottom: 1.5rem;
                 font-size: 1.1rem;
-                color: #666;
+                color: var(--text-secondary);
             }
 
             .buttons {
@@ -116,18 +138,18 @@
                 text-align: center;
                 margin-top: 2rem;
                 padding: 1rem 0;
-                border-top: 1px solid #eee;
+                border-top: 1px solid var(--border-color);
             }
 
             .footer a {
-                color: #666;
+                color: var(--text-secondary);
                 text-decoration: none;
                 margin: 0 1rem;
                 font-size: 0.9rem;
             }
 
             .footer a:hover {
-                color: #333;
+                color: var(--text-color);
                 text-decoration: underline;
             }
             .app-name {
@@ -140,6 +162,16 @@
             }
             .app-name img {
                 height: 24px;
+            }
+
+            @media (prefers-color-scheme: dark) {
+                img {
+                    opacity: 0.8;
+                }
+                
+                .video-container {
+                    opacity: 0.8;
+                }
             }
         </style>
     </head>
