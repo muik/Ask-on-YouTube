@@ -29,10 +29,6 @@
             "all_frames": false
         },
         {
-            "matches": ["https://gemini.google.com/*"],
-            "js": ["contentscript/gemini.min.js"]
-        },
-        {
             "matches": ["https://chatgpt.com/*"],
             "js": ["contentscript/chatgpt.min.js"]
         },

@@ -91,12 +91,6 @@ const config = {
             path.join(__dirname, "src", "css", "dialog.css"),
             path.join(__dirname, "src", "css", "extraOptions.css"),
         ],
-        "contentscript/gemini": path.join(
-            __dirname,
-            "src",
-            "contentscript",
-            "gemini.js"
-        ),
         "contentscript/chatgpt": path.join(
             __dirname,
             "src",
