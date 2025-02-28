@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Welcome to Your Extension</title>
+        <style>
+            body {
+                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                line-height: 1.6;
+                margin: 0;
+                padding: 0;
+                background-color: #ffffff;
+                color: #333;
+            }
+
+            .container {
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 2rem;
+            }
+
+            .welcome-header {
+                text-align: center;
+                padding: 2rem 0;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+                color: #2c3e50;
+                margin-bottom: 1rem;
+                line-height: 1.4;
+            }
+
+            .subtitle {
+                font-size: 1.2rem;
+                color: #666;
+                margin-bottom: 2rem;
+            }
+
+            .video-container {
+                position: relative;
+                padding-bottom: 56.25%;
+                height: 0;
+                overflow: hidden;
+                margin: 2rem 0;
+            }
+
+            .video-container iframe {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                border: none;
+            }
+
+            .features {
+                margin: 3rem 0;
+            }
+
+            .feature-item {
+                margin-bottom: 3rem;
+                text-align: center;
+            }
+
+            .feature-item img {
+                width: 100%;
+                max-width: 600px;
+                margin-top: 1.5rem;
+            }
+
+            .feature-item h3 {
+                color: #2c3e50;
+                margin-bottom: 1rem;
+                font-size: 1.8rem;
+            }
+
+            .feature-item p {
+                margin-top: 1rem;
+                margin-bottom: 1.5rem;
+                font-size: 1.1rem;
+                color: #666;
+            }
+
+            .buttons {
+                text-align: center;
+                margin-top: 3rem;
+                padding: 2rem 0;
+            }
+
+            .btn {
+                display: inline-block;
+                padding: 1rem 2rem;
+                background-color: #3498db;
+                color: white;
+                text-decoration: none;
+                border-radius: 32px;
+                transition: background-color 0.3s;
+                margin: 0.5rem;
+            }
+
+            .btn:hover {
+                background-color: #2980b9;
+            }
+
+            .btn.youtube {
+                background-color: #ff0000;
+            }
+
+            .btn.youtube:hover {
+                background-color: #cc0000;
+            }
+
+            .footer {
+                text-align: center;
+                margin-top: 2rem;
+                padding: 1rem 0;
+                border-top: 1px solid #eee;
+            }
+
+            .footer a {
+                color: #666;
+                text-decoration: none;
+                margin: 0 1rem;
+                font-size: 0.9rem;
+            }
+
+            .footer a:hover {
+                color: #333;
+                text-decoration: underline;
+            }
+            .app-name {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                font-weight: 500;
+                font-size: 16px;
+            }
+            .app-name img {
+                height: 24px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="welcome-header">
+                <p class="app-name">
+                    <img src="../src/images/icon48.png" />
+                    <span>Ask on YouTube</span>
+                </p>
+                <h1>
+                    The essential tool for effectively gathering YouTube
+                    insights.
+                </h1>
+                <p class="subtitle">
+                    Chrome extension that allows you to ask questions about
+                    YouTube videos.
+                </p>
+            </div>
+
+            <div class="video-container">
+                <iframe
+                    src="https://www.youtube.com/embed/shEGUeBL1Es?si=DosDFvITMQxs6NoU"
+                    title="YouTube video player"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerpolicy="strict-origin-when-cross-origin"
+                    allowfullscreen
+                ></iframe>
+            </div>
+
+            <div class="features">
+                <div class="feature-item">
+                    <h3>Easily ask questions about YouTube videos!</h3>
+                    <p>
+                        * The UI is added to seamlessly integrate with YouTube
+                        without disruption.
+                    </p>
+                    <img
+                        src="../resources/screenshots/detail-input-form.png"
+                        alt="Question form on the video detail page"
+                    />
+                    <p>
+                        An <strong>"Ask"</strong> button has been added to the
+                        top right corner of the video page.
+                    </p>
+                    <img
+                        src="../resources/screenshots/options-question-menu.png"
+                        alt="Question menu on the More options menu of a YouTube video"
+                    />
+                    <p>
+                        A <strong>"Question"</strong> button is available below
+                        the video's <strong>"More"</strong> options.
+                    </p>
+                </div>
+
+                <div class="feature-item">
+                    <h3>Ask smarter questions for clearer answers!</h3>
+                    <img
+                        src="../resources/screenshots/question-dialog.png"
+                        alt="Question form on the video detail page"
+                    />
+                    <p>
+                        Enter your own questions or choose from various options,
+                        including <strong>"favorites"</strong> and
+                        <strong>"recent questions"</strong>.
+                    </p>
+                    <img
+                        src="../resources/screenshots/dialog-suggestions.png"
+                        alt="Suggestions on the question dialog"
+                    />
+                    <p>
+                        Check out insightful question suggestions through AI<br />
+                        <small
+                            >(requires setting up a Gemini API Key, free tier
+                            available)</small
+                        >
+                    </p>
+                    <a
+                        href="chrome-extension://gdcabhbeojofokajoomgoclohimfnfjb/settings.html"
+                        class="btn"
+                        >Settings</a
+                    >
+                </div>
+            </div>
+
+            <div class="buttons">
+                <h2>Ready to Get Started?</h2>
+                <p>Now that you can ask questions on YouTube</p>
+                <a href="https://youtube.com" class="btn youtube"
+                    >Go to YouTube</a
+                >
+            </div>
+
+            <div class="footer">
+                <a href="privacy.html">Privacy Policy</a>
+            </div>
+        </div>
+    </body>
+</html>
