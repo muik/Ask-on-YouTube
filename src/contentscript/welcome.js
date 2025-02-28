@@ -1,4 +1,4 @@
-import { BackgroundActions } from "../background.js";
+import { BackgroundActions } from "../constants.js";
 
 window.onload = () => {
     const settingsBtn = document.getElementById("settings-btn");
