@@ -35,6 +35,12 @@
         {
             "matches": ["https://chatgpt.com/*"],
             "js": ["contentscript/chatgpt.min.js"]
+        },
+        {
+            "matches": [
+                "https://muik.github.io/Ask-on-YouTube/pages/welcome.html"
+            ],
+            "js": ["contentscript/welcome.min.js"]
         }
     ],
     "content_security_policy": {

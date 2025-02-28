@@ -103,6 +103,12 @@ const config = {
             "contentscript",
             "chatgpt.js"
         ),
+        "contentscript/welcome": path.join(
+            __dirname,
+            "src",
+            "contentscript",
+            "welcome.js"
+        ),
         background: path.join(__dirname, "src", "background.js"),
         settings: [
             path.join(__dirname, "src", "options", "settings.js"),
