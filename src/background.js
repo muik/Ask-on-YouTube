@@ -14,14 +14,11 @@ import {
 import { BackgroundActions } from "./constants.js";
 import { Errors } from "./errors.js";
 
-console.log("connected...");
-// const onInstallURL = "https://glasp.co/youtube-summary";
-
 // On Chrome Install
 chrome.runtime.onInstalled.addListener(function (details) {
     if (details.reason === "install") {
-        // TODO replace this url
-        // chrome.tabs.create({ url: onInstallURL });
+        const url = "https://muik.github.io/Ask-on-YouTube/pages/welcome.html";
+        chrome.tabs.create({ url });
     }
 });
 
