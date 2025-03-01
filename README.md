@@ -4,18 +4,28 @@ This Chrome Extension lets you ask questions about YouTube videos and get clear 
 
 ## How to Install
 
-To install this extension, follow these steps:
+### Option 1: Download from Release (For General Users)
 
-1. Download the code on GitHub.
-2. Unzip the downloaded file.
+For most users who just want to use the extension, this is the recommended method:
+
+1. Go to the [Releases page](https://github.com/muik/Ask-on-YouTube/releases) and download the latest release zip file.
+2. Unzip the downloaded file to get the `dist` directory.
+3. Skip to [Loading the Extension](#loading-the-extension) section below.
+
+### Option 2: Build from Source (For Developers/Latest Code)
+
+If you want to get the latest code or plan to modify the extension:
+
+1. Clone the repository or download the code on GitHub.
+2. If you downloaded the code, unzip the downloaded file.
 3. Open the code in your favorite IDE like VS Code.
-4. Run `npm install` in terminal
+4. Run `npm install` in terminal:
 
 ```
 npm install
 ```
 
-5. Run `npm run build` or `npm run build-release` to run webpack to generate **dist** folder.
+5. Run `npm run build` or `npm run build-release` to generate the **dist** folder:
 
 ```
 npm run build
@@ -23,10 +33,12 @@ npm run build
 npm run build-release
 ```
 
-6. In case of Google Chrome, open the Extensions page (chrome://extensions/).
-7. Turn on Developer mode by clicking the toggle switch in the top right corner of the page.
-8. Click the `Load unpacked` button and select the **dist** directory.
-9. This extension should be installed and active!
+### Loading the Extension
+
+1. In case of Google Chrome, open the Extensions page (chrome://extensions/).
+2. Turn on Developer mode by clicking the toggle switch in the top right corner of the page.
+3. Click the `Load unpacked` button and select the **dist** directory.
+4. This extension should be installed and active!
 
 ## How to Use
 
@@ -34,7 +46,7 @@ To use this extension:
 
 1. Open a YouTube video on your chrome browser.
 2. Click the question box at the top right, which includes an input field and an Ask button.
-3. Click the video’s "More options" (the vertical three-dot icon) and select the question option at the bottom of the menu.
+3. Click the video's "More options" (the vertical three-dot icon) and select the question option at the bottom of the menu.
 4. Get the right answer on ChatGPT.
 
 ## Notes
