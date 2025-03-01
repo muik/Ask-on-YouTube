@@ -95,7 +95,7 @@ async function loadDefaultQuestion() {
         }
 
         if (!response.question) {
-            console.error("loadDefaultQuestion Error:", response);
+            console.error("No question found:", response);
             setInputError(Errors.FAILED_TO_LOAD_DEFAULT_QUESTION);
             return;
         }
@@ -104,8 +104,12 @@ async function loadDefaultQuestion() {
             getContainerElement().querySelector("input[type='text']");
         inputElement.setAttribute("placeholder", response.question);
     } catch (error) {
-        console.error("loadDefaultQuestion Error:", error);
-        setInputError(Errors.FAILED_TO_LOAD_DEFAULT_QUESTION);
+        if (error.message === "Extension context invalidated.") {
+            setInputError(Errors.EXTENSION_CONTEXT_INVALIDATED);
+        } else {
+            console.error("loadDefaultQuestion Error:", error);
+            setInputError(Errors.FAILED_TO_LOAD_DEFAULT_QUESTION);
+        }
     }
 }
 
