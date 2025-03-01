@@ -24,18 +24,10 @@ jobs:
             - name: Build release
               run: npm run build-release
 
-            - name: Build
-              run: echo ${{ github.sha }} > Release.txt
-
-            - name: Test
-              run: cat Release.txt
-
             - name: Create Release
               uses: softprops/action-gh-release@v2
               with:
-                  files: |
-                      ask_on_youtube.zip
-                      Release.txt
+                  files: ask-on-youtube-v*.zip
                   generate_release_notes: true
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
