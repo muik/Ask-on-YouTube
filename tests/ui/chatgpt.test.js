@@ -28,6 +28,8 @@ describe("Question dialog Test", () => {
         await page.setViewport({ width: 1024, height: 768 });
         await page.goto("https://www.youtube.com/watch?v=kSgIRBvxiDo");
 
+        await closeWelcomePage(browser);
+
         const askButtonSelector =
             "#ytq-detail-related-above .question-input-container button";
         await waitAndClick(page, askButtonSelector);
@@ -41,3 +43,14 @@ describe("Question dialog Test", () => {
         // await page.waitForSelector("#prompt-textarea", { timeout: 5000 });
     });
 });
+
+async function closeWelcomePage(browser) {
+    const welcomePageUrl =
+        "https://muik.github.io/Ask-on-YouTube/pages/welcome.html";
+    const welcomePage = await browser.waitForTarget(
+        (target) => target.url().match(welcomePageUrl),
+        { timeout: 3000 }
+    );
+    const welcomePageTab = await welcomePage.page();
+    await welcomePageTab.close();
+}

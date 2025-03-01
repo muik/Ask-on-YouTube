@@ -74,7 +74,8 @@ describe("Question dialog Test", () => {
             name: "main",
         },
         {
-            selector: "ytd-compact-video-renderer yt-icon-button button#button",
+            selector:
+                "ytd-compact-video-renderer yt-icon-button button#button .yt-icon > div",
             name: "video-list",
         },
     ];
@@ -87,6 +88,8 @@ describe("Question dialog Test", () => {
                 waitUntil: ["networkidle0", "domcontentloaded"],
             });
 
+            await closeWelcomePage(browser);
+
             const title = await page.title();
             expect(title).toContain("YouTube");
 
@@ -98,6 +101,8 @@ describe("Question dialog Test", () => {
         const page = await browser.newPage();
         await page.setViewport({ width: 1024, height: 768 });
         await page.goto("https://www.youtube.com/watch?v=kSgIRBvxiDo");
+
+        await closeWelcomePage(browser);
 
         await waitAndClick(
             page,
@@ -121,6 +126,8 @@ describe("Question dialog Test", () => {
         const page = await browser.newPage();
         await page.setViewport({ width: 1024, height: 768 });
         await page.goto("https://www.youtube.com/watch?v=kSgIRBvxiDo");
+
+        await closeWelcomePage(browser);
 
         const moreOptionButtonSelector = moreOptionButtonTypes[0].selector;
         await waitAndClick(page, moreOptionButtonSelector);
@@ -154,6 +161,8 @@ describe("Question dialog Test", () => {
         const page = await browser.newPage();
         await page.setViewport({ width: 1024, height: 768 });
         await page.goto("https://www.youtube.com/watch?v=kSgIRBvxiDo");
+
+        await closeWelcomePage(browser);
 
         const moreOptionButtonSelector = moreOptionButtonTypes[0].selector;
         await waitAndClick(page, moreOptionButtonSelector);
@@ -190,3 +199,14 @@ describe("Question dialog Test", () => {
         });
     });
 });
+
+async function closeWelcomePage(browser) {
+    const welcomePageUrl =
+        "https://muik.github.io/Ask-on-YouTube/pages/welcome.html";
+    const welcomePage = await browser.waitForTarget(
+        (target) => target.url().match(welcomePageUrl),
+        { timeout: 3000 }
+    );
+    const welcomePageTab = await welcomePage.page();
+    await welcomePageTab.close();
+}
