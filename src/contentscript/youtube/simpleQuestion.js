@@ -63,7 +63,7 @@ function getQuestionInputFormHtml() {
     const requestingButtonName = chrome.i18n.getMessage("requestingButtonName");
 
     return `<div class="question-input-container">
-    <input type="text" value="">
+    <input type="text" class="question-input" value="">
     <button class="question-button">
         ${getQuestionMarkSvg()}
         <span class="default-text">${requestButtonName}</span><span class="loading-text">${requestingButtonName}</span>

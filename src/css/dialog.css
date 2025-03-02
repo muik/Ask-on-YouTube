@@ -65,7 +65,10 @@
     margin-top: 8px;
     position: relative;
 }
-.ytq-form .question-input-container textarea.question-input {
+.ytq-form .question-input-container input.question-input {
+    text-overflow: ellipsis;
+}
+.ytq-form .question-input-container .question-input {
     color: var(--yt-spec-text-primary);
     font-size: 14px;
     line-height: 20px;
@@ -83,10 +86,10 @@
     resize: none;
     font-family: "Roboto", "Noto", sans-serif;
 }
-.ytq-form .question-input-container textarea.question-input:focus {
+.ytq-form .question-input-container .question-input:focus {
     outline: none;
 }
-.ytq-form .question-input-container:has(textarea.question-input:disabled) {
+.ytq-form .question-input-container:has(.question-input:disabled) {
     background-color: var(--yt-spec-10-percent-layer);
 }
 
