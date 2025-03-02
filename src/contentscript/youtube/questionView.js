@@ -1,10 +1,7 @@
 import { BackgroundActions, QuestionOptionKeys } from "../../constants.js";
 import { getVideoThumbnailUrl } from "../../data.js";
 import { Errors, Info } from "../../errors.js";
-import {
-    getDialogBackgoundHtml,
-    getQuestionHtml,
-} from "./questionDialog/html.js";
+import { getQuestionHtml } from "./questionDialog/html.js";
 import { getTitleTokens, setTitleToken } from "./questionDialog/titleToken.js";
 
 export const containerId = "dialog-container";
@@ -20,15 +17,8 @@ export function showQuestionDialog(videoInfo) {
     containerElement.style.display = "block";
     containerElement.style.zIndex = 9999;
 
-    document.body.insertAdjacentHTML("beforeend", getDialogBackgoundHtml());
-
-    // close the dialog when the user clicks the background
-    const backgroundElement = document.querySelector(
-        "tp-yt-iron-overlay-backdrop"
-    );
-    backgroundElement.addEventListener("click", () => {
-        hideQuestionDialog();
-    });
+    const backgroundElement = createBackgroundElement();
+    document.body.insertAdjacentElement("beforeend", backgroundElement);
 
     setQuestionDialogContent(videoInfo);
 
@@ -41,6 +31,19 @@ export function showQuestionDialog(videoInfo) {
 
     loadDefaultQuestion();
     repositionDialog();
+}
+
+function createBackgroundElement() {
+    const element = document.createElement("tp-yt-iron-overlay-backdrop");
+    element.setAttribute("opened", "");
+    element.classList.add("opened");
+
+    // close the dialog when the user clicks the background
+    element.addEventListener("click", () => {
+        hideQuestionDialog();
+    });
+
+    return element;
 }
 
 async function loadLastQuestionOption(containerElement) {

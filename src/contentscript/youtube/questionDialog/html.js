@@ -54,10 +54,6 @@ export function getQuestionHtml() {
 </div>`;
 }
 
-export function getDialogBackgoundHtml() {
-    return `<tp-yt-iron-overlay-backdrop opened="" class="opened"></tp-yt-iron-overlay-backdrop>`;
-}
-
 const SPINNER_HEIGHT = 37 * Config.MAX_QUESTIONS_COUNT;
 
 const spinnerHtml = `
