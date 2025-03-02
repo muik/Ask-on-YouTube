@@ -34,7 +34,7 @@ export function getQuestionHtml() {
       </div>
       <div class="ytq-form">
         <div class="question-input-container">
-          <input type="text" value="">
+          <textarea class="question-input" rows="1"></textarea>
           <button class="question-button"><span class="default-text">${requestButtonName}</span><span class="loading-text">${requestingButtonName}</span></button>
         </div>
         <p id="question-input-error" class="message"></p>

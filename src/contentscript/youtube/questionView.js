@@ -1,6 +1,7 @@
 import { BackgroundActions, QuestionOptionKeys } from "../../constants.js";
 import { getVideoThumbnailUrl } from "../../data.js";
 import { Errors, Info } from "../../errors.js";
+import { initAutoComplete, setVideoInfo } from "./autoComplete.js";
 import { getQuestionHtml } from "./questionDialog/html.js";
 import { getTitleTokens, setTitleToken } from "./questionDialog/titleToken.js";
 
@@ -21,6 +22,7 @@ export function showQuestionDialog(videoInfo) {
     document.body.insertAdjacentElement("beforeend", backgroundElement);
 
     setQuestionDialogContent(videoInfo);
+    setVideoInfo(videoInfo);
 
     const questionOption = getSelectedQuestionOption();
     if (!questionOption) {
@@ -103,8 +105,9 @@ async function loadDefaultQuestion() {
             return;
         }
 
-        const inputElement =
-            getContainerElement().querySelector("input[type='text']");
+        const inputElement = getContainerElement().querySelector(
+            "textarea.question-input"
+        );
         inputElement.setAttribute("placeholder", response.question);
     } catch (error) {
         if (error.message === "Extension context invalidated.") {
@@ -250,7 +253,9 @@ function setQuestionDialogContent(videoInfo) {
     const containerElement = getContainerElement();
     containerElement.setAttribute("video-id", videoInfo.id);
 
-    const inputElement = containerElement.querySelector("input[type='text']");
+    const inputElement = containerElement.querySelector(
+        "textarea.question-input"
+    );
     const titleElement = containerElement.querySelector(".title");
     const captionElement = containerElement.querySelector(
         ".video-info .caption"
@@ -265,7 +270,11 @@ function setQuestionDialogContent(videoInfo) {
     thumbnailElement.setAttribute("src", getVideoThumbnailUrl(videoInfo));
 
     // cursor focus on the input field
-    inputElement.focus();
+    setTimeout(() => {
+        document
+            .querySelector(`#${containerId} textarea.question-input`)
+            .focus();
+    }, 100);
 }
 
 function setCaption(caption) {
@@ -324,8 +333,9 @@ function textToInputClickListener(e) {
         .trim();
     if (text) {
         const containerElement = e.target.closest(`#${containerId}`);
-        const inputElement =
-            containerElement.querySelector("input[type='text']");
+        const inputElement = containerElement.querySelector(
+            "textarea.question-input"
+        );
         inputElement.value = text;
 
         // focus on the input field, and move the cursor to the end of the text
@@ -379,7 +389,7 @@ function insertQuestionDialog() {
 
     // enter key event on the input field
     const inputElement = containerElement.querySelector(
-        "#contents input[type='text']"
+        "#contents textarea.question-input"
     );
     inputElement.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
@@ -410,6 +420,8 @@ function insertQuestionDialog() {
         repositionDialog();
     });
 
+    initAutoComplete(inputElement);
+
     return containerElement;
 }
 
@@ -435,7 +447,7 @@ function onRequestButtonClick(event) {
     const buttonElement = event.target;
     const formElement = buttonElement.closest(".ytq-form");
     const containerElement = formElement.closest(`#${containerId}`);
-    const inputElement = formElement.querySelector("input[type='text']");
+    const inputElement = formElement.querySelector("textarea.question-input");
     const question = inputElement.value || inputElement.placeholder;
     const thumbnailElement = containerElement.querySelector("img.thumbnail");
     const videoInfo = {
@@ -477,7 +489,7 @@ function onRequestButtonClick(event) {
 function resetRequesting(containerElement = null) {
     containerElement = containerElement || getContainerElement();
     const inputElement = containerElement.querySelector(
-        "#contents input[type='text']"
+        "#contents textarea.question-input"
     );
     const buttonElement = containerElement.querySelector(
         "#contents button.question-button"
@@ -582,7 +594,7 @@ function hideQuestionDialog() {
     containerElement.style.display = "none";
 
     const inputElement = containerElement.querySelector(
-        "#contents input[type='text']"
+        "#contents textarea.question-input"
     );
     inputElement.value = "";
     inputElement.placeholder = "";

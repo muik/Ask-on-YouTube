@@ -61,25 +61,32 @@
     background-color: var(--yt-spec-general-background-a);
     border-radius: 12px;
     display: flex;
+    align-items: center;
     margin-top: 8px;
+    position: relative;
 }
-.ytq-form .question-input-container input[type="text"] {
+.ytq-form .question-input-container textarea.question-input {
     color: var(--yt-spec-text-primary);
     font-size: 14px;
     line-height: 20px;
     font-weight: 400;
     padding: 8px 0 8px 12px;
     width: 100%;
+    min-height: 36px;
+    max-height: 120px;
     box-sizing: border-box;
     margin: 0;
     border: 0;
     background: transparent;
     border-radius: 12px;
+    overflow-y: auto;
+    resize: none;
+    font-family: "Roboto", "Noto", sans-serif;
 }
-.ytq-form .question-input-container input[type="text"]:focus {
+.ytq-form .question-input-container textarea.question-input:focus {
     outline: none;
 }
-.ytq-form .question-input-container:has(input[type="text"]:disabled) {
+.ytq-form .question-input-container:has(textarea.question-input:disabled) {
     background-color: var(--yt-spec-10-percent-layer);
 }
 
@@ -231,4 +238,38 @@
 
 #ytq-simple-question {
     margin-bottom: 8px;
+}
+
+/* Auto-completion styles */
+.question-auto-complete-text {
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 400;
+    font-family: "Roboto", "Noto", sans-serif;
+    pointer-events: none;
+    z-index: 9997;
+    color: var(--yt-spec-text-primary);
+    padding: 8px 0 8px 12px;
+    border: 0;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+}
+
+.question-auto-complete-text .typed-text {
+    visibility: hidden;
+}
+
+.question-auto-complete-text .suggestion-text {
+    color: var(--yt-spec-text-secondary, #606060);
+}
+
+.ytq-auto-complete-tab-hint {
+    color: #065fd4;
+    font-size: 12px;
+    font-weight: 500;
+    pointer-events: none;
 }
