@@ -14,6 +14,16 @@ async function fetchImageData(imageUrl) {
     };
 }
 
+/**
+ * Generate JSON content
+ * @param {string} prompt - The prompt
+ * @param {Object} options - The options object
+ * @param {string} options.imageUrl - The image url
+ * @param {string} options.systemInstruction - The system instruction
+ * @param {Object} options.responseSchema - The response schema
+ * @param {string} options.apiKey - The gemini api key
+ * @returns {Promise<Object>} - The response object
+ */
 export async function generateJsonContent(
     prompt,
     {

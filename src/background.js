@@ -1,5 +1,6 @@
 "use strict";
 
+import { getQuestionComplete } from "./background/questionComplete.js";
 import {
     getDefaultQuestion,
     getLastQuestionOption,
@@ -38,6 +39,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
     if (request.action === BackgroundActions.GET_QUESTIONS) {
         return getQuestions(request, sendResponse);
+    } else if (request.action === BackgroundActions.GET_QUESTION_COMPLETE) {
+        return getQuestionComplete(request, sendResponse);
     } else if (request.action === BackgroundActions.GET_DEFAULT_QUESTION) {
         return getDefaultQuestion(sendResponse);
     } else if (request.action === BackgroundActions.GET_LAST_QUESTION_OPTION) {
