@@ -334,6 +334,7 @@ function cleanupSuggestion() {
     }
 
     inputElement.style.height = "auto";
+    inputElement.style.height = inputElement.scrollHeight + "px";
     inputElement.removeAttribute("rows");
 }
 
