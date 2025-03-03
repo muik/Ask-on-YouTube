@@ -132,9 +132,17 @@ function getImageData(imgElement) {
     ctx.drawImage(imgElement, 0, 0);
 
     // Convert canvas to Base64
-    const base64Data = canvas.toDataURL("image/jpeg", 0.9); // Convert to JPEG
+    const mimeType = "image/jpeg";
+    const dataUrl = canvas.toDataURL(mimeType); // Convert to JPEG
+    const data = dataUrl.substring(dataUrl.indexOf(",") + 1);
     canvas.remove();
-    return base64Data;
+
+    return {
+        inlineData: {
+            data,
+            mimeType,
+        },
+    };
 }
 
 async function loadDefaultQuestion() {
