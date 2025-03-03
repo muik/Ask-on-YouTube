@@ -52,6 +52,7 @@ const responseSchema = {
 };
 
 const promptFormat = `The title of the youtube video: \`{title}\`
+The caption of the youtube video: \`{caption}\`
 
 Your task is to complete a full question sentence starts with \`{questionStart}\`.
 
@@ -79,6 +80,7 @@ async function requestQuestionComplete({
 
     const prompt = promptFormat
         .replace("{title}", videoInfo.title)
+        .replace("{caption}", videoInfo.caption)
         .replace("{questionStart}", questionStart)
         .replace("{history}", historyInline);
 

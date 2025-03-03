@@ -1,6 +1,18 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import {
+    GoogleGenerativeAI,
+    GoogleGenerativeAIFetchError,
+} from "@google/generative-ai";
 import { Buffer } from "buffer";
 import { Errors } from "../errors.js";
+
+// Gemini support PNG - image/png
+const supportedImageTypes = [
+    "image/png",
+    "image/jpeg",
+    "image/webp",
+    "image/heic",
+    "image/heif",
+];
 
 async function fetchImageData(imageUrl) {
     const imageResp = await fetch(imageUrl).then((response) =>
@@ -14,11 +26,34 @@ async function fetchImageData(imageUrl) {
     };
 }
 
+async function getImageData(imageUrl) {
+    const startTime = Date.now();
+    const imageData = await fetchImageData(imageUrl);
+    console.debug(
+        "fetch image time sec:",
+        (Date.now() - startTime) / 1000,
+        "size:",
+        imageData.inlineData.data.length
+    );
+
+    // if the image type is not image/jpeg, convert it to image/jpeg
+    if (!supportedImageTypes.includes(imageData.inlineData.mimeType)) {
+        console.error(
+            "Not supported image type:",
+            imageData.inlineData.mimeType
+        );
+        throw Errors.INVALID_REQUEST;
+    }
+
+    return imageData;
+}
+
 /**
  * Generate JSON content
  * @param {string} prompt - The prompt
  * @param {Object} options - The options object
  * @param {string} options.imageUrl - The image url
+ * @param {string} options.imageData - The image data
  * @param {string} options.systemInstruction - The system instruction
  * @param {Object} options.responseSchema - The response schema
  * @param {string} options.apiKey - The gemini api key
@@ -28,6 +63,7 @@ export async function generateJsonContent(
     prompt,
     {
         imageUrl = null,
+        imageData = null,
         systemInstruction = null,
         responseSchema = null,
         apiKey = undefined,
@@ -35,10 +71,10 @@ export async function generateJsonContent(
 ) {
     const data = [];
 
-    if (imageUrl) {
-        const startTime = Date.now();
-        const imageData = await fetchImageData(imageUrl);
-        console.debug("fetch image time sec:", (Date.now() - startTime) / 1000);
+    if (imageData) {
+        data.push(imageData);
+    } else if (imageUrl) {
+        const imageData = await getImageData(imageUrl);
         data.push(imageData);
     }
 
@@ -62,17 +98,47 @@ export async function generateJsonContent(
         systemInstruction: systemInstruction ? systemInstruction.trim() : null,
     });
 
-    const startTime = Date.now();
-    const result = await model.generateContent(request);
-    console.debug(
-        "token count:",
-        result.response.usageMetadata.totalTokenCount
-    );
-    const responseText = result.response.text();
-    console.debug(
-        "generate content request time sec:",
-        (Date.now() - startTime) / 1000
-    );
+    let responseText = null;
+
+    try {
+        const startTime = Date.now();
+        const result = await model.generateContent(request);
+        console.debug(
+            "token count:",
+            result.response.usageMetadata.totalTokenCount
+        );
+        responseText = result.response.text();
+        console.debug(
+            "generate content request time sec:",
+            (Date.now() - startTime) / 1000
+        );
+    } catch (error) {
+        if (error instanceof GoogleGenerativeAIFetchError) {
+            if (
+                error.status === 400 &&
+                error.message.includes("Provided image is not valid.")
+            ) {
+                console.info("the invalid image is:", imageData || imageUrl);
+            } else {
+                console.error(
+                    `Failed to generate content - status: ${
+                        error.status
+                    }, statusText: ${error.statusText}, errorDetails: ${
+                        error.errorDetails
+                            ? JSON.stringify(error.errorDetails)
+                            : ""
+                    }, message: ${error.message}`
+                );
+            }
+        } else {
+            console.error(
+                "Failed to generate content:",
+                error.constructor.name,
+                error
+            );
+        }
+        throw error;
+    }
 
     try {
         return JSON.parse(responseText);

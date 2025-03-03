@@ -1,7 +1,7 @@
 import { BackgroundActions, QuestionOptionKeys } from "../../constants.js";
 import { getVideoThumbnailUrl } from "../../data.js";
 import { Errors, Info } from "../../errors.js";
-import { initAutoComplete, setVideoInfo } from "./autoComplete.js";
+import { initAutoComplete } from "./autoComplete.js";
 import { getQuestionHtml } from "./questionDialog/html.js";
 import { getTitleTokens, setTitleToken } from "./questionDialog/titleToken.js";
 
@@ -10,6 +10,10 @@ const dialogData = {};
 
 function getContainerElement() {
     return document.querySelector(`ytd-popup-container #${containerId}`);
+}
+
+export function getDialogData() {
+    return dialogData;
 }
 
 export function showQuestionDialog(videoInfo) {
@@ -22,7 +26,6 @@ export function showQuestionDialog(videoInfo) {
     document.body.insertAdjacentElement("beforeend", backgroundElement);
 
     setQuestionDialogContent(videoInfo);
-    setVideoInfo(videoInfo);
 
     const questionOption = getSelectedQuestionOption();
     if (!questionOption) {
@@ -81,10 +84,57 @@ async function loadLastQuestionOption(containerElement) {
         }
 
         clickQuestionOption(response.option);
+
+        // Load the caption when the option is not "suggestions"
+        // because the suggestions response contains the caption
+        if (response.option !== QuestionOptionKeys.SUGGESTIONS) {
+            loadCaption(containerElement);
+        }
     } catch (error) {
         setQuestionsError(error);
         hideProgressSpinner();
     }
+}
+
+async function loadCaption(containerElement) {
+    const thumbnailElement = containerElement.querySelector("img.thumbnail");
+    const imageUrl = thumbnailElement.getAttribute("src");
+    const imageData = getImageData(thumbnailElement);
+
+    try {
+        const response = await chrome.runtime.sendMessage({
+            action: BackgroundActions.GET_CAPTION,
+            imageUrl,
+            imageData,
+        });
+
+        if (chrome.runtime.lastError) {
+            throw chrome.runtime.lastError;
+        }
+        if (response.error) {
+            throw response.error;
+        }
+
+        if (response.caption) {
+            setCaption(response.caption);
+        }
+    } catch (error) {
+        console.error("loadCaption Error:", error);
+    }
+}
+
+function getImageData(imgElement) {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    canvas.width = imgElement.width;
+    canvas.height = imgElement.height;
+    ctx.drawImage(imgElement, 0, 0);
+
+    // Convert canvas to Base64
+    const base64Data = canvas.toDataURL("image/jpeg", 0.9); // Convert to JPEG
+    canvas.remove();
+    return base64Data;
 }
 
 async function loadDefaultQuestion() {
@@ -278,6 +328,7 @@ function setQuestionDialogContent(videoInfo) {
 }
 
 function setCaption(caption) {
+    dialogData.videoInfo.caption = caption;
     const containerElement = getContainerElement();
     const thumbnailElement = containerElement.querySelector(
         ".video-info img.thumbnail"

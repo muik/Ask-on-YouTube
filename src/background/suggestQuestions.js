@@ -1,6 +1,5 @@
 import {
-    GoogleGenerativeAIError,
-    GoogleGenerativeAIFetchError,
+    GoogleGenerativeAIFetchError
 } from "@google/generative-ai";
 import { Config } from "../config.js";
 import { validateVideoInfo } from "../data.js";
@@ -119,29 +118,14 @@ export async function requestSuggestedQuestions(
 }
 
 function handleError(error) {
-    if (error instanceof GoogleGenerativeAIError) {
-        if (error instanceof GoogleGenerativeAIFetchError) {
-            if (
-                error.status === 400 &&
-                error.errorDetails[0].reason === "API_KEY_INVALID"
-            ) {
-                const newError = new Error(error.errorDetails[1].message);
-                newError.code = Info.GEMINI_API_KEY_NOT_VALID.code;
-                throw newError;
-            }
-            console.error(
-                `Failed to generate suggested questions - status: ${
-                    error.status
-                }, statusText: ${error.statusText}, errorDetails: ${
-                    error.errorDetails ? JSON.stringify(error.errorDetails) : ""
-                }`
-            );
-        } else {
-            console.error(
-                "Failed to generate suggested questions:",
-                error.constructor.name,
-                error
-            );
+    if (error instanceof GoogleGenerativeAIFetchError) {
+        if (
+            error.status === 400 &&
+            error.errorDetails[0].reason === "API_KEY_INVALID"
+        ) {
+            const newError = new Error(error.errorDetails[1].message);
+            newError.code = Info.GEMINI_API_KEY_NOT_VALID.code;
+            throw newError;
         }
     }
     throw error;

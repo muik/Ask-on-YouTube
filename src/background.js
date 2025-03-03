@@ -1,5 +1,6 @@
 "use strict";
 
+import { getCaption } from "./background/caption.js";
 import { getQuestionComplete } from "./background/questionComplete.js";
 import {
     getDefaultQuestion,
@@ -45,6 +46,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         return getDefaultQuestion(sendResponse);
     } else if (request.action === BackgroundActions.GET_LAST_QUESTION_OPTION) {
         return getLastQuestionOption(sendResponse);
+    } else if (request.action === BackgroundActions.GET_CAPTION) {
+        return getCaption(request, sendResponse);
     }
 
     if (request.action === BackgroundActions.GET_QUESTION_MENU_USED_BEFORE) {

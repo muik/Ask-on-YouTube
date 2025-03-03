@@ -1,4 +1,5 @@
 import { BackgroundActions } from "../../constants.js";
+import { getDialogData } from "./questionView.js";
 
 /**
  * Debounce function to limit the rate at which a function can fire
@@ -20,16 +21,10 @@ let suggestionElement = null;
 // Track if a suggestion was recently accepted
 let recentlyAcceptedSuggestion = false;
 
-let videoInfo = null;
-
 // Minimum characters required to trigger auto-completion
 const MIN_CHARS = 3;
 // Debounce delay in milliseconds
 const DEBOUNCE_DELAY = 300;
-
-export function setVideoInfo(_videoInfo) {
-    videoInfo = _videoInfo;
-}
 
 /**
  * Initialize auto-completion for the question input
@@ -152,6 +147,8 @@ async function handleInputChange(e) {
     }
 
     console.log("Requesting question completion for:", questionStart);
+
+    const { videoInfo } = getDialogData();
 
     // Request question completion from background script
     const response = await chrome.runtime.sendMessage({

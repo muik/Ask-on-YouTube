@@ -26,7 +26,7 @@ export function getQuestionHtml() {
     </yt-share-panel-header-renderer>
     <div id="contents" class="style-scope ytd-unified-share-panel-renderer">
       <div class="video-info">
-        <img class="thumbnail" />
+        <img class="thumbnail" crossorigin="anonymous" />
         <div class="text-container">
           <div class="title"></div>
           <span class="caption inputable"></span>
