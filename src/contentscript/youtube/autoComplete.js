@@ -20,6 +20,8 @@ function debounce(func, wait) {
 let suggestionElement = null;
 // Track if a suggestion was recently accepted
 let recentlyAcceptedSuggestion = false;
+// Track the last input value that triggered a request
+let lastRequestedInput = null;
 
 // Minimum characters required to trigger auto-completion
 const MIN_CHARS = 3;
@@ -144,6 +146,7 @@ export function initAutoComplete(inputElement) {
 async function handleInputChange(e) {
     const inputElement = e.target;
     const questionStart = inputElement.value;
+    lastRequestedInput = questionStart;
 
     console.log("Input changed:", questionStart);
 
@@ -170,6 +173,12 @@ async function handleInputChange(e) {
         questionStart,
         videoInfo,
     });
+
+    // Check if the input has changed since the request was sent
+    if (lastRequestedInput !== questionStart) {
+        console.log("Input changed since request, ignoring response");
+        return;
+    }
 
     console.log("Question completion response:", response);
 

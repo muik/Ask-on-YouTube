@@ -38,11 +38,14 @@ The auto-completion feature provides real-time suggestions as users type questio
    - Minimum character threshold (3 characters)
    - Prevents suggestion spam after accepting a completion
    - Auto-resizes textarea based on content
+   - Tracks last requested input to handle race conditions
 
 2. **Suggestion Retrieval**
    - Sends request to background script with:
      - Current text (questionStart)
      - Video information (id, title, caption)
+   - Tracks and validates responses against current input state
+   - Ignores responses for outdated input values
    - Processes response to ensure proper text completion
    - Handles case sensitivity and text duplication issues
 
@@ -62,17 +65,23 @@ The auto-completion feature provides real-time suggestions as users type questio
 ### Data Flow
 1. User types in the textarea
 2. Textarea auto-resizes to fit content
-3. After 300ms debounce, if text is ≥3 characters, request is sent to background script
+3. After 300ms debounce, if text is ≥3 characters:
+   - Current input value is stored
+   - Request is sent to background script
 4. Background script processes request and returns completed question
-5. Suggestion is displayed within the input field
-6. User can press Tab to accept or continue typing
-7. If Tab is pressed, suggestion is applied to input field
+5. Response is validated against current input state:
+   - If input has changed since request, response is ignored
+   - If input matches request state, suggestion is processed
+6. Valid suggestion is displayed within the input field
+7. User can press Tab to accept or continue typing
+8. If Tab is pressed, suggestion is applied to input field
 
 ### Error Handling
 - Clears suggestions when input is too short
 - Handles case sensitivity issues between user input and suggestions
 - Prevents duplicate text in suggestions
 - Handles dialog closing with proper cleanup
+- Ignores responses for outdated input states
 - Logs detailed debugging information to console
 
 ## Edge Cases
@@ -86,6 +95,7 @@ The auto-completion feature provides real-time suggestions as users type questio
 - **Text duplication**: Prevents duplicate text like "whyWhy..." in suggestions
 - **Multi-line text**: Properly handles line breaks and text wrapping
 - **Enter key behavior**: Differentiates between new line (Shift+Enter) and submission (Enter)
+- **Race conditions**: Properly handles out-of-order responses by tracking input state
 
 ### Potential Edge Cases to Consider
 - **Very long suggestions**: May need scrolling for extremely long completions
