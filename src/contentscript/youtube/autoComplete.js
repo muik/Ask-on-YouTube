@@ -24,9 +24,11 @@ let recentlyAcceptedSuggestion = false;
 let lastRequestedInput = null;
 
 // Minimum characters required to trigger auto-completion
-const MIN_CHARS = 3;
+const MIN_CHARS = 2;
 // Debounce delay in milliseconds
 const DEBOUNCE_DELAY = 300;
+
+const INPUT_ONE_LINE_HEIGHT = 48;
 
 function normalizeText(text) {
     return text.toLowerCase();
@@ -283,7 +285,11 @@ function displaySuggestion(inputElement, currentText, completedText) {
     suggestionElement = autoCompleteText;
     suggestionElement.dataset.suggestion = completedText;
 
-    inputElement.style.height = suggestionElement.scrollHeight + "px";
+    if (suggestionElement.scrollHeight > INPUT_ONE_LINE_HEIGHT) {
+        inputElement.style.height = suggestionElement.scrollHeight + "px";
+    } else {
+        inputElement.style.height = "auto";
+    }
     inputElement.setAttribute("rows", 1);
 
     console.log("Auto-complete text added to input container");
@@ -342,7 +348,9 @@ function cleanupSuggestion() {
     }
 
     inputElement.style.height = "auto";
-    inputElement.style.height = inputElement.scrollHeight + "px";
+    if (inputElement.scrollHeight > INPUT_ONE_LINE_HEIGHT) {
+        inputElement.style.height = inputElement.scrollHeight + "px";
+    }
     inputElement.removeAttribute("rows");
 }
 
