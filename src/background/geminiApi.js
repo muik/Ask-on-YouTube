@@ -73,9 +73,11 @@ export async function generateJsonContent(
 
     if (imageData) {
         data.push(imageData);
+        console.debug("imageData size:", imageData.inlineData.data.length);
     } else if (imageUrl) {
         const imageData = await getImageData(imageUrl);
         data.push(imageData);
+        console.debug("imageData size:", imageData.inlineData.data.length);
     }
 
     const request = [prompt.trim(), ...data];

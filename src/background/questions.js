@@ -20,7 +20,7 @@ export function getLastQuestionOption(sendResponse) {
 }
 
 export function getQuestions(request, sendResponse) {
-    getQuestionsRequest(request)
+    requestQuestions(request)
         .then(sendResponse)
         .catch(handleError(sendResponse));
 
@@ -29,7 +29,7 @@ export function getQuestions(request, sendResponse) {
     return true;
 }
 
-function getQuestionsRequest(request) {
+function requestQuestions(request) {
     let getQuestionsRequest;
 
     switch (request.option) {

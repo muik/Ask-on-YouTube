@@ -84,20 +84,14 @@ async function loadLastQuestionOption(containerElement) {
         }
 
         clickQuestionOption(response.option);
-
-        // Load the caption when the option is not "suggestions"
-        // because the suggestions response contains the caption
-        if (response.option !== QuestionOptionKeys.SUGGESTIONS) {
-            loadCaption(containerElement);
-        }
     } catch (error) {
         setQuestionsError(error);
         hideProgressSpinner();
     }
 }
 
-async function loadCaption(containerElement) {
-    const thumbnailElement = containerElement.querySelector("img.thumbnail");
+async function loadCaption(event) {
+    const thumbnailElement = event.target;
     const imageUrl = thumbnailElement.getAttribute("src");
     const imageData = getImageData(thumbnailElement);
 
@@ -118,6 +112,7 @@ async function loadCaption(containerElement) {
         if (response.caption) {
             setCaption(response.caption);
         }
+        console.debug("loadCaption caption:", response.caption);
     } catch (error) {
         console.error("loadCaption Error:", error);
     }
@@ -127,9 +122,17 @@ function getImageData(imgElement) {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
 
-    canvas.width = imgElement.width;
-    canvas.height = imgElement.height;
-    ctx.drawImage(imgElement, 0, 0);
+    const maxWidth = 336;
+    if (imgElement.naturalWidth > maxWidth) {
+        canvas.width = maxWidth;
+        canvas.height =
+            imgElement.naturalHeight * (maxWidth / imgElement.naturalWidth);
+    } else {
+        canvas.width = imgElement.naturalWidth;
+        canvas.height = imgElement.naturalHeight;
+    }
+
+    ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
 
     // Convert canvas to Base64
     const mimeType = "image/jpeg";
@@ -439,6 +442,8 @@ function insertQuestionDialog() {
         .insertAdjacentHTML("beforeend", getQuestionHtml());
 
     const containerElement = getContainerElement();
+    const thumbnailElement = containerElement.querySelector("img.thumbnail");
+    thumbnailElement.addEventListener("load", loadCaption);
 
     // request button click event
     const requestButton = containerElement.querySelector(
