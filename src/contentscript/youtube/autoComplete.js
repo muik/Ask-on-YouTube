@@ -61,8 +61,12 @@ export function initAutoComplete(inputElement) {
         if (suggestionElement) {
             const questionStart = e.target.value;
             const completedText = suggestionElement.dataset.suggestion;
-            if (isQuestionStart(completedText, questionStart)) {
+            if (
+                questionStart &&
+                isQuestionStart(completedText, questionStart)
+            ) {
                 // if user follows the suggestion, don't change the suggestion
+                console.debug("isQuestionStart", completedText, questionStart);
                 return;
             } else {
                 // if user doesn't follow the suggestion, clear the suggestion immediately
@@ -200,6 +204,7 @@ async function handleInputChange(e) {
     // Check if the completed text actually extends the current text
     if (!isQuestionStart(completedText, questionStart)) {
         console.log("Completed text doesn't start with current text, fixing");
+        cleanupSuggestion();
         return;
     }
 

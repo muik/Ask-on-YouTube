@@ -262,11 +262,7 @@
     align-items: center;
 }
 
-.question-auto-complete-text .typed-text {
-    visibility: hidden;
-}
-
-.question-auto-complete-text .suggestion-text {
+.question-auto-complete-text {
     color: var(--yt-spec-text-secondary, #606060);
 }
 
