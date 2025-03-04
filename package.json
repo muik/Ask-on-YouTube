@@ -1,6 +1,6 @@
 {
   "name": "ask-on-youtube",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Ask on YouTube",
   "main": "background.js",
   "type": "module",
