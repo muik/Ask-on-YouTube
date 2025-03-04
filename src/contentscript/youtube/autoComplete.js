@@ -26,6 +26,16 @@ const MIN_CHARS = 3;
 // Debounce delay in milliseconds
 const DEBOUNCE_DELAY = 300;
 
+function normalizeText(text) {
+    return text.toLowerCase();
+}
+
+function isQuestionStart(completedText, questionStart) {
+    return normalizeText(completedText).startsWith(
+        normalizeText(questionStart)
+    );
+}
+
 /**
  * Initialize auto-completion for the question input
  * @param {HTMLElement} inputElement - The input element
@@ -51,7 +61,7 @@ export function initAutoComplete(inputElement) {
         if (suggestionElement) {
             const questionStart = e.target.value;
             const completedText = suggestionElement.dataset.suggestion;
-            if (completedText.startsWith(questionStart)) {
+            if (isQuestionStart(completedText, questionStart)) {
                 // if user follows the suggestion, don't change the suggestion
                 return;
             } else {
@@ -188,7 +198,7 @@ async function handleInputChange(e) {
     }
 
     // Check if the completed text actually extends the current text
-    if (!completedText.startsWith(questionStart)) {
+    if (!isQuestionStart(completedText, questionStart)) {
         console.log("Completed text doesn't start with current text, fixing");
         return;
     }
@@ -208,19 +218,6 @@ function displaySuggestion(inputElement, currentText, completedText) {
     cleanupSuggestion();
 
     console.log("Displaying suggestion:", { currentText, completedText });
-
-    // Ensure the completed text starts with the current text without duplication
-    if (!completedText.toLowerCase().startsWith(currentText.toLowerCase())) {
-        console.log(
-            "Completed text doesn't start with current text, prepending current text"
-        );
-        completedText = currentText + completedText;
-    } else if (completedText.toLowerCase() !== currentText.toLowerCase()) {
-        // If the completed text starts with the current text but is different (case insensitive),
-        // ensure we use the user's exact casing for the part they typed
-        completedText =
-            currentText + completedText.substring(currentText.length);
-    }
 
     // Get the input container
     const inputContainer = inputElement.closest(".question-input-container");
