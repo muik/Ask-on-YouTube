@@ -11,7 +11,7 @@
     "build-release": "npm run lint && npm run clean && NODE_ENV=production webpack && npm run zip",
     "watch": "nodemon --watch src/ --watch webpack.config.cjs --watch manifest.json --watch _locales --ext js,html,css,json --exec 'npm run build'",
     "test": "NODE_OPTIONS=--experimental-vm-modules npx jest",
-    "zip": "tar -a -c -f $npm_package_name-v$npm_package_version.zip dist"
+    "zip": "zip -r $npm_package_name-v$npm_package_version.zip dist"
   },
   "repository": {
     "type": "git",
