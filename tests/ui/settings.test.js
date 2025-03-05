@@ -26,6 +26,15 @@ describe("Settings page Test", () => {
         const page = await browser.newPage();
         await page.goto(`chrome-extension://${EXTENSION_ID}/settings.html`);
         const title = await page.title();
-        expect(title).toContain("Settings - Ask on YouTube");
+
+        const language = await page.evaluate(() => {
+            return navigator.language;
+        });
+
+        if (language.startsWith("ko")) {
+            expect(title).toContain("설정 - Ask on YouTube");
+        } else {
+            expect(title).toContain("Settings - Ask on YouTube");
+        }
     });
 });
