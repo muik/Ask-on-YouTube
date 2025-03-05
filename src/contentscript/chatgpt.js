@@ -1,7 +1,8 @@
 "use strict";
 
+import Honeybadger from "@honeybadger-io/js";
 import { BackgroundActions, Targets } from "../constants.js";
-import { config } from "./config.js";
+import config from "../honeybadger-config.js";
 import { waitForElm } from "./utils.js";
 
 const promptDivider = "------------";
@@ -15,6 +16,8 @@ window.onload = async () => {
     ) {
         return;
     }
+
+    Honeybadger.configure(config);
 
     // get prompt from background.js
     chrome.runtime.sendMessage(

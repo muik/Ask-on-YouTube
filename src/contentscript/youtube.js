@@ -1,12 +1,16 @@
 "use strict";
 
+import Honeybadger from "@honeybadger-io/js";
 import { BackgroundActions } from "../constants.js";
+import config from "../honeybadger-config.js";
 import { waitForElm } from "./utils.js";
 import {
     detectVideoOptionClick,
     insertExtraOptions,
 } from "./youtube/moreOptions.js";
 import { injectElements } from "./youtube/videoDetail.js";
+
+Honeybadger.configure(config);
 
 let oldHref = "";
 
