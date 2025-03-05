@@ -1,3 +1,4 @@
+import Honeybadger from "@honeybadger-io/js";
 import Config from "../config.js";
 import { StorageKeys } from "../constants.js";
 
@@ -10,7 +11,7 @@ const STORAGE_KEY = StorageKeys.QUESTION_HISTORY;
  * @param {Object} videoInfo - The video info object.
  * @param {string} question - The question to save.
  */
-export function saveQuestionHistory(videoInfo, question) {
+export async function saveQuestionHistory(videoInfo, question) {
     console.debug("Saving question history:", videoInfo, question);
 
     const item = {
@@ -23,21 +24,31 @@ export function saveQuestionHistory(videoInfo, question) {
         timestamp: new Date().toISOString(),
     };
 
-    chrome.storage.sync.get([STORAGE_KEY], (result) => {
+    try {
+        const startTime = performance.now();
+        const result = await chrome.storage.local.get([STORAGE_KEY]);
         const history = result[STORAGE_KEY] || [];
         history.push(item);
         if (history.length > MAX_HISTORY_SIZE) {
             history.splice(0, history.length - MAX_HISTORY_SIZE);
         }
 
-        chrome.storage.sync.set({ [STORAGE_KEY]: history }, () => {
-            console.debug("Question history saved:", history);
-        });
-    });
+        await chrome.storage.local.set({ [STORAGE_KEY]: history });
+        console.debug(
+            "Question history saved:",
+            history.length,
+            "in",
+            (performance.now() - startTime).toFixed(1),
+            "ms"
+        );
+    } catch (error) {
+        console.error("Failed to save question history:", error);
+        Honeybadger.notify(error);
+    }
 }
 
 export async function getQuestionHistory(count = MAX_HISTORY_SIZE_IN_PROMPT) {
-    const result = await chrome.storage.sync.get([STORAGE_KEY]);
+    const result = await chrome.storage.local.get([STORAGE_KEY]);
     return (result[STORAGE_KEY] || []).slice(-count);
 }
 
@@ -47,7 +58,7 @@ export async function getQuestionHistory(count = MAX_HISTORY_SIZE_IN_PROMPT) {
  * @property {Array} questions - The recent questions.
  */
 export async function getRecentQuestions() {
-    const result = await chrome.storage.sync.get([STORAGE_KEY]);
+    const result = await chrome.storage.local.get([STORAGE_KEY]);
     const recentItems = (result[STORAGE_KEY] || [])
         .reverse()
         .map((item) => item.question)
@@ -70,7 +81,7 @@ const getDefaultFavoriteQuestions = () => [
  * @property {Array} questions - The favorite questions.
  */
 export async function getFavoriteQuestions() {
-    const result = await chrome.storage.sync.get([STORAGE_KEY]);
+    const result = await chrome.storage.local.get([STORAGE_KEY]);
     const counter = {};
 
     // group the questions by question and video id

@@ -5,7 +5,7 @@ const Config = {
     // Maximum number of questions to store in history
     // Used for calculating favorite questions
     // Larger history provides more accurate favorites but increases load/save time
-    MAX_HISTORY_SIZE: 30,
+    MAX_HISTORY_SIZE: 50,
 
     // Number of historical questions to include in the prompt for suggestions
     // Larger history uses more tokens

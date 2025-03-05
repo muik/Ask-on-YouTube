@@ -17,7 +17,7 @@ export function getPrompt(sendResponse) {
 }
 
 export function setPrompt(request, sendResponse) {
-    _setPrompt({
+    processSetPrompt({
         videoInfo: request.videoInfo,
         target: request.target,
         question: request.question,
@@ -31,7 +31,7 @@ export function setPrompt(request, sendResponse) {
     return true;
 }
 
-async function _setPrompt({ videoInfo, target, question }) {
+async function processSetPrompt({ videoInfo, target, question }) {
     validateVideoInfo(videoInfo);
 
     if (target === Targets.CHATGPT) {

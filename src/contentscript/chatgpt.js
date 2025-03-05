@@ -19,11 +19,20 @@ window.onload = async () => {
 
     Honeybadger.configure(honeybadgerConfig);
 
-    // get prompt from background.js
-    chrome.runtime.sendMessage(
-        { action: BackgroundActions.GET_PROMPT, target: Targets.CHATGPT },
-        onGetPrompt
-    );
+    try {
+        // get prompt from background.js
+        chrome.runtime.sendMessage(
+            { action: BackgroundActions.GET_PROMPT, target: Targets.CHATGPT },
+            onGetPrompt
+        );
+
+        if (chrome.runtime.lastError) {
+            Honeybadger.notify(chrome.runtime.lastError);
+        }
+    } catch (error) {
+        console.error("Error getting prompt", error);
+        Honeybadger.notify(error);
+    }
 };
 
 function onGetPrompt(response) {
