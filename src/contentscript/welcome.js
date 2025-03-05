@@ -1,8 +1,8 @@
 import Honeybadger from "@honeybadger-io/js";
+import { honeybadgerConfig } from "../config.js";
 import { BackgroundActions } from "../constants.js";
-import config from "../honeybadger-config.js";
 
-Honeybadger.configure(config);
+Honeybadger.configure(honeybadgerConfig);
 
 window.onload = () => {
     const settingsBtn = document.getElementById("settings-btn");

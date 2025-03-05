@@ -1,6 +1,6 @@
 "use strict";
+import Config from "../config.js";
 import { Targets } from "../constants.js";
-import { config } from "../contentscript/config.js";
 import { validateVideoInfo } from "../data.js";
 import { Errors } from "../errors.js";
 import { handleError } from "./handlers.js";
@@ -103,7 +103,7 @@ function getTargetUrl(target) {
     } else {
         throw new Error("Invalid target", { code: "INVALID_TARGET" });
     }
-    return `${url}?ref=${config["refCode"]}`;
+    return `${url}?ref=${Config.REF_CODE}`;
 }
 
 function handleSetPromptResult(sendResponse) {

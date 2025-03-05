@@ -1,7 +1,7 @@
 "use strict";
 
+import Config from "../config.js";
 import { BackgroundActions } from "../constants.js";
-import { config } from "./config.js";
 import { waitForElm } from "./utils.js";
 
 window.onload = async () => {
@@ -15,7 +15,7 @@ window.onload = async () => {
 function isOnGeminiPage() {
     if (
         window.location.hostname === "gemini.google.com" &&
-        window.location.search === `?ref=${config["refCode"]}`
+        window.location.search === `?ref=${Config.REF_CODE}`
     ) {
         return true;
     }

@@ -1,8 +1,8 @@
 "use strict";
 
 import Honeybadger from "@honeybadger-io/js";
+import Config, { honeybadgerConfig } from "../config.js";
 import { BackgroundActions, Targets } from "../constants.js";
-import config from "../honeybadger-config.js";
 import { waitForElm } from "./utils.js";
 
 const promptDivider = "------------";
@@ -12,12 +12,12 @@ window.onload = async () => {
     // If opened by the extension, insert the prompt
     if (
         window.location.hostname !== "chatgpt.com" ||
-        window.location.search !== `?ref=${config["refCode"]}`
+        window.location.search !== `?ref=${Config.REF_CODE}`
     ) {
         return;
     }
 
-    Honeybadger.configure(config);
+    Honeybadger.configure(honeybadgerConfig);
 
     // get prompt from background.js
     chrome.runtime.sendMessage(

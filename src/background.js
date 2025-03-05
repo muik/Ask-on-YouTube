@@ -14,11 +14,11 @@ import {
     getQuestionMenuUsedBefore,
     setQuestionMenuUsedBefore,
 } from "./background/usedBefore.js";
+import { honeybadgerConfig } from "./config.js";
 import { BackgroundActions } from "./constants.js";
 import { Errors } from "./errors.js";
-import config from "./honeybadger-config.js";
 
-Honeybadger.configure(config);
+Honeybadger.configure(honeybadgerConfig);
 
 // On Chrome Install
 chrome.runtime.onInstalled.addListener(function (details) {

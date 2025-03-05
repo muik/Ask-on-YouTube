@@ -1,7 +1,7 @@
 import {
     GoogleGenerativeAIFetchError
 } from "@google/generative-ai";
-import { Config } from "../config.js";
+import Config from "../config.js";
 import { validateVideoInfo } from "../data.js";
 import { Info } from "../errors.js";
 import { generateJsonContent } from "./geminiApi.js";
