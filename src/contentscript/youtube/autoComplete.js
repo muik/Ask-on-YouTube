@@ -67,8 +67,7 @@ export function initAutoComplete(inputElement) {
                 questionStart &&
                 isQuestionStart(completedText, questionStart)
             ) {
-                // if user follows the suggestion, don't change the suggestion
-                console.debug("isQuestionStart", completedText, questionStart);
+                displaySuggestion(inputElement, questionStart, completedText);
                 return;
             } else {
                 // if user doesn't follow the suggestion, clear the suggestion immediately
