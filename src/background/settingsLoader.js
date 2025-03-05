@@ -1,5 +1,6 @@
 import { QuestionOptionKeys, StorageKeys } from "../constants.js";
 import { Errors } from "../errors.js";
+import { clearQuestionCompleteCache } from "./questionCompleteAvailable.js";
 
 const settingsKeys = [
     StorageKeys.GEMINI_API_KEY,
@@ -30,6 +31,12 @@ export function updateSettings(changes) {
     Object.keys(changes).forEach((key) => {
         if (settingsKeys.includes(key)) {
             settings[key] = changes[key].newValue;
+        }
+
+        if (key === StorageKeys.GEMINI_API_KEY) {
+            // Clear the cache for the old and new API keys
+            clearQuestionCompleteCache(changes[key].oldValue);
+            clearQuestionCompleteCache(changes[key].newValue);
         }
     });
 

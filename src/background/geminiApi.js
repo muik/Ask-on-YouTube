@@ -5,6 +5,8 @@ import {
 import { Buffer } from "buffer";
 import { Errors } from "../errors.js";
 
+const MODEL = "gemini-2.0-flash-lite";
+
 // Gemini support PNG - image/png
 const supportedImageTypes = [
     "image/png",
@@ -95,7 +97,7 @@ export async function generateJsonContent(
         apiKey || process.env.GEMINI_API_KEY || process.env.GOOGLE_CLOUD_API_KEY
     );
     const model = genAI.getGenerativeModel({
-        model: "gemini-2.0-flash-lite",
+        model: MODEL,
         generationConfig,
         systemInstruction: systemInstruction ? systemInstruction.trim() : null,
     });
@@ -147,5 +149,30 @@ export async function generateJsonContent(
     } catch (error) {
         console.warn("Failed to parse JSON response:", responseText, error);
         throw Errors.INVALID_RESPONSE;
+    }
+}
+
+export async function isGeminiAvailable(apiKey) {
+    if (!apiKey) {
+        return false;
+    }
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}?key=${apiKey}`;
+
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            console.debug(
+                "Gemini API check failed:",
+                response.status,
+                response.statusText,
+                await response.json()
+            );
+            return false;
+        }
+        return true;
+    } catch (error) {
+        console.error("Failed to check Gemini API availability:", error);
+        return false;
     }
 }

@@ -3,6 +3,7 @@
 import Honeybadger from "@honeybadger-io/js";
 import { getCaption } from "./background/caption.js";
 import { getQuestionComplete } from "./background/questionComplete.js";
+import { getQuestionCompleteAvailable } from "./background/questionCompleteAvailable.js";
 import {
     getDefaultQuestion,
     getLastQuestionOption,
@@ -52,6 +53,10 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         return getLastQuestionOption(sendResponse);
     } else if (request.action === BackgroundActions.GET_CAPTION) {
         return getCaption(request, sendResponse);
+    } else if (
+        request.action === BackgroundActions.GET_QUESTION_COMPLETE_AVAILABLE
+    ) {
+        return getQuestionCompleteAvailable(sendResponse);
     }
 
     if (request.action === BackgroundActions.GET_QUESTION_MENU_USED_BEFORE) {

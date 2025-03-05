@@ -9,6 +9,7 @@ export const BackgroundActions = {
     SET_QUESTION_MENU_USED_BEFORE: "setQuestionMenuUsedBefore",
     GET_QUESTION_COMPLETE: "getQuestionComplete",
     GET_CAPTION: "getCaption",
+    GET_QUESTION_COMPLETE_AVAILABLE: "getQuestionCompleteAvailable",
 };
 
 export const StorageKeys = {
