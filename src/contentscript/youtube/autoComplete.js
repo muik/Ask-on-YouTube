@@ -18,8 +18,6 @@ function debounce(func, wait) {
 
 // Store the suggestion element reference
 let suggestionElement = null;
-// Track if a suggestion was recently accepted
-let recentlyAcceptedSuggestion = false;
 // Track the last input value that triggered a request
 let lastRequestedInput = null;
 
@@ -45,7 +43,7 @@ function isQuestionStart(completedText, questionStart) {
 export function initAutoComplete(inputElement) {
     if (!inputElement) return;
 
-    console.log("Initializing auto-completion for:", inputElement);
+    console.debug("Initializing auto-completion for:", inputElement);
 
     // Clean up any existing suggestion element
     cleanupSuggestion();
@@ -75,9 +73,12 @@ export function initAutoComplete(inputElement) {
             }
         }
 
+        inputElement.style.height = "auto";
+        inputElement.style.height = inputElement.scrollHeight + "px";
+
         debouncedInputHandler(e);
     });
-    console.log("Added input event listener for auto-completion");
+    console.debug("Added input event listener for auto-completion");
 
     // Add tab key event listener for accepting suggestions
     inputElement.addEventListener("keydown", (e) => {
@@ -99,7 +100,7 @@ export function initAutoComplete(inputElement) {
             }
         }
     });
-    console.log("Added key event listeners for auto-completion");
+    console.debug("Added key event listeners for auto-completion");
 
     // Add cleanup when dialog is closed
     const containerElement = document.getElementById("dialog-container");
@@ -116,14 +117,14 @@ export function initAutoComplete(inputElement) {
             });
         });
         observer.observe(containerElement, { attributes: true });
-        console.log("Added mutation observer for dialog closing");
+        console.debug("Added mutation observer for dialog closing");
     }
 
     // Handle placeholder changes
     const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
             if (mutation.attributeName === "placeholder") {
-                console.log("Placeholder changed to:", mutation);
+                console.debug("Placeholder changed to:", mutation);
 
                 const inputElement = mutation.target;
                 if (inputElement.textContent.length === 0) {
@@ -149,39 +150,40 @@ async function handleInputChange(e) {
     const questionStart = inputElement.value;
     lastRequestedInput = questionStart;
 
-    console.log("Input changed:", questionStart);
+    console.debug("Input changed:", questionStart);
 
     // Clear suggestion if input is too short or recently accepted a suggestion
-    if (
-        questionStart.replace(/\s+/g, "").length < MIN_CHARS ||
-        recentlyAcceptedSuggestion
-    ) {
-        console.log(
-            "Input too short or recently accepted suggestion, clearing suggestion"
-        );
+    if (questionStart.replace(/\s+/g, "").length < MIN_CHARS) {
+        console.debug("Input too short, clearing suggestion");
         cleanupSuggestion();
-        recentlyAcceptedSuggestion = false;
         return;
     }
 
-    console.log("Requesting question completion for:", questionStart);
+    console.debug("Requesting question completion for:", questionStart);
 
     const { videoInfo } = getDialogData();
 
     // Request question completion from background script
+    const startTime = performance.now();
     const response = await chrome.runtime.sendMessage({
         action: BackgroundActions.GET_QUESTION_COMPLETE,
         questionStart,
         videoInfo,
     });
+    const endTime = performance.now();
+    console.debug(
+        "Question completion response time:",
+        (endTime - startTime).toFixed(1),
+        "ms"
+    );
 
     // Check if the input has changed since the request was sent
     if (lastRequestedInput !== questionStart) {
-        console.log("Input changed since request, ignoring response");
+        console.debug("Input changed since request, ignoring response");
         return;
     }
 
-    console.log("Question completion response:", response);
+    console.debug("Question completion response:", response);
 
     if (chrome.runtime.lastError) {
         console.error(
@@ -205,7 +207,7 @@ async function handleInputChange(e) {
     const completedText = response.questionComplete;
 
     if (completedText === questionStart) {
-        console.log(
+        console.debug(
             "Completed text is the same as current text, not showing suggestion"
         );
         return;
@@ -213,12 +215,12 @@ async function handleInputChange(e) {
 
     // Check if the completed text actually extends the current text
     if (!isQuestionStart(completedText, questionStart)) {
-        console.log("Completed text doesn't start with current text, fixing");
+        console.debug("Completed text doesn't start with current text, fixing");
         cleanupSuggestion();
         return;
     }
 
-    console.log("Displaying suggestion:", completedText);
+    console.debug("Displaying suggestion:", completedText);
     displaySuggestion(inputElement, questionStart, completedText);
 }
 
@@ -232,7 +234,7 @@ function displaySuggestion(inputElement, currentText, completedText) {
     // Clean up any existing suggestion
     cleanupSuggestion();
 
-    console.log("Displaying suggestion:", { currentText, completedText });
+    console.debug("Displaying suggestion:", { currentText, completedText });
 
     // Get the input container
     const inputContainer = inputElement.closest(".question-input-container");
@@ -286,7 +288,7 @@ function displaySuggestion(inputElement, currentText, completedText) {
 
     inputElement.style.height = suggestionElement.scrollHeight + "px";
 
-    console.log("Auto-complete text added to input container");
+    console.debug("Auto-complete text added to input container");
 }
 
 /**
@@ -294,7 +296,7 @@ function displaySuggestion(inputElement, currentText, completedText) {
  * @param {KeyboardEvent} e - The keyboard event
  */
 function handleTabKey(e) {
-    console.log(
+    console.debug(
         "Tab key pressed, suggestion element exists:",
         !!suggestionElement
     );
@@ -304,7 +306,7 @@ function handleTabKey(e) {
 
         // Get the suggestion text
         const suggestion = suggestionElement.dataset.suggestion;
-        console.log("Accepting suggestion:", suggestion);
+        console.debug("Accepting suggestion:", suggestion);
 
         // Update the input value
         e.target.value = suggestion;
@@ -316,9 +318,7 @@ function handleTabKey(e) {
         // Clean up the suggestion
         cleanupSuggestion();
 
-        // Set flag to prevent immediate new suggestions
-        recentlyAcceptedSuggestion = true;
-        console.log("Suggestion accepted and cleaned up");
+        console.debug("Suggestion accepted and cleaned up");
     }
 }
 
@@ -363,7 +363,7 @@ export function testAutoComplete() {
         caption: "Test video caption",
     };
 
-    console.log("Testing auto-completion with:", {
+    console.debug("Testing auto-completion with:", {
         inputElement,
         videoInfo,
     });
@@ -380,14 +380,14 @@ export function testAutoComplete() {
                 currentText,
                 `${currentText} is a test suggestion`
             );
-            console.log("Test suggestion displayed");
+            console.debug("Test suggestion displayed");
         } else {
-            console.log(`Input needs at least ${MIN_CHARS} characters`);
+            console.debug(`Input needs at least ${MIN_CHARS} characters`);
         }
     };
 
-    console.log("Test function available: window.showTestSuggestion()");
-    console.log(
+    console.debug("Test function available: window.showTestSuggestion()");
+    console.debug(
         "Type at least 3 characters in the input field and run window.showTestSuggestion()"
     );
 }
