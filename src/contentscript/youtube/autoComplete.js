@@ -89,6 +89,8 @@ export function initAutoComplete(inputElement) {
         // Allow Enter key to submit when Shift is not pressed
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
+            cleanupSuggestion();
+
             const button = inputElement
                 .closest(".question-input-container")
                 .querySelector(".question-button");
