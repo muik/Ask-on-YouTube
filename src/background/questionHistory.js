@@ -1,4 +1,4 @@
-import { Config } from "../config.js";
+import Config from "../config.js";
 import { StorageKeys } from "../constants.js";
 
 const { MAX_HISTORY_SIZE, MAX_HISTORY_SIZE_IN_PROMPT } = Config;
