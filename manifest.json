@@ -1,6 +1,6 @@
 {
     "name": "__MSG_extensionName__",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "manifest_version": 3,
     "description": "__MSG_extensionDescription__",
     "default_locale": "en",
@@ -24,19 +24,28 @@
     "content_scripts": [
         {
             "matches": ["https://www.youtube.com/*"],
-            "js": ["contentscript/youtube.min.js"],
+            "js": [
+                "vendor/honeybadger.ext.min.js",
+                "contentscript/youtube.min.js"
+            ],
             "css": ["contentscript/youtube.min.css"],
             "all_frames": false
         },
         {
             "matches": ["https://chatgpt.com/*"],
-            "js": ["contentscript/chatgpt.min.js"]
+            "js": [
+                "vendor/honeybadger.ext.min.js",
+                "contentscript/chatgpt.min.js"
+            ]
         },
         {
             "matches": [
                 "https://muik.github.io/Ask-on-YouTube/pages/welcome.html"
             ],
-            "js": ["contentscript/welcome.min.js"]
+            "js": [
+                "vendor/honeybadger.ext.min.js",
+                "contentscript/welcome.min.js"
+            ]
         }
     ],
     "content_security_policy": {

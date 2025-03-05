@@ -4,6 +4,9 @@ import globals from "globals";
 /** @type {import('eslint').Linter.Config[]} */
 export default [
     {
+        ignores: ["**/vendor/**"], // Ignore vendor directory
+    },
+    {
         languageOptions: {
             globals: {
                 ...globals.browser,

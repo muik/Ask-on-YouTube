@@ -1,5 +1,6 @@
 "use strict";
 
+import Honeybadger from "@honeybadger-io/js";
 import { getCaption } from "./background/caption.js";
 import { getQuestionComplete } from "./background/questionComplete.js";
 import {
@@ -15,6 +16,9 @@ import {
 } from "./background/usedBefore.js";
 import { BackgroundActions } from "./constants.js";
 import { Errors } from "./errors.js";
+import config from "./honeybadger-config.js";
+
+Honeybadger.configure(config);
 
 // On Chrome Install
 chrome.runtime.onInstalled.addListener(function (details) {

@@ -31,6 +31,10 @@ const plugins = [
                 from: "src/images",
                 to: "images",
             },
+            {
+                from: "src/vendor/honeybadger.ext.min.js",
+                to: "vendor/honeybadger.ext.min.js",
+            },
         ],
     }),
     new HtmlWebpackPlugin({
@@ -103,7 +107,10 @@ const config = {
             "contentscript",
             "welcome.js"
         ),
-        background: path.join(__dirname, "src", "background.js"),
+        background: [
+            path.join(__dirname, "src", "vendor", "honeybadger.ext.min.js"),
+            path.join(__dirname, "src", "background.js")
+        ],
         settings: [
             path.join(__dirname, "src", "options", "settings.js"),
             path.join(__dirname, "src", "css", "settings.css"),
