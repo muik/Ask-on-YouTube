@@ -1,7 +1,6 @@
 import { BackgroundActions } from "../../constants.js";
 import { Errors } from "../../errors.js";
 import { waitForElm } from "../utils.js";
-import { setLoadingState } from "./extraOptionsView.js";
 import { showQuestionDialog } from "./questionView.js";
 import { getQuestionMarkSvg } from "./simpleQuestion.js";
 import { showToastMessage } from "./toast.js";
@@ -181,31 +180,7 @@ function onExtraOptionClick(e) {
         return;
     }
 
-    setLoadingState(element, true);
-
-    try {
-        chrome.runtime.sendMessage(
-            { action: BackgroundActions.SET_PROMPT, target: target, videoInfo },
-            (response) => {
-                onSetPrompt(response, element);
-            }
-        );
-    } catch (error) {
-        if (error.message === "Extension context invalidated.") {
-            showToastMessage(Errors.EXTENSION_CONTEXT_INVALIDATED.message);
-        } else {
-            if (!error.code) {
-                console.error("sendMessage setPrompt Error:", error);
-            }
-            showToastMessage(error.message);
-        }
-        setLoadingState(element, false);
-        return;
-    }
-
-    waitForElm(`${dropdownSelector}[aria-hidden='true']`).then(() => {
-        setLoadingState(element, false);
-    });
+    console.error("Invalid option clicked.", e.target);
 }
 
 function onQuestionClick(videoInfo) {
@@ -214,50 +189,6 @@ function onQuestionClick(videoInfo) {
 
     showQuestionDialog(videoInfo);
     removeQuestionMenuUseMark();
-}
-
-function onSetPrompt(response, element) {
-    // Stop when dropbox already closed, it means user doesn't want to continue.
-    if (document.querySelector(`${dropdownSelector}[aria-hidden='true']`)) {
-        return;
-    }
-
-    setLoadingState(element, false);
-
-    if (chrome.runtime.lastError) {
-        const errorMessage = `Error - ${
-            chrome.runtime.lastError.message || chrome.runtime.lastError
-        }`;
-        console.error(
-            "onSetPrompt chrome.runtime.lastError:",
-            chrome.runtime.lastError
-        );
-        showToastMessage(errorMessage);
-        return;
-    }
-
-    if (response.error) {
-        const { code, message } = response.error;
-        const error = Errors[code];
-        if (error) {
-            showToastMessage(error.message);
-        } else {
-            console.error("onSetPrompt Response Error:", response.error);
-            showToastMessage(message);
-        }
-        return;
-    }
-
-    if (!response.targetUrl) {
-        console.error("Error - targetUrl is not set.");
-        showToastMessage("Error - targetUrl is not set.");
-        return;
-    }
-
-    window.open(response.targetUrl, "_blank");
-
-    // Close the dropdown menu
-    pressEscKey();
 }
 
 /**
