@@ -1,9 +1,7 @@
-import {
-    GoogleGenerativeAIFetchError
-} from "@google/generative-ai";
+import { GoogleGenerativeAIFetchError } from "@google/generative-ai";
 import Config from "../config.js";
 import { validateVideoInfo } from "../data.js";
-import { Info } from "../errors.js";
+import { Errors, Info } from "../errors.js";
 import { generateJsonContent } from "./geminiApi.js";
 import { LRUCache } from "./lruCache.js";
 import { getQuestionHistory } from "./questionHistory.js";
@@ -123,9 +121,7 @@ function handleError(error) {
             error.status === 400 &&
             error.errorDetails[0].reason === "API_KEY_INVALID"
         ) {
-            const newError = new Error(error.errorDetails[1].message);
-            newError.code = Info.GEMINI_API_KEY_NOT_VALID.code;
-            throw newError;
+            throw Errors.GEMINI_API_KEY_NOT_VALID;
         }
     }
     throw error;

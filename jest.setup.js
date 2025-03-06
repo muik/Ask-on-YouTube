@@ -12,4 +12,9 @@ global.chrome = {
     i18n: {
         getMessage: (message) => message,
     },
+    runtime: {
+        getManifest: () => ({
+            version: "1.0.3"
+        })
+    }
 };

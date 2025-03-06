@@ -27,6 +27,10 @@ export const Errors = {
         message: chrome.i18n.getMessage("failedToLoadQuestionsError"),
         code: "FAILED_TO_LOAD_QUESTIONS",
     },
+    GEMINI_API_KEY_NOT_VALID: {
+        message: chrome.i18n.getMessage("geminiApiKeyNotValidError"),
+        code: "GEMINI_API_KEY_NOT_VALID",
+    },
 };
 
 export const Info = {
@@ -37,9 +41,5 @@ export const Info = {
     GEMINI_API_KEY_NOT_SET: {
         message: chrome.i18n.getMessage("geminiApiKeyNotSetError"),
         code: "GEMINI_API_KEY_NOT_SET",
-    },
-    GEMINI_API_KEY_NOT_VALID: {
-        message: chrome.i18n.getMessage("geminiApiKeyNotValidError"),
-        code: "GEMINI_API_KEY_NOT_VALID",
     },
 };

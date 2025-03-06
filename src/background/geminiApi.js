@@ -93,9 +93,11 @@ export async function generateJsonContent(
         responseSchema,
     };
 
-    const genAI = new GoogleGenerativeAI(
-        apiKey || process.env.GEMINI_API_KEY || process.env.GOOGLE_CLOUD_API_KEY
-    );
+    if (!apiKey) {
+        throw new Error("API key is required");
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
         model: MODEL,
         generationConfig,
@@ -118,6 +120,13 @@ export async function generateJsonContent(
         );
     } catch (error) {
         if (error instanceof GoogleGenerativeAIFetchError) {
+            if (
+                error.status === 400 &&
+                error.errorDetails[0].reason === "API_KEY_INVALID"
+            ) {
+                console.debug("Invalid api key:", apiKey);
+                throw Errors.GEMINI_API_KEY_NOT_VALID;
+            }
             if (
                 error.status === 400 &&
                 error.message.includes("Provided image is not valid.")
