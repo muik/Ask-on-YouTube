@@ -207,7 +207,7 @@
     color: var(--yt-spec-error-indicator);
 }
 .ytq p.message[type="info"] {
-    color: var(--yt-spec-text-secondary);
+    color: #065fd4;
 }
 .ytq p.message a {
     color: var(--yt-spec-text-primary);
