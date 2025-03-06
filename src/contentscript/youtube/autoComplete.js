@@ -161,6 +161,11 @@ async function loadAutoCompleteAvailable() {
             return;
         }
 
+        if (response.isAvailable === undefined) {
+            console.error("Invalid response from background script");
+            return;
+        }
+
         autoCompleteEnabled = response.isAvailable;
         console.debug("Auto-complete available:", autoCompleteEnabled);
     } catch (error) {

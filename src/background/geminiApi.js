@@ -154,7 +154,7 @@ export async function generateJsonContent(
 
 export async function isGeminiAvailable(apiKey) {
     if (!apiKey) {
-        return false;
+        throw new Error("API key is required");
     }
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}?key=${apiKey}`;

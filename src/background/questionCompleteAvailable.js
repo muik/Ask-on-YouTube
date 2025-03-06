@@ -106,7 +106,7 @@ export function getQuestionCompleteAvailable(sendResponse) {
     getApiKey().then((apiKey) => {
         if (!apiKey) {
             sendResponse({
-                questionCompleteAvailable: false,
+                isAvailable: false,
             });
             return;
         }
@@ -114,7 +114,7 @@ export function getQuestionCompleteAvailable(sendResponse) {
         getQuestionCompleteCached(apiKey).then((cached) => {
             if (cached !== null) {
                 sendResponse({
-                    questionCompleteAvailable: cached,
+                    isAvailable: cached,
                 });
                 return;
             }
