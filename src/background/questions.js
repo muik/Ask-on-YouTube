@@ -3,7 +3,7 @@ import { Errors } from "../errors.js";
 import { handleError } from "./handlers.js";
 import { getFavoriteQuestions, getRecentQuestions } from "./questionHistory.js";
 import {
-    getApiKey,
+    getApiKeyRequired,
     loadLastQuestionOption,
     setLastQuestionOption,
 } from "./settingsLoader.js";
@@ -40,7 +40,7 @@ function requestQuestions(request) {
             getQuestionsRequest = getFavoriteQuestions();
             break;
         case QuestionOptionKeys.SUGGESTIONS:
-            getQuestionsRequest = getApiKey().then((apiKey) =>
+            getQuestionsRequest = getApiKeyRequired().then((apiKey) =>
                 getSuggestedQuestions({
                     videoInfo: request.videoInfo,
                     apiKey,

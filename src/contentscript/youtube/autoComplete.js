@@ -1,4 +1,5 @@
 import { BackgroundActions } from "../../constants.js";
+import { isGeminiServiceAvailable } from "./geminiService.js";
 import { getDialogData } from "./questionView.js";
 
 /**
@@ -20,8 +21,6 @@ function debounce(func, wait) {
 let suggestionElement = null;
 // Track the last input value that triggered a request
 let lastRequestedInput = null;
-// Flag to enable/disable auto-completion functionality
-let autoCompleteEnabled = false;
 
 // Minimum characters required to trigger auto-completion
 const MIN_CHARS = 2;
@@ -78,7 +77,7 @@ export function initAutoComplete(inputElement) {
         inputElement.style.height = "auto";
         inputElement.style.height = inputElement.scrollHeight + "px";
 
-        if (autoCompleteEnabled) {
+        if (isGeminiServiceAvailable()) {
             debouncedInputHandler(e);
         }
     });
@@ -141,36 +140,8 @@ export function initAutoComplete(inputElement) {
     });
     observer.observe(inputElement, { attributes: true });
 
-    loadAutoCompleteAvailable();
-
     // Return the input element in case it was replaced
     return inputElement;
-}
-
-async function loadAutoCompleteAvailable() {
-    try {
-        const response = await chrome.runtime.sendMessage({
-            action: BackgroundActions.GET_QUESTION_COMPLETE_AVAILABLE,
-        });
-
-        if (chrome.runtime.lastError) {
-            console.error(
-                "Failed to load auto-complete available:",
-                chrome.runtime.lastError
-            );
-            return;
-        }
-
-        if (response.isAvailable === undefined) {
-            console.error("Invalid response from background script");
-            return;
-        }
-
-        autoCompleteEnabled = response.isAvailable;
-        console.debug("Auto-complete available:", autoCompleteEnabled);
-    } catch (error) {
-        console.error("Failed to load auto-complete available:", error);
-    }
 }
 
 /**

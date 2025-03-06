@@ -1,8 +1,8 @@
 import { Errors } from "../errors.js";
 import { generateJsonContent } from "./geminiApi.js";
 import { handleError } from "./handlers.js";
+import { getApiKeyRequired } from "./settingsLoader.js";
 import { getQuestionHistory } from "./questionHistory.js";
-import { getApiKey } from "./settingsLoader.js";
 import { getHistoryText } from "./suggestQuestions.js";
 
 /**
@@ -19,11 +19,17 @@ export function getQuestionComplete(request, sendResponse) {
         return;
     }
 
-    Promise.all([getQuestionHistory(), getApiKey()]).then(([history, apiKey]) =>
-        requestQuestionComplete({ questionStart, videoInfo, history, apiKey })
-            .then(sendResponse)
-            .catch(handleError(sendResponse))
-    );
+    Promise.all([getQuestionHistory(), getApiKeyRequired()])
+        .then(([history, apiKey]) =>
+            requestQuestionComplete({
+                questionStart,
+                videoInfo,
+                history,
+                apiKey,
+            })
+        )
+        .then(sendResponse)
+        .catch(handleError(sendResponse));
 
     return true;
 }

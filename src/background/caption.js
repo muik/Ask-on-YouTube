@@ -1,7 +1,7 @@
 import { Errors } from "../errors.js";
 import { generateJsonContent } from "./geminiApi.js";
 import { handleError } from "./handlers.js";
-import { getApiKey } from "./settingsLoader.js";
+import { getApiKeyRequired } from "./settingsLoader.js";
 
 export function getCaption(request, sendResponse) {
     const { imageUrl, imageData } = request;
@@ -11,11 +11,11 @@ export function getCaption(request, sendResponse) {
         return;
     }
 
-    getApiKey().then((apiKey) =>
-        requestCaption({ imageUrl, imageData, apiKey })
-            .then(sendResponse)
-            .catch(handleError(sendResponse))
-    );
+    getApiKeyRequired()
+        .then((apiKey) => requestCaption({ imageUrl, imageData, apiKey }))
+        .then(sendResponse)
+        .catch(handleError(sendResponse));
+
     return true;
 }
 

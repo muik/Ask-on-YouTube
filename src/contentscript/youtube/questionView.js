@@ -2,6 +2,8 @@ import { BackgroundActions, QuestionOptionKeys } from "../../constants.js";
 import { getVideoThumbnailUrl } from "../../data.js";
 import { Errors, Info } from "../../errors.js";
 import { initAutoComplete } from "./autoComplete.js";
+import { loadGeminiServiceAvailable } from "./geminiService.js";
+import { loadCaption } from "./questionDialog/caption.js";
 import { getQuestionHtml } from "./questionDialog/html.js";
 import { getTitleTokens, setTitleToken } from "./questionDialog/titleToken.js";
 
@@ -88,64 +90,6 @@ async function loadLastQuestionOption(containerElement) {
         setQuestionsError(error);
         hideProgressSpinner();
     }
-}
-
-async function loadCaption(event) {
-    const thumbnailElement = event.target;
-    const imageUrl = thumbnailElement.getAttribute("src");
-    const imageData = getImageData(thumbnailElement);
-
-    try {
-        const response = await chrome.runtime.sendMessage({
-            action: BackgroundActions.GET_CAPTION,
-            imageUrl,
-            imageData,
-        });
-
-        if (chrome.runtime.lastError) {
-            throw chrome.runtime.lastError;
-        }
-        if (response.error) {
-            throw response.error;
-        }
-
-        if (response.caption) {
-            setCaption(response.caption);
-        }
-        console.debug("loadCaption caption:", response.caption);
-    } catch (error) {
-        console.error("loadCaption Error:", error);
-    }
-}
-
-function getImageData(imgElement) {
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-
-    const maxWidth = 336;
-    if (imgElement.naturalWidth > maxWidth) {
-        canvas.width = maxWidth;
-        canvas.height =
-            imgElement.naturalHeight * (maxWidth / imgElement.naturalWidth);
-    } else {
-        canvas.width = imgElement.naturalWidth;
-        canvas.height = imgElement.naturalHeight;
-    }
-
-    ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
-
-    // Convert canvas to Base64
-    const mimeType = "image/jpeg";
-    const dataUrl = canvas.toDataURL(mimeType); // Convert to JPEG
-    const data = dataUrl.substring(dataUrl.indexOf(",") + 1);
-    canvas.remove();
-
-    return {
-        inlineData: {
-            data,
-            mimeType,
-        },
-    };
 }
 
 async function loadDefaultQuestion() {
@@ -338,7 +282,7 @@ function setQuestionDialogContent(videoInfo) {
     }, 100);
 }
 
-function setCaption(caption) {
+export function setCaption(caption) {
     dialogData.videoInfo.caption = caption;
     const containerElement = getContainerElement();
     const thumbnailElement = containerElement.querySelector(
@@ -426,15 +370,18 @@ function setQuestionsError(error, containerElement = null) {
         return;
     }
 
+    messageElement.setAttribute("type", "error");
+
     const knownError = Errors[error.code];
     if (knownError) {
+        if (knownError.code === "GEMINI_API_KEY_NOT_SET") {
+            messageElement.setAttribute("type", "info");
+        }
         messageElement.innerHTML = knownError.message;
     } else {
         console.error(error);
+        messageElement.textContent = error.message;
     }
-
-    messageElement.setAttribute("type", "error");
-    messageElement.textContent = error.message;
 }
 
 function insertQuestionDialog() {
@@ -486,6 +433,7 @@ function insertQuestionDialog() {
     });
 
     initAutoComplete(inputElement);
+    loadGeminiServiceAvailable();
 
     return containerElement;
 }

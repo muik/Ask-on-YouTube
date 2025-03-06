@@ -31,15 +31,15 @@ export const Errors = {
         message: chrome.i18n.getMessage("geminiApiKeyNotValidError"),
         code: "GEMINI_API_KEY_NOT_VALID",
     },
+    GEMINI_API_KEY_NOT_SET: {
+        message: chrome.i18n.getMessage("geminiApiKeyNotSetError"),
+        code: "GEMINI_API_KEY_NOT_SET",
+    },
 };
 
 export const Info = {
     NO_RECENT_QUESTIONS: {
         message: chrome.i18n.getMessage("noRecentQuestionsError"),
         code: "NO_RECENT_QUESTIONS",
-    },
-    GEMINI_API_KEY_NOT_SET: {
-        message: chrome.i18n.getMessage("geminiApiKeyNotSetError"),
-        code: "GEMINI_API_KEY_NOT_SET",
     },
 };

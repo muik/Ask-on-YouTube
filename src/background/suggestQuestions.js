@@ -1,7 +1,7 @@
 import { GoogleGenerativeAIFetchError } from "@google/generative-ai";
 import Config from "../config.js";
 import { validateVideoInfo } from "../data.js";
-import { Errors, Info } from "../errors.js";
+import { Errors } from "../errors.js";
 import { generateJsonContent } from "./geminiApi.js";
 import { LRUCache } from "./lruCache.js";
 import { getQuestionHistory } from "./questionHistory.js";
@@ -12,7 +12,7 @@ export async function getSuggestedQuestions({ videoInfo, apiKey, language }) {
     validateVideoInfo(videoInfo);
 
     if (!apiKey) {
-        throw Info.GEMINI_API_KEY_NOT_SET;
+        throw Errors.GEMINI_API_KEY_NOT_SET;
     }
 
     const cacheKey = videoInfo.id;

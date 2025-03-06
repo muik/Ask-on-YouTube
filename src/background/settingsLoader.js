@@ -48,6 +48,14 @@ export async function getApiKey() {
     return settings[StorageKeys.GEMINI_API_KEY];
 }
 
+export async function getApiKeyRequired() {
+    const apiKey = await getApiKey();
+    if (!apiKey) {
+        throw Errors.GEMINI_API_KEY_NOT_SET;
+    }
+    return apiKey;
+}
+
 export async function setLastQuestionOption(option) {
     if (!Object.values(QuestionOptionKeys).includes(option)) {
         console.error("Invalid question option:", option);
