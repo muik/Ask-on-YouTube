@@ -36,6 +36,7 @@ export function showQuestionDialog(videoInfo) {
         loadQuestions(questionOption, containerElement);
     }
 
+    loadGeminiServiceAvailable();
     loadDefaultQuestion();
     repositionDialog();
 }
@@ -433,7 +434,6 @@ function insertQuestionDialog() {
     });
 
     initAutoComplete(inputElement);
-    loadGeminiServiceAvailable();
 
     return containerElement;
 }
