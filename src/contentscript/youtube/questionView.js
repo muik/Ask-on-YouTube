@@ -403,6 +403,7 @@ function textToInputClickListener(e) {
         // focus on the input field, and move the cursor to the end of the text
         inputElement.focus();
         inputElement.setSelectionRange(text.length, text.length);
+        inputElement.dispatchEvent(new Event("input"));
     }
 }
 
