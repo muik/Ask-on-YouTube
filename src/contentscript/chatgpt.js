@@ -164,19 +164,21 @@ ${transcriptPage}
     let promptText;
     if (pageIndex < pagesCount) {
         const question = chrome.i18n.getMessage("chatgptMorePages");
-        promptText = `${transcriptPrompt}
+        promptText = `${question}
 ${promptDivider}
-${question}`;
+${transcriptPrompt}
+`;
     } else {
         const videoInfoPrompt = getVideoInfoPrompt(
             promptData.videoInfo,
             promptData.langCode
         );
         const question = promptData.question;
-        promptText = `${transcriptPrompt}
-${videoInfoPrompt}
+        promptText = `${question}
 ${promptDivider}
-${question}`;
+${transcriptPrompt}
+${videoInfoPrompt}
+`;
     }
 
     setPromptText(promptTextarea, promptText);
@@ -232,12 +234,12 @@ function getPromptText({ videoInfo, transcript, question, langCode }) {
     const videoInfoPrompt = getVideoInfoPrompt(videoInfo, langCode);
     const transcriptRevised = transcript.trim();
 
-    return `${videoInfoPrompt}
+    return `${question}
+${promptDivider}
+${videoInfoPrompt}
 ${message.transcript}: \`\`\`
 ${transcriptRevised}
-\`\`\`
-${promptDivider}
-${question}`;
+\`\`\``;
 }
 
 function getPromptTextWithTranscript({
@@ -251,9 +253,9 @@ function getPromptTextWithTranscript({
     const transcriptRevised = transcript.trim();
 
     return {
-        prompt: `${videoInfoPrompt}
+        prompt: `${question}
 ${promptDivider}
-${question}`,
+${videoInfoPrompt}`,
         transcript: `${message.transcript}: \`\`\`
 ${transcriptRevised}
 \`\`\`
