@@ -45,6 +45,11 @@ export async function loadCaption(event) {
             console.debug("loadCaption failed, due to GEMINI_API_KEY_NOT_SET");
             return;
         }
+        if (error.code === Errors.GEMINI_API_KEY_NOT_VALID.code) {
+            // ignore
+            console.debug("loadCaption failed, due to GEMINI_API_KEY_NOT_VALID");
+            return;
+        }
 
         console.error("loadCaption Error:", error);
     }
