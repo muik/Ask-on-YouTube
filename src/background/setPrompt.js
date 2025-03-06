@@ -17,11 +17,7 @@ export function getPrompt(sendResponse) {
 }
 
 export function setPrompt(request, sendResponse) {
-    processSetPrompt({
-        videoInfo: request.videoInfo,
-        target: request.target,
-        question: request.question,
-    })
+    processSetPrompt(request)
         .then(handleSetPromptResult(sendResponse))
         .catch(handleError(sendResponse));
 
@@ -31,11 +27,11 @@ export function setPrompt(request, sendResponse) {
     return true;
 }
 
-async function processSetPrompt({ videoInfo, target, question }) {
+async function processSetPrompt({ videoInfo, target, question, langCode }) {
     validateVideoInfo(videoInfo);
 
     if (target === Targets.CHATGPT) {
-        const transcript = await getTranscriptCached(videoInfo.id);
+        const transcript = await getTranscriptCached(videoInfo.id, langCode);
         if (!transcript) {
             return {
                 error: Errors.TRANSCRIPT_NOT_FOUND,
@@ -50,6 +46,7 @@ async function processSetPrompt({ videoInfo, target, question }) {
             videoInfo,
             transcript,
             question,
+            langCode,
         };
         return {
             promptData,
@@ -82,15 +79,21 @@ async function processSetPrompt({ videoInfo, target, question }) {
     }
 }
 
-async function getTranscriptCached(videoId) {
-    if (transcriptCache.has(videoId)) {
-        const transcript = transcriptCache.get(videoId);
-        console.debug(`Using cached transcript for video ID: ${videoId}`);
+async function getTranscriptCached(videoId, langCode) {
+    const cacheKey = `${videoId}-${langCode}`;
+    if (transcriptCache.has(cacheKey)) {
+        const transcript = transcriptCache.get(cacheKey);
+        console.debug(
+            `Using cached transcript for video ID: ${videoId} and langCode: ${langCode}`
+        );
         return transcript;
     }
-    const transcript = await loadTranscript(videoId);
-    transcriptCache.put(videoId, transcript);
-    console.debug(`Cached transcript for video ID: ${videoId}`);
+
+    const transcript = await loadTranscript(videoId, langCode);
+    transcriptCache.put(cacheKey, transcript);
+    console.debug(
+        `Cached transcript for video ID: ${videoId} and langCode: ${langCode}`
+    );
     return transcript;
 }
 

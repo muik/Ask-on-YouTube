@@ -8,6 +8,21 @@ import { waitForElm } from "./utils.js";
 const promptDivider = "------------";
 const sendButtonSelector = "button[data-testid=send-button]";
 
+const messages = {
+    en: {
+        transcript: "Transcript",
+        title: "Title",
+        caption: "Subtitle",
+        transcriptPagingFormat: "Transcript (page {pageIndex} of {pagesCount})",
+    },
+    ko: {
+        transcript: "자막",
+        title: "제목",
+        caption: "부제목",
+        transcriptPagingFormat: "자막 ({pageIndex} / {pagesCount} 페이지)",
+    },
+};
+
 window.onload = async () => {
     // If opened by the extension, insert the prompt
     if (
@@ -36,6 +51,7 @@ window.onload = async () => {
 };
 
 function onGetPrompt(response) {
+    console.debug("onGetPrompt", response);
     const promptData = response.promptData;
     if (!promptData) {
         console.debug("No prompt data received");
@@ -54,6 +70,7 @@ function onGetPrompt(response) {
                 sendButton.click();
                 return;
             }
+            console.debug("sendButton disabled", sendButton);
 
             if (isNotLogin()) {
                 const message = chrome.i18n.getMessage("chatgptLoginRequired");
@@ -64,7 +81,7 @@ function onGetPrompt(response) {
             setTimeout(() => {
                 setPromptAnotherOptions(promptTextarea, promptData);
             }, 500);
-        }, 1);
+        }, 300);
     });
 }
 
@@ -134,8 +151,12 @@ function setPromptPaging(
         (pageIndex - 1) * pageSize,
         pageIndex * pageSize
     );
+    const message = messages[promptData.langCode] || messages.en;
+    const pagingText = message.transcriptPagingFormat
+        .replace("{pageIndex}", pageIndex)
+        .replace("{pagesCount}", pagesCount);
 
-    const transcriptPrompt = `Transcript (page ${pageIndex} of ${pagesCount}): \`\`\`
+    const transcriptPrompt = `${pagingText}: \`\`\`
 ${transcriptPage}
 \`\`\`
 `;
@@ -147,7 +168,10 @@ ${transcriptPage}
 ${promptDivider}
 ${question}`;
     } else {
-        const videoInfoPrompt = getVideoInfoPrompt(promptData.videoInfo);
+        const videoInfoPrompt = getVideoInfoPrompt(
+            promptData.videoInfo,
+            promptData.langCode
+        );
         const question = promptData.question;
         promptText = `${transcriptPrompt}
 ${videoInfoPrompt}
@@ -203,43 +227,51 @@ function attachTextAsFile(dropZone, text, filename) {
     dropZone.dispatchEvent(event);
 }
 
-function getPromptText({ videoInfo, transcript, question }) {
-    const videoInfoPrompt = getVideoInfoPrompt(videoInfo);
+function getPromptText({ videoInfo, transcript, question, langCode }) {
+    const message = messages[langCode] || messages.en;
+    const videoInfoPrompt = getVideoInfoPrompt(videoInfo, langCode);
     const transcriptRevised = transcript.trim();
 
     return `${videoInfoPrompt}
-Transcript: \`\`\`
+${message.transcript}: \`\`\`
 ${transcriptRevised}
 \`\`\`
 ${promptDivider}
 ${question}`;
 }
 
-function getPromptTextWithTranscript({ videoInfo, transcript, question }) {
-    const videoInfoPrompt = getVideoInfoPrompt(videoInfo);
+function getPromptTextWithTranscript({
+    videoInfo,
+    transcript,
+    question,
+    langCode,
+}) {
+    const message = messages[langCode] || messages.en;
+    const videoInfoPrompt = getVideoInfoPrompt(videoInfo, langCode);
     const transcriptRevised = transcript.trim();
 
     return {
         prompt: `${videoInfoPrompt}
 ${promptDivider}
 ${question}`,
-        transcript: `Transcript: \`\`\`
+        transcript: `${message.transcript}: \`\`\`
 ${transcriptRevised}
 \`\`\`
 `,
     };
 }
 
-function getVideoInfoPrompt(videoInfo) {
+function getVideoInfoPrompt(videoInfo, langCode) {
+    const message = messages[langCode] || messages.en;
     const title = videoInfo.title.trim();
     const captionInline = videoInfo.caption
-        ? `Caption: \`${videoInfo.caption
+        ? `${message.caption}: \`${videoInfo.caption
               .replace(/`/g, "\\`")
               .replace(/\n/g, " ")
               .replace("  ", ", ")
               .trim()}\`\n`
         : "";
 
-    return `Title: ${title}
+    return `${message.title}: ${title}
 ${captionInline}URL: https://www.youtube.com/watch?v=${videoInfo.id}`;
 }

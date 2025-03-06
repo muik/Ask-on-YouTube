@@ -80,6 +80,11 @@ function onRequestButtonClick(event) {
     const videoInfo = getVideoInfoFromVideoDetail();
     const target = "chatgpt";
 
+    // chrome.i18n depends on the OS language, but the YouTube language is not always the same as the OS language.
+    // Assume the user wants to ask the question in the YouTube language.
+    const lang = document.querySelector("html").getAttribute("lang");
+    const langCode = lang.split("-")[0] || "en";
+
     // set loading state
     buttonElement.setAttribute("disabled", "");
     inputElement.setAttribute("disabled", "");
@@ -92,6 +97,7 @@ function onRequestButtonClick(event) {
                 target: target,
                 videoInfo,
                 question,
+                langCode,
                 type: "placeholder",
             },
             (response) => {

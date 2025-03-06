@@ -1,15 +1,21 @@
 import { getTranscriptParagraphised } from "./transcript.js";
 
-export async function loadTranscript(videoId) {
-    const langOptionsWithLink = await getLangOptionsWithLink(videoId);
-    if (!langOptionsWithLink) {
+/**
+ * Load a transcript for a given video ID and language code.
+ * @param {string} videoId - The ID of the video to load the transcript for.
+ * @param {string} langCode - The language code of the transcript to load. example: "en"
+ * @returns {Promise<string>} The transcript for the given video ID and language code.
+ */
+export async function loadTranscript(videoId, langCode = "en") {
+    const items = await getTranscriptItems(videoId);
+    if (!items) {
         return;
     }
 
-    const link = langOptionsWithLink[0].link;
-    const transcript = await getTranscriptParagraphised(link);
+    const item = items.find((i) => i.language.code === langCode) || items[0];
+    const link = item.link;
 
-    return transcript;
+    return await getTranscriptParagraphised(link);
 }
 
 export async function getGeminiCustomPrompt(videoInfo, transcript, prompt) {
@@ -38,7 +44,7 @@ export async function getGeminiPrompt(videoId, prompt) {
     return prompt ? `${prompt}\n${videoUrl}` : videoUrl;
 }
 
-async function getLangOptionsWithLink(videoId) {
+async function getTranscriptItems(videoId) {
     // Get a transcript URL
     const videoPageResponse = await fetch(
         "https://www.youtube.com/watch?v=" + videoId
@@ -55,25 +61,14 @@ async function getLangOptionsWithLink(videoId) {
     );
     const captionTracks =
         captions_json.playerCaptionsTracklistRenderer.captionTracks;
-    const languageOptions = Array.from(captionTracks).map((i) => {
-        return i.name.simpleText;
-    });
 
-    const first = "English"; // Sort by English first
-    languageOptions.sort(function (x, y) {
-        return x.includes(first) ? -1 : y.includes(first) ? 1 : 0;
-    });
-    languageOptions.sort(function (x, y) {
-        return x == first ? -1 : y == first ? 1 : 0;
-    });
-
-    return Array.from(languageOptions).map((langName) => {
-        const link = captionTracks.find(
-            (i) => i.name.simpleText === langName
-        ).baseUrl;
+    return captionTracks.map((i) => {
         return {
-            language: langName,
-            link: link,
+            language: {
+                code: i.languageCode,
+                name: i.name.simpleText,
+            },
+            link: i.baseUrl,
         };
     });
 }
