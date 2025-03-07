@@ -33,17 +33,9 @@ export async function getSuggestedQuestions({ videoInfo, apiKey, language }) {
     return response;
 }
 
-const defaultResponseSchema = {
-    type: "object",
-    properties: {
-        questions: { type: "array", items: { type: "string" } },
-        caption: { type: "string" },
-    },
-    required: ["questions", "caption"],
-};
-
-const systemInstructions = {
-    default: `You are an AI assistant designed to help users quickly **discover what they are curious about or get desired information** from YouTube videos **before watching them**. You will suggest questions based on the video's title and thumbnail to help users **easily and quickly ask questions to satisfy their curiosity or find necessary information**.
+const types = {
+    image: {
+        systemInstruction: `You are an AI assistant designed to help users quickly **discover what they are curious about or get desired information** from YouTube videos **before watching them**. You will suggest questions based on the video's title and thumbnail to help users **easily and quickly ask questions to satisfy their curiosity or find necessary information**.
 
 Your response should include the following:
 * **\`"questions"\`: An array of strings, each representing a question. You should suggest between 1 and ${Config.MAX_QUESTIONS_COUNT} questions. These questions should be:
@@ -53,9 +45,8 @@ Your response should include the following:
     * **Naturally phrased:** Sound like questions a user would actually ask when trying to quickly understand a video's content *before watching*.
     * **Referenced by the user's question history**: Consider the user's past questions to suggest questions aligned with their likely pre-viewing interests and information needs.
 * **\`"caption"\`: A string containing the exact text visible in the thumbnail image, without any translation. If the thumbnail image does not contain any text, the value should be an empty string.`,
-};
 
-const promptFormat = `Given this image is a thumbnail of a youtube video.
+        promptFormat: `Given this image is a thumbnail of a youtube video.
 Your first task is to extract text from the image.
 
 The title of the youtube video: \`{title}\`
@@ -65,21 +56,51 @@ Your second task is to analyze the provided YouTube video title, thumbnail image
 The user's recent question history:
 {history}
 
-{postPrompt}`;
+{postPrompt}`,
+        responseSchema: {
+            type: "object",
+            properties: {
+                questions: { type: "array", items: { type: "string" } },
+                caption: { type: "string" },
+            },
+            required: ["questions", "caption"],
+        },
+    },
+    caption: {
+        systemInstruction: `You are an AI assistant designed to help users quickly **discover what they are curious about or get desired information** from YouTube videos **before watching them**. You will suggest questions based on the video's title and thumbnail to help users **easily and quickly ask questions to satisfy their curiosity or find necessary information**.
 
-export async function requestSuggestedQuestions(
+Your response should include the following:
+* **\`"questions"\`: An array of strings, each representing a question. You should suggest between 1 and ${Config.MAX_QUESTIONS_COUNT} questions. These questions should be:
+    * **Relevant:** Directly related to the content implied by the video title and thumbnail.
+    * **Insightful for pre-viewing:** Help users quickly grasp the main topic, purpose, or key takeaways of the video *before* watching.
+    * **Targeted for curiosity/information:** Address what a user might be curious about or what specific information they might want to know quickly.
+    * **Naturally phrased:** Sound like questions a user would actually ask when trying to quickly understand a video's content *before watching*.
+    * **Referenced by the user's question history**: Consider the user's past questions to suggest questions aligned with their likely pre-viewing interests and information needs.`,
+
+        promptFormat: `The title of the youtube video: \`{title}\`
+The subtitle of the youtube video: \`{subtitle}\`
+
+Your task is to analyze the provided YouTube video title, thumbnail image, and the user's recent question history. Based on this information, you should suggest questions that a user might naturally ask to **quickly understand what the video is about, determine if it's relevant to their interests, or extract specific information without having to watch the entire video.**
+
+The user's recent question history:
+{history}
+
+{postPrompt}`,
+        responseSchema: {
+            type: "object",
+            properties: {
+                questions: { type: "array", items: { type: "string" } },
+            },
+            required: ["questions"],
+        },
+    },
+};
+
+async function requestSuggestedQuestions(
     videoInfo,
-    {
-        history = [],
-        promptText = null,
-        systemInstruction = systemInstructions["default"],
-        responseSchema = defaultResponseSchema,
-        imageUrl = undefined,
-        apiKey = undefined,
-        language = undefined,
-    } = {}
+    { history = [], apiKey = undefined, language = undefined } = {}
 ) {
-    const { id, title } = videoInfo;
+    const { id, title, caption } = videoInfo;
     if (id === undefined) {
         throw new Error("id is undefined");
     }
@@ -87,26 +108,36 @@ export async function requestSuggestedQuestions(
         throw new Error("title is undefined");
     }
 
-    // if imageUrl is not defined, use the default image url
-    if (imageUrl === undefined) {
-        imageUrl = `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
-    }
-
     const historyInline = getHistoryText(history);
     const postPrompt = language ? `The user's language: ${language}` : "";
-    const prompt =
-        promptText ||
-        promptFormat
+
+    let type = null;
+    let imageUrl = null;
+    let prompt = null;
+
+    console.debug("caption:", caption);
+    if (caption === undefined) {
+        type = types.image;
+        imageUrl = `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+        prompt = type.promptFormat
             .replace("{title}", title)
             .replace("{history}", historyInline)
             .replace("{postPrompt}", postPrompt);
+    } else {
+        type = types.caption;
+        prompt = type.promptFormat
+            .replace("{title}", title)
+            .replace("{subtitle}", caption)
+            .replace("{history}", historyInline)
+            .replace("{postPrompt}", postPrompt);
+    }
 
     console.debug("prompt:", prompt);
     try {
         const response = await generateJsonContent(prompt, {
             imageUrl,
-            systemInstruction,
-            responseSchema,
+            systemInstruction: type.systemInstruction,
+            responseSchema: type.responseSchema,
             apiKey,
         });
         return response;

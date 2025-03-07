@@ -114,6 +114,10 @@ function setQuestionDialogContent(videoInfo) {
 }
 
 export function setCaption(caption) {
+    if (dialogData.videoInfo.caption) {
+        return;
+    }
+
     dialogData.videoInfo.caption = caption;
     const containerElement = getContainerElement();
     const thumbnailElement = containerElement.querySelector(
@@ -366,7 +370,7 @@ function hideQuestionDialog() {
     }
 
     resetQuestions(containerElement);
-
     resetRequesting(containerElement);
     setInputError({}, containerElement);
+    delete dialogData.videoInfo;
 }
