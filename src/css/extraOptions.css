@@ -43,13 +43,20 @@
     fill: var(--yt-spec-text-primary);
 }
 .ytq-extra-options .vertical-menu .text {
-    margin-right: 24px;
+    margin-right: 16px;
     flex: 1;
     flex-basis: 0.000000001px;
     font-family: "Roboto", "Arial", sans-serif;
     font-size: 1.4rem;
     line-height: 2rem;
     font-weight: 400;
+}
+.ytq-extra-options .vertical-menu .shortcut {
+    font-family: "Roboto", "Arial", sans-serif;
+    font-size: 1.3rem;
+    color: var(--secondary-text-color);
+    margin-right: 8px;
+    opacity: 0.8;
 }
 .ytq-extra-options .vertical-menu:hover {
     background-color: var(--yt-spec-10-percent-layer);

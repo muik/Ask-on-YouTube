@@ -23,6 +23,9 @@
     "questionButtonText": {
         "message": "Question"
     },
+    "questionShortcutTooltip": {
+        "message": "Press 'Q' to quickly open the question dialog"
+    },
     "requestButtonName": {
         "message": "Ask"
     },
@@ -48,7 +51,7 @@
         "message": "Please summarize briefly, focusing on the key points."
     },
     "defaultFavoriteQuestion3": {
-        "message": "What’s the title talking about? Just a quick explanation."
+        "message": "What's the title talking about? Just a quick explanation."
     },
     "extensionContextInvalidatedError": {
         "message": "The Chrome extension has been updated. Please refresh the page and try again."

@@ -4,10 +4,12 @@ import Honeybadger from "@honeybadger-io/js";
 import { honeybadgerConfig } from "../config.js";
 import { BackgroundActions } from "../constants.js";
 import { waitForElm } from "./utils.js";
+import { handleQuestionShortcut } from "./youtube/keyboardShortcuts.js";
 import {
     detectVideoOptionClick,
-    insertExtraOptions,
+    insertExtraOptions
 } from "./youtube/moreOptions.js";
+import { injectShortcutHelp } from "./youtube/shortcutHelp.js";
 import { injectElements } from "./youtube/videoDetail.js";
 
 Honeybadger.configure(honeybadgerConfig);
@@ -19,6 +21,7 @@ window.onload = async () => {
 
     injectElements();
     insertExtraOptions();
+    injectShortcutHelp();
 
     document.addEventListener("click", (event) => {
         detectVideoOptionClick(event.target);
@@ -46,4 +49,6 @@ window.onload = async () => {
             });
         });
     }
+
+    document.addEventListener("keydown", handleQuestionShortcut);
 };

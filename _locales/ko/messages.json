@@ -23,6 +23,9 @@
     "questionButtonText": {
         "message": "질문하기"
     },
+    "questionShortcutTooltip": {
+        "message": "'Q'를 눌러 빠르게 질문 창 열기"
+    },
     "requestButtonName": {
         "message": "요청"
     },

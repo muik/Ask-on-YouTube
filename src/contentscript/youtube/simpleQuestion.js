@@ -9,6 +9,18 @@ function getContainerElement() {
     return document.querySelector(`#${containerId}`);
 }
 
+/**
+ * Find the simple question input if it's shown
+ * @returns {Element|null} The question input element if found and visible, null otherwise
+ */
+export function findSimpleQuestionInputShown() {
+    const container = getContainerElement();
+    if (!container || container.style.display === 'none') {
+        return null;
+    }
+    return container.querySelector(".question-input-container input[type='text']");
+}
+
 export function createQuestionInputForm() {
     const containerElement = document.createElement("div");
     containerElement.id = containerId;

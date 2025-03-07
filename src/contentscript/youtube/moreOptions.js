@@ -31,6 +31,18 @@ const useMarkElements = [];
 let questionMenuUsedBefore;
 
 /**
+ * Find the question menu in the shown dropdown
+ * @returns {Element|null} The question button element if found, null otherwise
+ */
+export function findQuestionMenuShown() {
+    const dropdown = document.querySelector(`${dropdownSelector}:not([aria-hidden='true'])`);
+    if (!dropdown) {
+        return null;
+    }
+    return dropdown.querySelector(`.${extraOptionsClassName} .option-item[target-value=question]`);
+}
+
+/**
  * Insert extra options ui into the footer of more options dropdown
  */
 export function insertExtraOptions() {
@@ -67,6 +79,7 @@ function insertExtraOptionsToFooter(footerElement) {
 function createExtraOptionsContainer() {
     const optionItemClassName = "option-item";
     const questionText = chrome.i18n.getMessage("questionButtonText");
+    const shortcutTooltip = chrome.i18n.getMessage("questionShortcutTooltip");
     const container = document.createElement("div");
     container.classList.add("ytq");
     container.classList.add(extraOptionsClassName);
@@ -74,6 +87,7 @@ function createExtraOptionsContainer() {
             <div class="vertical-menu ${optionItemClassName}" target-value="question">
                 <div class="icon">${getQuestionMarkSvg()}</div>
                 <span class="text">${questionText}</span>
+                <span class="shortcut" title="${shortcutTooltip}">q</span>
             </div>`.trim();
 
     // Click event listener for the "View in Gemini" button
