@@ -114,7 +114,7 @@ function setQuestionDialogContent(videoInfo) {
 }
 
 export function setCaption(caption) {
-    if (dialogData.videoInfo.caption) {
+    if (isQuestionDialogClosed() || dialogData.videoInfo.caption) {
         return;
     }
 
