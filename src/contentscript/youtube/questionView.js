@@ -129,7 +129,6 @@ export function setCaption(caption) {
 
     thumbnailElement.setAttribute("title", caption);
     captionElement.textContent = caption;
-    captionElement.addEventListener("click", textToInputClickListener);
 }
 
 export function textToInputClickListener(e) {
@@ -176,6 +175,12 @@ function insertQuestionDialog() {
             requestButton.click();
         }
     });
+
+    // caption text click event
+    const captionElement = containerElement.querySelector(
+        ".video-info .caption"
+    );
+    captionElement.addEventListener("click", textToInputClickListener);
 
     setQuestionOptionsView(containerElement);
 
