@@ -86,6 +86,8 @@
     overflow-y: auto;
     resize: none;
     font-family: "Roboto", "Noto", sans-serif;
+}
+.ytq-form .question-input-container textarea.question-input {
     z-index: 9998;
 }
 .ytq-form .question-input-container .question-input:focus {
