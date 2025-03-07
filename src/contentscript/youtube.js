@@ -12,26 +12,13 @@ import { injectElements } from "./youtube/videoDetail.js";
 
 Honeybadger.configure(honeybadgerConfig);
 
-function isVideoPage(location) {
-    try {
-        if (location.pathname === "/watch") {
-            return new URLSearchParams(location.search).has("v");
-        }
-        return false;
-    } catch (error) {
-        console.error("Invalid URL:", location, error);
-        return false;
-    }
-}
-
 window.onload = async () => {
     if (window.location.hostname !== "www.youtube.com") {
         return;
     }
 
-    if (isVideoPage(window.location)) {
-        injectElements();
-    }
+    injectElements();
+    insertExtraOptions();
 
     document.addEventListener("click", (event) => {
         detectVideoOptionClick(event.target);
@@ -43,8 +30,6 @@ window.onload = async () => {
             });
         }
     });
-
-    insertExtraOptions();
 
     // watch for shorts item click on home page
     if (window.location.pathname === "/") {
