@@ -1,16 +1,21 @@
-import { BackgroundActions, QuestionOptionKeys } from "../../constants.js";
+import { BackgroundActions } from "../../constants.js";
 import { getVideoThumbnailUrl } from "../../data.js";
-import { Errors, Info } from "../../errors.js";
+import { Errors } from "../../errors.js";
 import { initAutoComplete } from "./autoComplete.js";
 import { loadGeminiServiceAvailable } from "./geminiService.js";
 import { loadCaption } from "./questionDialog/caption.js";
 import { getQuestionHtml } from "./questionDialog/html.js";
+import {
+    loadQuestionOptions,
+    resetQuestions,
+    setQuestionOptionsView,
+} from "./questionDialog/questionOptions.js";
 import { getTitleTokens, setTitleToken } from "./questionDialog/titleToken.js";
 
 export const containerId = "dialog-container";
 const dialogData = {};
 
-function getContainerElement() {
+export function getContainerElement() {
     return document.querySelector(`ytd-popup-container #${containerId}`);
 }
 
@@ -29,13 +34,7 @@ export function showQuestionDialog(videoInfo) {
 
     setQuestionDialogContent(videoInfo);
 
-    const questionOption = getSelectedQuestionOption();
-    if (!questionOption) {
-        loadLastQuestionOption(containerElement);
-    } else {
-        loadQuestions(questionOption, containerElement);
-    }
-
+    loadQuestionOptions(containerElement);
     loadGeminiServiceAvailable();
     loadDefaultQuestion();
     repositionDialog();
@@ -52,45 +51,6 @@ function createBackgroundElement() {
     });
 
     return element;
-}
-
-async function loadLastQuestionOption(containerElement) {
-    try {
-        showProgressSpinner(containerElement);
-        setQuestionsError(null, containerElement);
-
-        const response = await chrome.runtime.sendMessage({
-            action: BackgroundActions.GET_LAST_QUESTION_OPTION,
-        });
-
-        if (chrome.runtime.lastError) {
-            console.error(
-                "requestLastQuestionOption lastError:",
-                chrome.runtime.lastError
-            );
-            throw Errors.UNKNOWN_ERROR;
-        }
-
-        if (response.error) {
-            if (!response.error.code) {
-                console.error("requestLastQuestionOption Error:", response);
-            }
-            throw response.error;
-        }
-
-        if (!response.option) {
-            console.error(
-                "requestLastQuestionOption Error: no option",
-                response
-            );
-            throw Errors.INVALID_RESPONSE;
-        }
-
-        clickQuestionOption(response.option);
-    } catch (error) {
-        setQuestionsError(error);
-        hideProgressSpinner();
-    }
 }
 
 async function loadDefaultQuestion() {
@@ -123,136 +83,6 @@ async function loadDefaultQuestion() {
             setInputError(Errors.FAILED_TO_LOAD_DEFAULT_QUESTION);
         }
     }
-}
-
-/**
- * Get the selected question option from the container element
- * @returns {string | null} The selected question option, null when first loaded
- */
-function getSelectedQuestionOption() {
-    const containerElement = getContainerElement();
-    return (
-        containerElement
-            .querySelector(".question-options .title.active")
-            ?.getAttribute("data-option") || null
-    );
-}
-
-function loadQuestions(option, containerElement = null) {
-    showProgressSpinner(containerElement);
-    setQuestionsError(null, containerElement);
-    requestQuestions(option);
-}
-
-function resetQuestions(containerElement = null) {
-    containerElement = containerElement || getContainerElement();
-    containerElement.querySelector("ul.suggestions").innerHTML = "";
-
-    // remove message
-    const messageElement = containerElement.querySelector(
-        "#question-suggestions-error"
-    );
-    messageElement.innerHTML = "";
-    messageElement.removeAttribute("type");
-}
-
-async function requestQuestions(option) {
-    try {
-        validateQuestionOption(option);
-
-        const response = await chrome.runtime.sendMessage({
-            action: BackgroundActions.GET_QUESTIONS,
-            option,
-            videoInfo: dialogData.videoInfo,
-        });
-
-        if (!isQuestionOptionActive(option)) {
-            // stop, when the option is changed
-            return;
-        }
-
-        handleQuestionsResponse(response);
-    } catch (error) {
-        setRequestQuestionsError(error);
-    } finally {
-        if (isQuestionOptionActive(option)) {
-            hideProgressSpinner();
-        }
-    }
-}
-
-function handleQuestionsResponse(response) {
-    if (handleQuestionsResponseError(response)) {
-        return;
-    }
-
-    if (!response.questions || response.questions.length === 0) {
-        const questionOption = getSelectedQuestionOption();
-        if (questionOption === QuestionOptionKeys.RECENTS) {
-            setQuestionsError(Info.NO_RECENT_QUESTIONS);
-        } else {
-            console.error("questions response:", response);
-            setQuestionsError(Errors.INVALID_RESPONSE);
-        }
-        return;
-    }
-
-    if (response.caption) {
-        setCaption(response.caption);
-    }
-    setQuestions(response.questions);
-}
-
-function validateQuestionOption(option) {
-    if (Object.values(QuestionOptionKeys).includes(option) === false) {
-        console.error("Invalid question option:", option);
-        throw Errors.INVALID_REQUEST;
-    }
-}
-
-function clickQuestionOption(option) {
-    getContainerElement()
-        .querySelector(`.question-options .title[data-option="${option}"]`)
-        .click();
-}
-
-function isQuestionOptionActive(option) {
-    const selectedQuestionOption = getSelectedQuestionOption();
-    return selectedQuestionOption === option;
-}
-
-function handleQuestionsResponseError(response) {
-    if (chrome.runtime.lastError || response.error) {
-        const error = chrome.runtime.lastError || response.error;
-        setQuestionsError(error);
-        return true;
-    }
-    return false;
-}
-
-function setRequestQuestionsError(error) {
-    if (error.message === "Extension context invalidated.") {
-        setQuestionsError(Errors.EXTENSION_CONTEXT_INVALIDATED);
-    } else {
-        setQuestionsError(error);
-    }
-}
-
-function showProgressSpinner(containerElement = null) {
-    containerElement = containerElement || getContainerElement();
-    const spinnerElement = containerElement.querySelector("#spinner");
-    spinnerElement.removeAttribute("hidden");
-    const paperSpinnerElement = spinnerElement.querySelector(
-        "tp-yt-paper-spinner"
-    );
-    paperSpinnerElement.removeAttribute("aria-hidden");
-    paperSpinnerElement.setAttribute("active", "");
-}
-
-function hideProgressSpinner() {
-    const containerElement = getContainerElement();
-    const spinnerElement = containerElement.querySelector("#spinner");
-    spinnerElement.setAttribute("hidden", "");
 }
 
 function setQuestionDialogContent(videoInfo) {
@@ -298,41 +128,7 @@ export function setCaption(caption) {
     captionElement.addEventListener("click", textToInputClickListener);
 }
 
-function setQuestions(questions, containerElement = null) {
-    if (!questions || questions.length === 0) {
-        return;
-    }
-
-    containerElement = containerElement || getContainerElement();
-    const suggestionsElement = containerElement.querySelector("ul.suggestions");
-    suggestionsElement.innerHTML = "";
-
-    questions.forEach((question) => {
-        const li = document.createElement("li");
-        li.innerHTML = `<span class="question">${question}</span><button class="request">&gt;</button>`;
-        li.querySelector("span.question").addEventListener(
-            "click",
-            textToInputClickListener
-        );
-        li.querySelector("button.request").addEventListener(
-            "click",
-            textRequestButtonClickListener
-        );
-
-        suggestionsElement.appendChild(li);
-    });
-}
-
-function textRequestButtonClickListener(e) {
-    e.preventDefault();
-    e.target.previousElementSibling.click();
-    e.target
-        .closest("#contents")
-        .querySelector(".question-input-container .question-button")
-        .click();
-}
-
-function textToInputClickListener(e) {
+export function textToInputClickListener(e) {
     e.preventDefault();
     const text = e.target.textContent
         .replace(/\n/g, " ")
@@ -349,39 +145,6 @@ function textToInputClickListener(e) {
         inputElement.focus();
         inputElement.setSelectionRange(text.length, text.length);
         inputElement.dispatchEvent(new Event("input"));
-    }
-}
-
-function setQuestionsError(error, containerElement = null) {
-    containerElement = containerElement || getContainerElement();
-    const messageElement = containerElement.querySelector(
-        "#question-suggestions-error"
-    );
-
-    if (!error) {
-        messageElement.innerHTML = "";
-        messageElement.removeAttribute("type");
-        return;
-    }
-
-    const info = Info[error.code];
-    if (info) {
-        messageElement.setAttribute("type", "info");
-        messageElement.innerHTML = info.message;
-        return;
-    }
-
-    messageElement.setAttribute("type", "error");
-
-    const knownError = Errors[error.code];
-    if (knownError) {
-        if (knownError.code === "GEMINI_API_KEY_NOT_SET") {
-            messageElement.setAttribute("type", "info");
-        }
-        messageElement.innerHTML = knownError.message;
-    } else {
-        console.error(error);
-        messageElement.textContent = error.message;
     }
 }
 
@@ -410,12 +173,7 @@ function insertQuestionDialog() {
         }
     });
 
-    // question options click event
-    containerElement
-        .querySelectorAll(".question-options .title")
-        .forEach((el) => {
-            el.addEventListener("click", onQuestionOptionClick);
-        });
+    setQuestionOptionsView(containerElement);
 
     // close the dialog when the user clicks the close button
     const closeButton = containerElement.querySelector("#close-button");
@@ -436,24 +194,6 @@ function insertQuestionDialog() {
     initAutoComplete(inputElement);
 
     return containerElement;
-}
-
-function onQuestionOptionClick(e) {
-    const optionElement = e.target;
-    if (optionElement.classList.contains("active")) {
-        return;
-    }
-
-    optionElement
-        .closest(".question-options")
-        .querySelector(".title.active")
-        ?.classList.remove("active");
-    optionElement.classList.add("active");
-
-    resetQuestions();
-
-    const option = optionElement.getAttribute("data-option");
-    loadQuestions(option);
 }
 
 function onRequestButtonClick(event) {
@@ -626,7 +366,6 @@ function hideQuestionDialog() {
     }
 
     resetQuestions(containerElement);
-    setQuestionsError(null, containerElement);
 
     resetRequesting(containerElement);
     setInputError({}, containerElement);
