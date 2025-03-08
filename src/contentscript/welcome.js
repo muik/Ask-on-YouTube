@@ -15,9 +15,14 @@ window.onload = () => {
             });
         } catch (error) {
             if (error.message === "Extension context invalidated.") {
-                const message = chrome.i18n.getMessage(
-                    "extensionContextInvalidatedError"
-                );
+                const messages = {
+                    en: "The Chrome extension has been updated. Please refresh the page and try again.",
+                    ko: "Chrome 확장 프로그램이 업데이트되었습니다. 이 페이지를 새로고침 후 다시 시도해주세요.",
+                };
+                const userLang = navigator.language.startsWith("ko")
+                    ? "ko"
+                    : "en";
+                const message = messages[userLang];
                 alert(message);
                 return;
             }
