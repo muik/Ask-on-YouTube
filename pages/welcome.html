@@ -349,6 +349,16 @@
                 <a href="privacy.html" data-i18n="footer.privacy"
                     >Privacy Policy</a
                 >
+                <a
+                    id="feedback"
+                    href="mailto:muikor+ytq@gmail.com?subject=[Ask%20on%20YouTube]%20Feedback"
+                    target="_blank"
+                    data-i18n="footer.feedback"
+                    >Feedback</a
+                >
+                <a href="https://github.com/muik/Ask-on-YouTube" target="_blank"
+                    >GitHub</a
+                >
                 <select id="languageSelect" class="language-select">
                     <option value="en">English</option>
                     <option value="ko">한국어</option>
@@ -395,6 +405,7 @@
                     },
                     footer: {
                         privacy: "Privacy Policy",
+                        feedback: "Feedback",
                     },
                 },
                 ko: {
@@ -434,6 +445,7 @@
                     },
                     footer: {
                         privacy: "개인정보 처리방침",
+                        feedback: "문의하기",
                     },
                 },
             };
@@ -471,6 +483,12 @@
                             element.alt = translation;
                         }
                     });
+
+                document.getElementById(
+                    "feedback"
+                ).href = `mailto:muikor+ytq@gmail.com?subject=[Ask%20on%20YouTube]%20${encodeURIComponent(
+                    translations[lang].footer.feedback
+                )}`;
 
                 localStorage.setItem("preferred_language", lang);
             }
