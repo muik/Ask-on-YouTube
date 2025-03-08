@@ -8,8 +8,20 @@ window.onload = () => {
     const settingsBtn = document.getElementById("settings-btn");
     settingsBtn.addEventListener("click", (e) => {
         e.preventDefault();
-        chrome.runtime.sendMessage({
-            action: BackgroundActions.OPEN_SETTINGS_PAGE,
-        });
+
+        try {
+            chrome.runtime.sendMessage({
+                action: BackgroundActions.OPEN_SETTINGS_PAGE,
+            });
+        } catch (error) {
+            if (error.message === "Extension context invalidated.") {
+                const message = chrome.i18n.getMessage(
+                    "extensionContextInvalidatedError"
+                );
+                alert(message);
+                return;
+            }
+            Honeybadger.notify(error);
+        }
     });
 };
