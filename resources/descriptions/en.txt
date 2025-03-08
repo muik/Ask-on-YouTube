@@ -1,0 +1,16 @@
+Easily ask questions about videos through the added UI on the YouTube site!
+- A 'Ask' button has been added to the top right corner of the video page.
+- A 'Question' button has been added below the video's 'More' options list.
+
+Effectively obtain desired information through AI to decide whether to watch the video!
+- Questions are sent to ChatGPT along with the video's information (title, subtitles) to receive answers.
+
+Get clear information by asking appropriate questions!
+- Directly input your questions or easily select from various question options (favorites, recent).
+- Check out insightful question suggestions through AI (requires setting up a Gemini API Key, free).
+
+Quickly ask questions in the most convenient way!
+- Simply press the request button to ask the most frequently asked questions.
+- Press the 'q' shortcut key to open the question dialog.
+
+* Designed to blend seamlessly with YouTube's existing UI without disrupting the user experience.
