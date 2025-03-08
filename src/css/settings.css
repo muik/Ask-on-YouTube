@@ -149,7 +149,7 @@ body.dark-mode a:visited {
     display: none;
     margin-top: 4px;
 }
-.screenshot-container[opened="true"] img {
+.screenshot-container[data-opened="true"] img {
     display: block;
     animation: fadeIn 0.2s ease-in-out;
 }
@@ -162,7 +162,7 @@ body.dark-mode a:visited {
     }
 }
 .screenshot-container .screenshot-title .toggle-icon {
-    display: none;
+    margin-right: 4px;
 }
 .screenshot-container[opened="false"] .screenshot-title .toggle-icon.closed {
     display: inline;

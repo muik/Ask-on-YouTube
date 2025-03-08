@@ -1,10 +1,11 @@
-import puppeteer from "puppeteer";
+/// <reference types="jest" />
+import puppeteer, { Browser, Page } from "puppeteer";
 
 const EXTENSION_PATH = "./dist";
 const EXTENSION_ID = "gdcabhbeojofokajoomgoclohimfnfjb";
 
 describe("Settings page Test", () => {
-    let browser;
+    let browser: Browser | undefined;
 
     beforeEach(async () => {
         browser = await puppeteer.launch({
@@ -18,16 +19,19 @@ describe("Settings page Test", () => {
     afterEach(async () => {
         if (browser) {
             await browser.close();
-            browser = null;
+            browser = undefined;
         }
     });
 
     it("Settings page renders correctly", async () => {
-        const page = await browser.newPage();
+        if (!browser) {
+            throw new Error("Browser is not initialized");
+        }
+        const page: Page = await browser.newPage();
         await page.goto(`chrome-extension://${EXTENSION_ID}/settings.html`);
-        const title = await page.title();
+        const title: string = await page.title();
 
-        const language = await page.evaluate(() => {
+        const language: string = await page.evaluate(() => {
             return navigator.language;
         });
 

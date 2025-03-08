@@ -63,6 +63,20 @@ const fileExtensions = [
 ];
 const moduleRules = [
     {
+        test: /\.(js|jsx|ts|tsx)$/,
+        exclude: /node_modules/,
+        use: {
+            loader: "babel-loader",
+            options: {
+                presets: [
+                    "@babel/preset-env",
+                    ["@babel/preset-react", { runtime: "automatic" }],
+                    "@babel/preset-typescript",
+                ],
+            },
+        },
+    },
+    {
         test: /\.css$/i,
         use: [MiniCssExtractPlugin.loader, "css-loader"],
         exclude: /node_modules/,
@@ -109,10 +123,10 @@ const config = {
         ),
         background: [
             path.join(__dirname, "src", "vendor", "honeybadger.ext.min.js"),
-            path.join(__dirname, "src", "background.js")
+            path.join(__dirname, "src", "background.js"),
         ],
         settings: [
-            path.join(__dirname, "src", "options", "settings.js"),
+            path.join(__dirname, "src", "options", "index.tsx"),
             path.join(__dirname, "src", "css", "settings.css"),
         ],
     },
@@ -128,6 +142,9 @@ const config = {
     optimization: {
         minimize: ENV === "production",
         minimizer: [new CssMinimizerPlugin(), new TerserPlugin()],
+    },
+    resolve: {
+        extensions: [".js", ".jsx", ".ts", ".tsx"],
     },
 };
 

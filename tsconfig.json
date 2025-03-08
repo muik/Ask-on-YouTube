@@ -1,0 +1,34 @@
+{
+    "compilerOptions": {
+        "target": "ES2018",
+        "module": "commonjs",
+        "lib": ["dom", "dom.iterable", "esnext"],
+        "jsx": "react",
+
+        /* Modules */
+        "moduleResolution": "node",
+        "baseUrl": ".",
+        "resolveJsonModule": true,
+        "allowJs": true,
+        "esModuleInterop": true,
+
+        /* Emit */
+        "outDir": "./dist",
+        "sourceMap": true,
+        "removeComments": false,
+
+        /* Type Checking */
+        "strict": true,
+        "noImplicitAny": true,
+        "strictNullChecks": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+
+        /* Additional Checks */
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "types": ["jest", "node", "chrome"]
+    },
+    "include": ["src/**/*", "tests/**/*"],
+    "exclude": ["node_modules", "dist", "build", "coverage"]
+}
