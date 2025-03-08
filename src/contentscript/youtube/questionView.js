@@ -6,6 +6,7 @@ import { loadGeminiServiceAvailable } from "./geminiService.js";
 import { loadCaption } from "./questionDialog/caption.js";
 import { getQuestionHtml } from "./questionDialog/html.js";
 import {
+    clearRequestQuestionsPendingListener,
     loadQuestionOptions,
     resetQuestions,
     setQuestionOptionsView,
@@ -111,24 +112,6 @@ function setQuestionDialogContent(videoInfo) {
             .querySelector(`#${containerId} textarea.question-input`)
             .focus();
     }, 100);
-}
-
-export function setCaption(caption) {
-    if (isQuestionDialogClosed() || dialogData.videoInfo.caption) {
-        return;
-    }
-
-    dialogData.videoInfo.caption = caption;
-    const containerElement = getContainerElement();
-    const thumbnailElement = containerElement.querySelector(
-        ".video-info img.thumbnail"
-    );
-    const captionElement = containerElement.querySelector(
-        ".video-info .caption"
-    );
-
-    thumbnailElement.setAttribute("title", caption);
-    captionElement.textContent = caption;
 }
 
 export function textToInputClickListener(e) {
@@ -352,7 +335,7 @@ function repositionDialog() {
     containerElement.style.zIndex = highestZIndex + 2;
 }
 
-function isQuestionDialogClosed() {
+export function isQuestionDialogClosed() {
     const containerElement = getContainerElement();
     return containerElement && containerElement.style.display === "none";
 }
@@ -378,4 +361,5 @@ function hideQuestionDialog() {
     resetRequesting(containerElement);
     setInputError({}, containerElement);
     delete dialogData.videoInfo;
+    clearRequestQuestionsPendingListener();
 }

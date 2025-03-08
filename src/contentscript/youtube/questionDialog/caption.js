@@ -1,8 +1,9 @@
 import { BackgroundActions } from "../../../constants.js";
 import { Errors } from "../../../errors.js";
 import { isGeminiServiceAvailable } from "../geminiService.js";
-import { setCaption } from "../questionView.js";
+import { getContainerElement, getDialogData, isQuestionDialogClosed } from "../questionView.js";
 
+const CAPTION_LOADED_EVENT = 'captionLoaded';
 let loadCaptionPendingArg = null;
 
 export function loadCaptionIfPending() {
@@ -83,4 +84,35 @@ function getImageData(imgElement) {
             mimeType,
         },
     };
+}
+
+export function addCaptionLoadListener(callback) {
+    const containerElement = getContainerElement();
+    const captionElement = containerElement.querySelector('.video-info .caption');
+    captionElement.addEventListener(CAPTION_LOADED_EVENT, callback);
+}
+
+export function removeCaptionLoadListener(callback) {
+    const containerElement = getContainerElement();
+    const captionElement = containerElement.querySelector('.video-info .caption');
+    captionElement.removeEventListener(CAPTION_LOADED_EVENT, callback);
+}
+
+export function setCaption(caption) {
+    if (isQuestionDialogClosed() || getDialogData().videoInfo.caption) {
+        return;
+    }
+
+    getDialogData().videoInfo.caption = caption;
+    const containerElement = getContainerElement();
+    const thumbnailElement = containerElement.querySelector(
+        ".video-info img.thumbnail"
+    );
+    const captionElement = containerElement.querySelector(
+        ".video-info .caption"
+    );
+
+    thumbnailElement.setAttribute("title", caption);
+    captionElement.textContent = caption;
+    captionElement.dispatchEvent(new Event(CAPTION_LOADED_EVENT));
 }

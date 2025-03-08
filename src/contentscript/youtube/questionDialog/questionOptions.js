@@ -3,9 +3,13 @@ import { Errors, Info } from "../../../errors.js";
 import {
     getContainerElement,
     getDialogData,
-    setCaption,
     textToInputClickListener,
 } from "../questionView.js";
+import {
+    addCaptionLoadListener,
+    removeCaptionLoadListener,
+    setCaption,
+} from "./caption.js";
 
 /**
  * Load the question options on initial load
@@ -96,16 +100,37 @@ function loadQuestions(option, containerElement = null) {
     requestQuestions(option);
 }
 
+let requestQuestionsPendingListener = null;
+
+export function clearRequestQuestionsPendingListener() {
+    if (requestQuestionsPendingListener) {
+        removeCaptionLoadListener(requestQuestionsPendingListener);
+        requestQuestionsPendingListener = null;
+    }
+}
+
 async function requestQuestions(option) {
+    clearRequestQuestionsPendingListener();
+
     try {
         validateQuestionOption(option);
 
-        const dialogData = getDialogData();
+        const videoInfo = getDialogData().videoInfo;
+
+        if (option === QuestionOptionKeys.SUGGESTIONS) {
+            if (videoInfo.caption === undefined) {
+                requestQuestionsPendingListener = () => {
+                    requestQuestions(option);
+                };
+                addCaptionLoadListener(requestQuestionsPendingListener);
+                return;
+            }
+        }
 
         const response = await chrome.runtime.sendMessage({
             action: BackgroundActions.GET_QUESTIONS,
             option,
-            videoInfo: dialogData.videoInfo,
+            videoInfo,
         });
 
         if (!isQuestionOptionActive(option)) {
@@ -117,7 +142,10 @@ async function requestQuestions(option) {
     } catch (error) {
         setRequestQuestionsError(error);
     } finally {
-        if (isQuestionOptionActive(option)) {
+        if (
+            isQuestionOptionActive(option) &&
+            !requestQuestionsPendingListener
+        ) {
             hideProgressSpinner();
         }
     }
