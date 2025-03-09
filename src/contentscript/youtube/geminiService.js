@@ -1,11 +1,22 @@
 import { BackgroundActions } from "../../constants.js";
-import { loadCaptionIfPending } from "./questionDialog/caption.js";
+import {
+    loadCaptionIfPending,
+    setCaptionUnavailable,
+} from "./questionDialog/caption.js";
 
 // Flag to enable/disable auto-completion functionality
 let geminiServiceAvailable = null;
 
+export function isGeminiServiceNotLoaded() {
+    return geminiServiceAvailable === null;
+}
+
 export function isGeminiServiceAvailable() {
-    return geminiServiceAvailable;
+    return geminiServiceAvailable === true;
+}
+
+export function isGeminiServiceUnavailable() {
+    return geminiServiceAvailable === false;
 }
 
 export async function setGeminiServiceAvailable(available) {
@@ -37,14 +48,19 @@ export async function loadGeminiServiceAvailable() {
             return;
         }
 
-        geminiServiceAvailable = response.isAvailable;
+        setGeminiServiceAvailable(response.isAvailable);
     } catch (error) {
         console.error("Failed to load gemini service available:", error);
+        setGeminiServiceAvailable(false);
     }
 }
 
 function onGeminiServiceAvailableChanged(available) {
     console.debug("Gemini service available changed:", available);
 
-    loadCaptionIfPending();
+    if (available) {
+        loadCaptionIfPending();
+    } else {
+        setCaptionUnavailable();
+    }
 }

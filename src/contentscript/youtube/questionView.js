@@ -3,7 +3,7 @@ import { getVideoThumbnailUrl } from "../../data.js";
 import { Errors } from "../../errors.js";
 import { initAutoComplete } from "./autoComplete.js";
 import { loadGeminiServiceAvailable } from "./geminiService.js";
-import { loadCaption } from "./questionDialog/caption.js";
+import { loadCaption, loadCaptionError } from "./questionDialog/caption.js";
 import { getQuestionHtml } from "./questionDialog/html.js";
 import {
     clearRequestQuestionsPendingListener,
@@ -142,6 +142,7 @@ function insertQuestionDialog() {
     const containerElement = getContainerElement();
     const thumbnailElement = containerElement.querySelector("img.thumbnail");
     thumbnailElement.addEventListener("load", loadCaption);
+    thumbnailElement.addEventListener("error", loadCaptionError);
 
     // request button click event
     const requestButton = containerElement.querySelector(

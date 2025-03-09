@@ -21,10 +21,13 @@ export function getLastQuestionOption(sendResponse) {
 
 export function getQuestions(request, sendResponse) {
     requestQuestions(request)
-        .then(sendResponse)
-        .catch(handleError(sendResponse));
+        .then((response) => {
+            sendResponse(response);
 
-    setLastQuestionOption(request.option);
+            // only set the last question option if the questions were loaded successfully  
+            setLastQuestionOption(request.option);
+        })
+        .catch(handleError(sendResponse));
 
     return true;
 }

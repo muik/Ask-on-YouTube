@@ -1,9 +1,24 @@
 import { BackgroundActions } from "../../../constants.js";
 import { Errors } from "../../../errors.js";
-import { isGeminiServiceAvailable } from "../geminiService.js";
-import { getContainerElement, getDialogData, isQuestionDialogClosed } from "../questionView.js";
+import {
+    isGeminiServiceNotLoaded,
+    isGeminiServiceUnavailable,
+} from "../geminiService.js";
+import {
+    getContainerElement,
+    getDialogData,
+    isQuestionDialogClosed,
+} from "../questionView.js";
 
-const CAPTION_LOADED_EVENT = 'captionLoaded';
+const CaptionStatus = {
+    PENDING: "pending",
+    LOADING: "loading",
+    LOADED: "loaded",
+    ERROR: "error",
+    UNAVAILABLE: "unavailable",
+};
+const CAPTION_LOAD_CHANGED_EVENT = "captionLoadChanged";
+
 let loadCaptionPendingArg = null;
 
 export function loadCaptionIfPending() {
@@ -13,11 +28,22 @@ export function loadCaptionIfPending() {
 }
 
 export async function loadCaption(event) {
-    if (!isGeminiServiceAvailable()) {
+    const containerElement = getContainerElement();
+    const captionElement = containerElement.querySelector(
+        ".video-info .caption"
+    );
+
+    if (isGeminiServiceNotLoaded()) {
+        setCaptionStatus(captionElement, CaptionStatus.PENDING);
         loadCaptionPendingArg = event;
+        return;
+    } else if (isGeminiServiceUnavailable()) {
+        setCaptionUnavailable();
         return;
     }
     loadCaptionPendingArg = null;
+
+    setCaptionStatus(captionElement, CaptionStatus.LOADING);
 
     const thumbnailElement = event.target;
     const imageUrl = thumbnailElement.getAttribute("src");
@@ -42,13 +68,17 @@ export async function loadCaption(event) {
         }
         console.debug("loadCaption caption:", response.caption);
     } catch (error) {
+        setCaptionStatus(captionElement, CaptionStatus.ERROR);
+
         if (error.code === Errors.GEMINI_API_KEY_NOT_SET.code) {
             console.debug("loadCaption failed, due to GEMINI_API_KEY_NOT_SET");
             return;
         }
         if (error.code === Errors.GEMINI_API_KEY_NOT_VALID.code) {
             // ignore
-            console.debug("loadCaption failed, due to GEMINI_API_KEY_NOT_VALID");
+            console.debug(
+                "loadCaption failed, due to GEMINI_API_KEY_NOT_VALID"
+            );
             return;
         }
 
@@ -86,16 +116,20 @@ function getImageData(imgElement) {
     };
 }
 
-export function addCaptionLoadListener(callback) {
+export function addCaptionLoadChangedListener(callback) {
     const containerElement = getContainerElement();
-    const captionElement = containerElement.querySelector('.video-info .caption');
-    captionElement.addEventListener(CAPTION_LOADED_EVENT, callback);
+    const captionElement = containerElement.querySelector(
+        ".video-info .caption"
+    );
+    captionElement.addEventListener(CAPTION_LOAD_CHANGED_EVENT, callback);
 }
 
-export function removeCaptionLoadListener(callback) {
+export function removeCaptionLoadChangedListener(callback) {
     const containerElement = getContainerElement();
-    const captionElement = containerElement.querySelector('.video-info .caption');
-    captionElement.removeEventListener(CAPTION_LOADED_EVENT, callback);
+    const captionElement = containerElement.querySelector(
+        ".video-info .caption"
+    );
+    captionElement.removeEventListener(CAPTION_LOAD_CHANGED_EVENT, callback);
 }
 
 export function setCaption(caption) {
@@ -114,5 +148,63 @@ export function setCaption(caption) {
 
     thumbnailElement.setAttribute("title", caption);
     captionElement.textContent = caption;
-    captionElement.dispatchEvent(new Event(CAPTION_LOADED_EVENT));
+    setCaptionStatus(captionElement, CaptionStatus.LOADED);
+}
+
+function setCaptionStatus(captionElement, newStatus) {
+    const currentStatus = captionElement.getAttribute("status");
+    if (currentStatus === newStatus) {
+        return;
+    }
+
+    captionElement.setAttribute("status", newStatus);
+    captionElement.dispatchEvent(
+        new CaptionLoadChangedEvent(CAPTION_LOAD_CHANGED_EVENT, newStatus)
+    );
+}
+
+class CaptionLoadChangedEvent extends Event {
+    constructor(type, status) {
+        super(type);
+        this.status = status;
+        this.isResolved = isCaptionResolved(status);
+    }
+}
+
+export function setCaptionUnavailable() {
+    const containerElement = getContainerElement();
+    const captionElement = containerElement.querySelector(
+        ".video-info .caption"
+    );
+    setCaptionStatus(captionElement, CaptionStatus.UNAVAILABLE);
+}
+
+function getCaptionStatus() {
+    const containerElement = getContainerElement();
+    const captionElement = containerElement.querySelector(
+        ".video-info .caption"
+    );
+    return captionElement.getAttribute("status");
+}
+
+export function loadCaptionError() {
+    const containerElement = getContainerElement();
+    const captionElement = containerElement.querySelector(
+        ".video-info .caption"
+    );
+    setCaptionStatus(captionElement, CaptionStatus.ERROR);
+}
+
+export function isCaptionResolved(status = null) {
+    if (!status) {
+        status = getCaptionStatus();
+    }
+    if (
+        !status ||
+        status === CaptionStatus.PENDING ||
+        status === CaptionStatus.LOADING
+    ) {
+        return false;
+    }
+    return true;
 }

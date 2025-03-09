@@ -6,8 +6,9 @@ import {
     textToInputClickListener,
 } from "../questionView.js";
 import {
-    addCaptionLoadListener,
-    removeCaptionLoadListener,
+    addCaptionLoadChangedListener,
+    isCaptionResolved,
+    removeCaptionLoadChangedListener,
     setCaption,
 } from "./caption.js";
 
@@ -104,7 +105,7 @@ let requestQuestionsPendingListener = null;
 
 export function clearRequestQuestionsPendingListener() {
     if (requestQuestionsPendingListener) {
-        removeCaptionLoadListener(requestQuestionsPendingListener);
+        removeCaptionLoadChangedListener(requestQuestionsPendingListener);
         requestQuestionsPendingListener = null;
     }
 }
@@ -118,11 +119,13 @@ async function requestQuestions(option) {
         const videoInfo = getDialogData().videoInfo;
 
         if (option === QuestionOptionKeys.SUGGESTIONS) {
-            if (videoInfo.caption === undefined) {
-                requestQuestionsPendingListener = () => {
-                    requestQuestions(option);
+            if (!isCaptionResolved()) {
+                requestQuestionsPendingListener = (event) => {
+                    if (event.isResolved) {
+                        requestQuestions(option);
+                    }
                 };
-                addCaptionLoadListener(requestQuestionsPendingListener);
+                addCaptionLoadChangedListener(requestQuestionsPendingListener);
                 return;
             }
         }
