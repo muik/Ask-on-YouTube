@@ -144,7 +144,11 @@ const config = {
         minimizer: [new CssMinimizerPlugin(), new TerserPlugin()],
     },
     resolve: {
-        extensions: [".js", ".jsx", ".ts", ".tsx"],
+        extensions: [".ts", ".tsx", ".js", ".jsx"],
+        extensionAlias: {
+            ".js": [".ts", ".js"],
+            ".jsx": [".tsx", ".jsx"]
+        }
     },
 };
 

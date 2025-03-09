@@ -501,7 +501,8 @@ export function getVideoInfoFromVideoDetail() {
 /**
  * Detects when a video option is clicked.
  */
-export function detectVideoOptionClick(target) {
+export function detectVideoOptionClick(event) {
+    const target = event.target;
     if (target.tagName != "DIV") {
         return;
     }
