@@ -35,11 +35,15 @@ let questionMenuUsedBefore;
  * @returns {Element|null} The question button element if found, null otherwise
  */
 export function findQuestionMenuShown() {
-    const dropdown = document.querySelector(`${dropdownSelector}:not([aria-hidden='true'])`);
+    const dropdown = document.querySelector(
+        `${dropdownSelector}:not([aria-hidden='true'])`
+    );
     if (!dropdown) {
         return null;
     }
-    return dropdown.querySelector(`.${extraOptionsClassName} .option-item[target-value=question]`);
+    return dropdown.querySelector(
+        `.${extraOptionsClassName} .option-item[target-value=question]`
+    );
 }
 
 /**
@@ -418,10 +422,28 @@ function getVideoInfoFromShortsItem(target) {
  * @returns {ClickResult | undefined} - The click result. If undefined, this is not the correct type of element and other options need to be considered.
  */
 function getVideoInfoFromShortsDetail(videoContainer) {
-    const linkElement = videoContainer.querySelector("a.ytp-title-link");
-    const thumbnailElement = null; // no thumbnail for shorts detail page
+    const id = window.location.pathname.split("/")[2];
+    const title = videoContainer.querySelector("h2").textContent.trim();
 
-    return getVideoInfoFromShortsLinkElement(linkElement, thumbnailElement);
+    if (!title || !id) {
+        console.debug(
+            "Unexpected shorts detail page",
+            id,
+            title,
+            videoContainer
+        );
+        return {
+            type: ClickElementType.UNEXPECTED,
+        };
+    }
+
+    return {
+        videoInfo: {
+            id,
+            title,
+            thumbnail: null, // no thumbnail for shorts detail page
+        },
+    };
 }
 
 /**

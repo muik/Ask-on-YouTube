@@ -358,6 +358,9 @@ function hideQuestionDialog() {
         backgroundElement.remove();
     }
 
+    const thumbnailElement = containerElement.querySelector("img.thumbnail");
+    thumbnailElement.removeAttribute("src");
+
     resetQuestions(containerElement);
     resetRequesting(containerElement);
     setInputError({}, containerElement);
