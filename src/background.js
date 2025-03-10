@@ -48,7 +48,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     } else if (request.action === BackgroundActions.GET_QUESTION_COMPLETE) {
         return getQuestionComplete(request, sendResponse);
     } else if (request.action === BackgroundActions.GET_DEFAULT_QUESTION) {
-        return getDefaultQuestion(sendResponse);
+        return getDefaultQuestion(request, sendResponse);
     } else if (request.action === BackgroundActions.GET_LAST_QUESTION_OPTION) {
         return getLastQuestionOption(sendResponse);
     } else if (request.action === BackgroundActions.GET_CAPTION) {

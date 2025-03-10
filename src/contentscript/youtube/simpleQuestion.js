@@ -1,7 +1,7 @@
 import { BackgroundActions } from "../../constants.js";
 import { Errors } from "../../errors.js";
 import { getVideoInfoFromVideoDetail } from "./moreOptions.js";
-import { showQuestionDialog } from "./questionView.js";
+import { getYouTubeLanguageCode, showQuestionDialog } from "./questionView.js";
 
 const containerId = "ytq-simple-question";
 
@@ -51,6 +51,7 @@ async function loadDefaultQuestion(inputElement) {
     try {
         const response = await chrome.runtime.sendMessage({
             action: BackgroundActions.GET_DEFAULT_QUESTION,
+            langCode: getYouTubeLanguageCode(),
         });
 
         if (handleError(response.error)) {
@@ -94,8 +95,7 @@ function onRequestButtonClick(event) {
 
     // chrome.i18n depends on the OS language, but the YouTube language is not always the same as the OS language.
     // Assume the user wants to ask the question in the YouTube language.
-    const lang = document.querySelector("html").getAttribute("lang");
-    const langCode = lang.split("-")[0] || "en";
+    const langCode = getYouTubeLanguageCode();
 
     // set loading state
     buttonElement.setAttribute("disabled", "");

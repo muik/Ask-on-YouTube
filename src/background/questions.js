@@ -40,7 +40,7 @@ function requestQuestions(request) {
             getQuestionsRequest = getRecentQuestions();
             break;
         case QuestionOptionKeys.FAVORITES:
-            getQuestionsRequest = getFavoriteQuestions();
+            getQuestionsRequest = getFavoriteQuestions(request.langCode);
             break;
         case QuestionOptionKeys.SUGGESTIONS:
             getQuestionsRequest = getApiKeyRequired().then((apiKey) =>
@@ -59,8 +59,8 @@ function requestQuestions(request) {
     return getQuestionsRequest;
 }
 
-export function getDefaultQuestion(sendResponse) {
-    getFavoriteQuestions()
+export function getDefaultQuestion(request, sendResponse) {
+    getFavoriteQuestions(request.langCode)
         .then((result) => {
             return {
                 question: result.questions[0],

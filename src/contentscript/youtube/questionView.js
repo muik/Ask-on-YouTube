@@ -58,6 +58,7 @@ async function loadDefaultQuestion() {
     try {
         const response = await chrome.runtime.sendMessage({
             action: BackgroundActions.GET_DEFAULT_QUESTION,
+            langCode: getYouTubeLanguageCode(),
         });
 
         if (chrome.runtime.lastError || response.error) {
@@ -205,8 +206,7 @@ function onRequestButtonClick(event) {
 
     // chrome.i18n depends on the OS language, but the YouTube language is not always the same as the OS language.
     // Assume the user wants to ask the question in the YouTube language.
-    const lang = document.querySelector("html").getAttribute("lang");
-    const langCode = lang.split("-")[0] || "en";
+    const langCode = getYouTubeLanguageCode();
 
     // set loading state
     buttonElement.setAttribute("disabled", "");
@@ -366,4 +366,9 @@ function hideQuestionDialog() {
     setInputError({}, containerElement);
     delete dialogData.videoInfo;
     clearRequestQuestionsPendingListener();
+}
+
+export function getYouTubeLanguageCode() {
+    const lang = document.querySelector("html").getAttribute("lang");
+    return lang.split("-")[0] || "en";
 }

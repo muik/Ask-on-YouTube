@@ -3,6 +3,7 @@ import { Errors, Info } from "../../../errors.js";
 import {
     getContainerElement,
     getDialogData,
+    getYouTubeLanguageCode,
     textToInputClickListener,
 } from "../questionView.js";
 import {
@@ -134,6 +135,7 @@ async function requestQuestions(option) {
             action: BackgroundActions.GET_QUESTIONS,
             option,
             videoInfo,
+            langCode: getYouTubeLanguageCode(),
         });
 
         if (!isQuestionOptionActive(option)) {
