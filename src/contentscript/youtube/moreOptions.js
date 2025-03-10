@@ -35,14 +35,8 @@ let questionMenuUsedBefore;
  * @returns {Element|null} The question button element if found, null otherwise
  */
 export function findQuestionMenuShown() {
-    const dropdown = document.querySelector(
-        `${dropdownSelector}:not([aria-hidden='true'])`
-    );
-    if (!dropdown) {
-        return null;
-    }
-    return dropdown.querySelector(
-        `.${extraOptionsClassName} .option-item[target-value=question]`
+    return document.querySelector(
+        `${dropdownSelector}:not([aria-hidden='true']) .${extraOptionsClassName} .option-item[target-value=question]`
     );
 }
 
@@ -51,7 +45,9 @@ export function findQuestionMenuShown() {
  */
 export function insertExtraOptions() {
     // for video item
-    waitForElm(`${dropdownSelector} #footer`).then(insertExtraOptionsToFooter);
+    waitForElm(`${dropdownSelector} ytd-menu-popup-renderer #footer`).then(
+        insertExtraOptionsToFooter
+    );
 
     // for shorts item
     waitForElm(
