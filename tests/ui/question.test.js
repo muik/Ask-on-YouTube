@@ -5,8 +5,9 @@ const EXTENSION_PATH = "./dist";
 
 describe("Question dialog Test", () => {
     let browser;
+    let page;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         browser = await puppeteer.launch({
             headless: "new",
             args: [
@@ -14,13 +15,67 @@ describe("Question dialog Test", () => {
                 `--load-extension=${EXTENSION_PATH}`,
             ],
         });
+
+        closeWelcomePage(browser);
     });
 
-    afterEach(async () => {
+    afterAll(async () => {
         if (browser) {
             await browser.close();
             browser = null;
         }
+    });
+
+    beforeEach(async () => {
+        page = await browser.newPage();
+        await page.setViewport({ width: 800, height: 600 });
+
+        // Optimize page load by not waiting for non-essential resources
+        await page.setDefaultNavigationTimeout(10000);
+        await page.setDefaultTimeout(5000);
+    });
+
+    afterEach(async () => {
+        if (page) {
+            await page.close();
+        }
+    });
+
+    it("Question menu use mark is shown when first time", async () => {
+        await page.goto("https://www.youtube.com/watch?v=kSgIRBvxiDo");
+        const moreOptionButtonSelector = moreOptionButtonTypes[0].selector;
+        await waitAndClick(page, moreOptionButtonSelector);
+
+        const extraOptionsSelector =
+            "tp-yt-iron-dropdown.ytd-popup-container:not([aria-hidden='true']) .ytq-extra-options";
+        await page.waitForSelector(extraOptionsSelector, { timeout: 2000 });
+
+        const useMarkSelector = `${extraOptionsSelector} .vertical-menu .use-mark`;
+        await page.waitForSelector(useMarkSelector, { timeout: 2000 });
+
+        // click quesuseMarkElement useMarkElement tion menu
+        const questionButtonSelector = ".option-item[target-value=question]";
+        await waitAndClick(page, questionButtonSelector);
+
+        const questionDialogSelector = "ytd-popup-container #dialog-container";
+        await page.waitForSelector(questionDialogSelector, { timeout: 2000 });
+
+        // Close question dialog
+        await waitAndClick(page, `${questionDialogSelector} #close-button`);
+        await page.waitForSelector(questionDialogSelector, {
+            timeout: 2000,
+            hidden: true,
+        });
+
+        // click more option button
+        await waitAndClick(page, moreOptionButtonSelector);
+        await page.waitForSelector(extraOptionsSelector, { timeout: 2000 });
+
+        // Check if useMarkElement is removed
+        await page.waitForSelector(useMarkSelector, {
+            timeout: 2000,
+            hidden: true,
+        });
     });
 
     const runCommonTestFlow = async (page, moreOptionButtonSelector) => {
@@ -29,17 +84,17 @@ describe("Question dialog Test", () => {
 
         const extraOptionsSelector =
             "tp-yt-iron-dropdown.ytd-popup-container:not([aria-hidden='true']) .ytq-extra-options";
-        await page.waitForSelector(extraOptionsSelector, { timeout: 2000 });
+        await page.waitForSelector(extraOptionsSelector, { timeout: 1000 });
 
         const questionButtonSelector = ".option-item[target-value=question]";
         await waitAndClick(page, questionButtonSelector);
 
         const questionDialogSelector = "ytd-popup-container #dialog-container";
-        await page.waitForSelector(questionDialogSelector, { timeout: 2000 });
+        await page.waitForSelector(questionDialogSelector, { timeout: 1000 });
 
         const contentsSelector = `${questionDialogSelector} #contents`;
         await page.waitForSelector(contentsSelector, {
-            timeout: 2000,
+            timeout: 1000,
             hidden: false,
         });
 
@@ -80,30 +135,21 @@ describe("Question dialog Test", () => {
         },
     ];
 
+    const loadYoutubePage = async (videoId) => {
+        await page.goto(`https://www.youtube.com/watch?v=${videoId}`, {
+            waitUntil: "domcontentloaded", // Don't wait for full page load
+        });
+    };
+
     moreOptionButtonTypes.forEach((type) => {
         it(`Question dialog renders correctly for ${type.name}`, async () => {
-            const page = await browser.newPage();
-            await page.setViewport({ width: 1024, height: 768 });
-            await page.goto("https://www.youtube.com/watch?v=_CcYSnoZytk", {
-                waitUntil: ["networkidle0", "domcontentloaded"],
-            });
-
-            await closeWelcomePage(browser);
-
-            const title = await page.title();
-            expect(title).toContain("YouTube");
-
+            await loadYoutubePage("_CcYSnoZytk");
             await runCommonTestFlow(page, type.selector);
         });
     });
 
     it("Input question on ChatGPT from simple question form correctly", async () => {
-        const page = await browser.newPage();
-        await page.setViewport({ width: 1024, height: 768 });
-        await page.goto("https://www.youtube.com/watch?v=kSgIRBvxiDo");
-
-        await closeWelcomePage(browser);
-
+        await loadYoutubePage("kSgIRBvxiDo");
         await waitAndClick(
             page,
             "#ytq-detail-related-above .question-input-container button"
@@ -123,11 +169,7 @@ describe("Question dialog Test", () => {
     });
 
     it("Input question on ChatGPT from question dialog correctly", async () => {
-        const page = await browser.newPage();
-        await page.setViewport({ width: 1024, height: 768 });
         await page.goto("https://www.youtube.com/watch?v=kSgIRBvxiDo");
-
-        await closeWelcomePage(browser);
 
         const moreOptionButtonSelector = moreOptionButtonTypes[0].selector;
         await waitAndClick(page, moreOptionButtonSelector);
@@ -155,48 +197,6 @@ describe("Question dialog Test", () => {
         // await newPage.setViewport({ width: 1024, height: 768 });
         // await newPage.waitForSelector("title", { timeout: 5000 });
         // expect(await newPage.title()).toContain("ChatGPT");
-    });
-
-    it("Question menu use mark is shown when first time", async () => {
-        const page = await browser.newPage();
-        await page.setViewport({ width: 1024, height: 768 });
-        await page.goto("https://www.youtube.com/watch?v=kSgIRBvxiDo");
-
-        await closeWelcomePage(browser);
-
-        const moreOptionButtonSelector = moreOptionButtonTypes[0].selector;
-        await waitAndClick(page, moreOptionButtonSelector);
-
-        const extraOptionsSelector =
-            "tp-yt-iron-dropdown.ytd-popup-container:not([aria-hidden='true']) .ytq-extra-options";
-        await page.waitForSelector(extraOptionsSelector, { timeout: 2000 });
-
-        const useMarkSelector = `${extraOptionsSelector} .vertical-menu .use-mark`;
-        await page.waitForSelector(useMarkSelector, { timeout: 2000 });
-
-        // click quesuseMarkElement useMarkElement tion menu
-        const questionButtonSelector = ".option-item[target-value=question]";
-        await waitAndClick(page, questionButtonSelector);
-
-        const questionDialogSelector = "ytd-popup-container #dialog-container";
-        await page.waitForSelector(questionDialogSelector, { timeout: 2000 });
-
-        // Close question dialog
-        await waitAndClick(page, `${questionDialogSelector} #close-button`);
-        await page.waitForSelector(questionDialogSelector, {
-            timeout: 2000,
-            hidden: true,
-        });
-
-        // click more option button
-        await waitAndClick(page, moreOptionButtonSelector);
-        await page.waitForSelector(extraOptionsSelector, { timeout: 2000 });
-
-        // Check if useMarkElement is removed
-        await page.waitForSelector(useMarkSelector, {
-            timeout: 2000,
-            hidden: true,
-        });
     });
 });
 
