@@ -27,6 +27,10 @@ export function loadCaptionIfPending() {
     }
 }
 
+export function clearCaptionPending() {
+    loadCaptionPendingArg = null;
+}
+
 export async function loadCaption(event) {
     const containerElement = getContainerElement();
     const captionElement = containerElement.querySelector(

@@ -3,7 +3,11 @@ import { getVideoThumbnailUrl } from "../../data.js";
 import { Errors } from "../../errors.js";
 import { initAutoComplete } from "./autoComplete.js";
 import { loadGeminiServiceAvailable } from "./geminiService.js";
-import { loadCaption, loadCaptionError } from "./questionDialog/caption.js";
+import {
+    clearCaptionPending,
+    loadCaption,
+    loadCaptionError,
+} from "./questionDialog/caption.js";
 import { getQuestionHtml } from "./questionDialog/html.js";
 import {
     clearRequestQuestionsPendingListener,
@@ -366,6 +370,7 @@ function hideQuestionDialog() {
     setInputError({}, containerElement);
     delete dialogData.videoInfo;
     clearRequestQuestionsPendingListener();
+    clearCaptionPending();
 }
 
 export function getYouTubeLanguageCode() {
