@@ -85,22 +85,31 @@ export function initAutoComplete(inputElement) {
 
     // Add tab key event listener for accepting suggestions
     inputElement.addEventListener("keydown", (e) => {
-        // Handle Tab key for accepting suggestions
-        if (e.key === "Tab" && suggestionElement) {
-            handleTabKey(e);
-        }
+        switch (e.key) {
+            case "Tab":
+                if (suggestionElement) {
+                    e.preventDefault();
 
-        // Allow Enter key to submit when Shift is not pressed
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            cleanupSuggestion();
+                    // Prevent the last character of the inputted Korean text
+                    // from being added to the end of the sentence
+                    setTimeout(() => {
+                        handleTabKey(e.target);
+                    }, 1);
+                }
+                break;
+            case "Enter":
+                if (!e.shiftKey) {
+                    e.preventDefault();
+                    cleanupSuggestion();
 
-            const button = inputElement
-                .closest(".question-input-container")
-                .querySelector(".question-button");
-            if (button) {
-                button.click();
-            }
+                    const button = inputElement
+                        .closest(".question-input-container")
+                        .querySelector(".question-button");
+                    if (button) {
+                        button.click();
+                    }
+                }
+                break;
         }
     });
     console.debug("Added key event listeners for auto-completion");
@@ -298,31 +307,23 @@ function displaySuggestion(inputElement, currentText, completedText) {
  * Handle tab key press to accept suggestions
  * @param {KeyboardEvent} e - The keyboard event
  */
-function handleTabKey(e) {
-    console.debug(
-        "Tab key pressed, suggestion element exists:",
-        !!suggestionElement
-    );
-
-    if (e.key === "Tab" && suggestionElement) {
-        e.preventDefault();
-
-        // Get the suggestion text
-        const suggestion = suggestionElement.dataset.suggestion;
-        console.debug("Accepting suggestion:", suggestion);
-
-        // Update the input value
-        e.target.value = suggestion;
-
-        // Move cursor to the end
-        e.target.selectionStart = suggestion.length;
-        e.target.selectionEnd = suggestion.length;
-
-        // Clean up the suggestion
-        cleanupSuggestion();
-
-        console.debug("Suggestion accepted and cleaned up");
+function handleTabKey(inputElement) {
+    if (!suggestionElement) {
+        return;
     }
+
+    // Get the suggestion text
+    const suggestion = suggestionElement.dataset.suggestion;
+
+    // Update the input value
+    inputElement.value = suggestion;
+
+    // Move cursor to the end
+    inputElement.selectionStart = suggestion.length;
+    inputElement.selectionEnd = suggestion.length;
+
+    // Clean up the suggestion
+    cleanupSuggestion();
 }
 
 /**
