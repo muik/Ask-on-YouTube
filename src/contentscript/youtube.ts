@@ -7,25 +7,13 @@ import {
     insertExtraOptions,
 } from "./youtube/moreOptions.js";
 import { injectShortcutHelp } from "./youtube/shortcutHelp.js";
-import { setupShortsClickHandlers } from "./youtube/shortsHandlers.js";
-import { URLChangeDetector } from "./youtube/urlChangeDetector.js";
+import {
+    cleanup as cleanupShortsHandlers,
+    setupShortsClickHandlers
+} from "./youtube/shortsHandlers.js";
 import { injectElements } from "./youtube/videoDetail.js";
 
 Honeybadger.configure(honeybadgerConfig);
-
-/**
- * Handle URL changes in the YouTube app
- * @param {Location} location - The current location object
- */
-function handleUrlChange(location: Location): void {
-    // Setup shorts handlers if on home page
-    if (location.pathname === "/") {
-        setupShortsClickHandlers();
-    }
-}
-
-// Initialize URL change detector
-const urlDetector = new URLChangeDetector(handleUrlChange);
 
 /**
  * Handle clicks on the settings link
@@ -41,6 +29,12 @@ function handleSettingsClick(event: MouseEvent): void {
     }
 }
 
+// Cleanup function to handle all cleanup tasks
+function cleanupAll(): void {
+    cleanupShortsHandlers();
+    // Add other cleanup functions here as needed
+}
+
 window.onload = async (): Promise<void> => {
     if (window.location.hostname !== "www.youtube.com") {
         return;
@@ -49,14 +43,15 @@ window.onload = async (): Promise<void> => {
     injectElements();
     insertExtraOptions();
     injectShortcutHelp();
-
-    // Initialize URL change detection
-    urlDetector.init();
-
-    // Initial setup
-    handleUrlChange(location);
+    setupShortsClickHandlers();
 
     document.addEventListener("click", detectVideoOptionClick);
     document.addEventListener("click", handleSettingsClick);
     document.addEventListener("keydown", handleQuestionShortcut);
-}; 
+};
+
+// Cleanup when navigating away or closing the page
+window.addEventListener("unload", cleanupAll);
+
+// Cleanup when extension is being disabled/uninstalled
+chrome.runtime.onSuspend?.addListener(cleanupAll);
