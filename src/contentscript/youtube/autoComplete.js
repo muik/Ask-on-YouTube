@@ -32,9 +32,16 @@ function normalizeText(text) {
 }
 
 function isQuestionStart(completedText, questionStart) {
-    return normalizeText(completedText).startsWith(
-        normalizeText(questionStart)
-    );
+    return normalizeText(completedText).startsWith(normalizeText(questionStart));
+}
+
+/**
+ * Adjust the height of an input element to match its content
+ * @param {HTMLElement} inputElement - The input element to adjust
+ */
+function adjustInputHeight(inputElement) {
+    inputElement.style.height = "auto";
+    inputElement.style.height = inputElement.scrollHeight + "px";
 }
 
 /**
@@ -47,10 +54,7 @@ function handleInputEvent(e, debouncedInputHandler) {
     if (suggestionElement) {
         const questionStart = inputElement.value;
         const completedText = suggestionElement.dataset.suggestion;
-        if (
-            questionStart &&
-            isQuestionStart(completedText, questionStart)
-        ) {
+        if (questionStart && isQuestionStart(completedText, questionStart)) {
             displaySuggestion(inputElement, questionStart, completedText);
             return;
         } else {
@@ -59,8 +63,7 @@ function handleInputEvent(e, debouncedInputHandler) {
         }
     }
 
-    inputElement.style.height = "auto";
-    inputElement.style.height = inputElement.scrollHeight + "px";
+    adjustInputHeight(inputElement);
 
     if (isGeminiServiceAvailable()) {
         debouncedInputHandler(e);
@@ -107,8 +110,8 @@ function handleKeyDown(e) {
 function setupDialogCloseObserver() {
     const containerElement = document.getElementById("dialog-container");
     if (containerElement) {
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
+        const observer = new MutationObserver(mutations => {
+            mutations.forEach(mutation => {
                 if (
                     mutation.type === "attributes" &&
                     mutation.attributeName === "style" &&
@@ -128,20 +131,29 @@ function setupDialogCloseObserver() {
  * @param {HTMLElement} inputElement - The input element to observe
  */
 function setupPlaceholderObserver(inputElement) {
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
+    const observer = new MutationObserver(mutations => {
+        mutations.forEach(mutation => {
             if (mutation.attributeName === "placeholder") {
                 const inputElement = mutation.target;
                 if (inputElement.textContent.length === 0) {
-                    inputElement.style.height = "auto";
-                    inputElement.style.height =
-                        inputElement.scrollHeight + "px";
+                    adjustInputHeight(inputElement);
                 }
             }
         });
     });
     observer.observe(inputElement, { attributes: true });
     console.debug("Added mutation observer for placeholder changes");
+}
+
+/**
+ * Setup observer to handle disabled state changes and adjust input height
+ * @param {HTMLElement} inputElement - The input element to observe
+ */
+function setupDisabledStateObserver(inputElement) {
+    const observer = new MutationObserver(() => {
+        adjustInputHeight(inputElement);
+    });
+    observer.observe(inputElement, { attributeFilter: ["disabled"] });
 }
 
 /**
@@ -165,7 +177,7 @@ export function initAutoComplete(inputElement) {
     inputElement = newInputElement;
 
     // Add input event listener
-    inputElement.addEventListener("input", (e) => handleInputEvent(e, debouncedInputHandler));
+    inputElement.addEventListener("input", e => handleInputEvent(e, debouncedInputHandler));
     console.debug("Added input event listener for auto-completion");
 
     // Add tab key event listener for accepting suggestions
@@ -177,6 +189,9 @@ export function initAutoComplete(inputElement) {
 
     // Handle placeholder changes
     setupPlaceholderObserver(inputElement);
+
+    // Handle disabled state changes
+    setupDisabledStateObserver(inputElement);
 
     // Return the input element in case it was replaced
     return inputElement;
@@ -212,11 +227,7 @@ async function handleInputChange(e) {
         videoInfo,
     });
     const endTime = performance.now();
-    console.debug(
-        "Question completion response time:",
-        (endTime - startTime).toFixed(1),
-        "ms"
-    );
+    console.debug("Question completion response time:", (endTime - startTime).toFixed(1), "ms");
 
     // Check if the input has changed since the request was sent
     if (lastRequestedInput !== questionStart) {
@@ -227,10 +238,7 @@ async function handleInputChange(e) {
     console.debug("Question completion response:", response);
 
     if (chrome.runtime.lastError) {
-        console.error(
-            "Error getting question completion:",
-            chrome.runtime.lastError
-        );
+        console.error("Error getting question completion:", chrome.runtime.lastError);
         return;
     }
 
@@ -248,9 +256,7 @@ async function handleInputChange(e) {
     const completedText = response.questionComplete;
 
     if (completedText === questionStart) {
-        console.debug(
-            "Completed text is the same as current text, not showing suggestion"
-        );
+        console.debug("Completed text is the same as current text, not showing suggestion");
         return;
     }
 
@@ -358,9 +364,7 @@ function handleTabKey(inputElement) {
  * Clean up the suggestion element
  */
 function cleanupSuggestion() {
-    const inputElement = document.querySelector(
-        ".ytq-form textarea.question-input"
-    );
+    const inputElement = document.querySelector(".ytq-form textarea.question-input");
 
     if (suggestionElement) {
         // Also remove any tab hint elements
@@ -373,17 +377,14 @@ function cleanupSuggestion() {
         suggestionElement = null;
     }
 
-    inputElement.style.height = "auto";
-    inputElement.style.height = inputElement.scrollHeight + "px";
+    adjustInputHeight(inputElement);
 }
 
 /**
  * Test function for auto-completion (for debugging)
  */
 export function testAutoComplete() {
-    const inputElement = document.querySelector(
-        ".ytq-form textarea.question-input"
-    );
+    const inputElement = document.querySelector(".ytq-form textarea.question-input");
     if (!inputElement) {
         console.error("Input element not found");
         return;
@@ -407,11 +408,7 @@ export function testAutoComplete() {
     window.showTestSuggestion = () => {
         const currentText = inputElement.value;
         if (currentText.replace(/\s+/g, "").length >= MIN_CHARS) {
-            displaySuggestion(
-                inputElement,
-                currentText,
-                `${currentText} is a test suggestion`
-            );
+            displaySuggestion(inputElement, currentText, `${currentText} is a test suggestion`);
             console.debug("Test suggestion displayed");
         } else {
             console.debug(`Input needs at least ${MIN_CHARS} characters`);
