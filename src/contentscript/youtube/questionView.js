@@ -3,11 +3,7 @@ import { getVideoThumbnailUrl } from "../../data.js";
 import { Errors } from "../../errors.js";
 import { initAutoComplete } from "./autoComplete.js";
 import { loadGeminiServiceAvailable } from "./geminiService.js";
-import {
-    clearCaptionPending,
-    loadCaption,
-    loadCaptionError,
-} from "./questionDialog/caption.js";
+import { clearCaptionPending, loadCaption, loadCaptionError } from "./questionDialog/caption.js";
 import { getQuestionHtml } from "./questionDialog/html.js";
 import {
     clearRequestQuestionsPendingListener,
@@ -65,7 +61,13 @@ async function loadDefaultQuestion() {
             langCode: getYouTubeLanguageCode(),
         });
 
-        if (chrome.runtime.lastError || response.error) {
+        if (chrome.runtime.lastError) {
+            console.error("setDefaultQuestion lastError:", chrome.runtime.lastError);
+            setInputError(Errors.FAILED_TO_LOAD_DEFAULT_QUESTION);
+            return;
+        }
+
+        if (response.error) {
             console.error("setDefaultQuestion Error:", response);
             setInputError(Errors.FAILED_TO_LOAD_DEFAULT_QUESTION);
             return;
@@ -77,9 +79,7 @@ async function loadDefaultQuestion() {
             return;
         }
 
-        const inputElement = getContainerElement().querySelector(
-            "textarea.question-input"
-        );
+        const inputElement = getContainerElement().querySelector("textarea.question-input");
         inputElement.setAttribute("placeholder", response.question);
     } catch (error) {
         if (error.message === "Extension context invalidated.") {
@@ -95,13 +95,9 @@ function setQuestionDialogContent(videoInfo) {
     const containerElement = getContainerElement();
     containerElement.setAttribute("video-id", videoInfo.id);
 
-    const inputElement = containerElement.querySelector(
-        "textarea.question-input"
-    );
+    const inputElement = containerElement.querySelector("textarea.question-input");
     const titleElement = containerElement.querySelector(".title");
-    const captionElement = containerElement.querySelector(
-        ".video-info .caption"
-    );
+    const captionElement = containerElement.querySelector(".video-info .caption");
     titleElement.innerHTML = "";
     captionElement.innerHTML = "";
 
@@ -113,23 +109,16 @@ function setQuestionDialogContent(videoInfo) {
 
     // cursor focus on the input field
     setTimeout(() => {
-        document
-            .querySelector(`#${containerId} textarea.question-input`)
-            .focus();
+        document.querySelector(`#${containerId} textarea.question-input`).focus();
     }, 100);
 }
 
 export function textToInputClickListener(e) {
     e.preventDefault();
-    const text = e.target.textContent
-        .replace(/\n/g, " ")
-        .replace("  ", ", ")
-        .trim();
+    const text = e.target.textContent.replace(/\n/g, " ").replace("  ", ", ").trim();
     if (text) {
         const containerElement = e.target.closest(`#${containerId}`);
-        const inputElement = containerElement.querySelector(
-            "textarea.question-input"
-        );
+        const inputElement = containerElement.querySelector("textarea.question-input");
         inputElement.value = text;
 
         // focus on the input field, and move the cursor to the end of the text
@@ -150,25 +139,19 @@ function insertQuestionDialog() {
     thumbnailElement.addEventListener("error", loadCaptionError);
 
     // request button click event
-    const requestButton = containerElement.querySelector(
-        "#contents button.question-button"
-    );
+    const requestButton = containerElement.querySelector("#contents button.question-button");
     requestButton.addEventListener("click", onRequestButtonClick);
 
     // enter key event on the input field
-    const inputElement = containerElement.querySelector(
-        "#contents textarea.question-input"
-    );
-    inputElement.addEventListener("keydown", (event) => {
+    const inputElement = containerElement.querySelector("#contents textarea.question-input");
+    inputElement.addEventListener("keydown", event => {
         if (event.key === "Enter") {
             requestButton.click();
         }
     });
 
     // caption text click event
-    const captionElement = containerElement.querySelector(
-        ".video-info .caption"
-    );
+    const captionElement = containerElement.querySelector(".video-info .caption");
     captionElement.addEventListener("click", textToInputClickListener);
 
     setQuestionOptionsView(containerElement);
@@ -178,7 +161,7 @@ function insertQuestionDialog() {
     closeButton.addEventListener("click", hideQuestionDialog);
 
     // close the dialog when the user clicks outside of it or presses escape key
-    window.addEventListener("keydown", (event) => {
+    window.addEventListener("keydown", event => {
         if (event.key === "Escape") {
             hideQuestionDialog();
         }
@@ -226,7 +209,7 @@ function onRequestButtonClick(event) {
                 question,
                 langCode,
             },
-            (response) => {
+            response => {
                 onPromptSet(response);
                 resetRequesting();
             }
@@ -244,24 +227,15 @@ function onRequestButtonClick(event) {
 
 function resetRequesting(containerElement = null) {
     containerElement = containerElement || getContainerElement();
-    const inputElement = containerElement.querySelector(
-        "#contents textarea.question-input"
-    );
-    const buttonElement = containerElement.querySelector(
-        "#contents button.question-button"
-    );
+    const inputElement = containerElement.querySelector("#contents textarea.question-input");
+    const buttonElement = containerElement.querySelector("#contents button.question-button");
     buttonElement.removeAttribute("disabled");
     inputElement.removeAttribute("disabled");
 }
 
-function setInputError(
-    { message = "", type = "error" },
-    containerElement = null
-) {
+function setInputError({ message = "", type = "error" }, containerElement = null) {
     containerElement = containerElement || getContainerElement();
-    const inputErrorElement = containerElement.querySelector(
-        "#question-input-error"
-    );
+    const inputErrorElement = containerElement.querySelector("#question-input-error");
     inputErrorElement.textContent = message;
     inputErrorElement.setAttribute("type", type);
 }
@@ -272,10 +246,7 @@ function onPromptSet(response) {
     }
 
     if (chrome.runtime.lastError) {
-        console.error(
-            "onPromptSet chrome.runtime.lastError:",
-            chrome.runtime.lastError.message
-        );
+        console.error("onPromptSet chrome.runtime.lastError:", chrome.runtime.lastError.message);
         setInputError({ message: Errors.UNKNOWN_ERROR.message });
         return;
     }
@@ -293,10 +264,7 @@ function onPromptSet(response) {
     }
 
     if (!response.targetUrl) {
-        console.error(
-            "onPromptSet Invalid Response - targetUrl is not set. response:",
-            response
-        );
+        console.error("onPromptSet Invalid Response - targetUrl is not set. response:", response);
         setInputError({ message: "Invalid response, please try again later." });
         return;
     }
@@ -327,15 +295,10 @@ function repositionDialog() {
     // set z-index to the highest possible value
     const zIndexElements = document.querySelectorAll("[style*='z-index']");
     const highestZIndex =
-        Math.max(
-            ...Array.from(zIndexElements).map((element) =>
-                parseInt(element.style.zIndex)
-            )
-        ) || 2200;
+        Math.max(...Array.from(zIndexElements).map(element => parseInt(element.style.zIndex))) ||
+        2200;
 
-    const backdropElement = document.querySelector(
-        "tp-yt-iron-overlay-backdrop"
-    );
+    const backdropElement = document.querySelector("tp-yt-iron-overlay-backdrop");
     backdropElement.style.zIndex = highestZIndex + 1;
     containerElement.style.zIndex = highestZIndex + 2;
 }
@@ -349,15 +312,11 @@ function hideQuestionDialog() {
     const containerElement = getContainerElement();
     containerElement.style.display = "none";
 
-    const inputElement = containerElement.querySelector(
-        "#contents textarea.question-input"
-    );
+    const inputElement = containerElement.querySelector("#contents textarea.question-input");
     inputElement.value = "";
     inputElement.placeholder = "";
 
-    const backgroundElement = document.querySelector(
-        "tp-yt-iron-overlay-backdrop"
-    );
+    const backgroundElement = document.querySelector("tp-yt-iron-overlay-backdrop");
     if (backgroundElement) {
         backgroundElement.remove();
     }
