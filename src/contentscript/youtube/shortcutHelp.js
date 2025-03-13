@@ -4,20 +4,18 @@
  * our custom shortcut information when the dialog appears.
  */
 export function injectShortcutHelp() {
-    const container = document.querySelector(
-        "body > ytd-app > ytd-popup-container.ytd-app"
-    );
+    const container = document.querySelector("body > ytd-app > ytd-popup-container.ytd-app");
     if (!container) {
         console.error("YouTube popup container not found");
         return;
     }
 
     const observer = new MutationObserver((mutations, observer) => {
-        const dialog = mutations.find(mutation => 
-            mutation.type === "childList" &&
-            mutation.addedNodes.length > 0 &&
-            mutation.addedNodes[0].tagName === "TP-YT-PAPER-DIALOG" &&
-            mutation.addedNodes[0].querySelector("ytd-hotkey-dialog-renderer")
+        const dialog = mutations.find(
+            mutation =>
+                mutation.addedNodes.length > 0 &&
+                mutation.addedNodes[0].tagName === "TP-YT-PAPER-DIALOG" &&
+                mutation.addedNodes[0].querySelector("ytd-hotkey-dialog-renderer")
         )?.addedNodes[0];
 
         if (dialog) {
@@ -37,12 +35,8 @@ export function injectShortcutHelp() {
  */
 function onShortcutHelpDialogChanged(dialog) {
     // Keep observing only the options section for changes
-    const observer = new MutationObserver((mutations) => {
-        const isDialogVisible = mutations.some(mutation =>
-            mutation.type === "attributes" &&
-            mutation.attributeName === "aria-hidden" &&
-            !mutation.target.hasAttribute("aria-hidden")
-        );
+    const observer = new MutationObserver(() => {
+        const isDialogVisible = !dialog.hasAttribute("aria-hidden");
 
         if (isDialogVisible) {
             const generalSectionOptions = dialog.querySelector(

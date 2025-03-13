@@ -110,19 +110,12 @@ function handleKeyDown(e) {
 function setupDialogCloseObserver() {
     const containerElement = document.getElementById("dialog-container");
     if (containerElement) {
-        const observer = new MutationObserver(mutations => {
-            mutations.forEach(mutation => {
-                if (
-                    mutation.type === "attributes" &&
-                    mutation.attributeName === "style" &&
-                    containerElement.style.display === "none"
-                ) {
-                    cleanupSuggestion();
-                }
-            });
+        const observer = new MutationObserver(() => {
+            if (containerElement.style.display === "none") {
+                cleanupSuggestion();
+            }
         });
-        observer.observe(containerElement, { attributes: true });
-        console.debug("Added mutation observer for dialog closing");
+        observer.observe(containerElement, { attributeFilter: ["style"] });
     }
 }
 
@@ -131,18 +124,12 @@ function setupDialogCloseObserver() {
  * @param {HTMLElement} inputElement - The input element to observe
  */
 function setupPlaceholderObserver(inputElement) {
-    const observer = new MutationObserver(mutations => {
-        mutations.forEach(mutation => {
-            if (mutation.attributeName === "placeholder") {
-                const inputElement = mutation.target;
-                if (inputElement.textContent.length === 0) {
-                    adjustInputHeight(inputElement);
-                }
-            }
-        });
+    const observer = new MutationObserver(() => {
+        if (inputElement.textContent.length === 0) {
+            adjustInputHeight(inputElement);
+        }
     });
-    observer.observe(inputElement, { attributes: true });
-    console.debug("Added mutation observer for placeholder changes");
+    observer.observe(inputElement, { attributeFilter: ["placeholder"] });
 }
 
 /**
