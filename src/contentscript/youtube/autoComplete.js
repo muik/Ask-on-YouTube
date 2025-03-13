@@ -38,6 +38,113 @@ function isQuestionStart(completedText, questionStart) {
 }
 
 /**
+ * Handle input events for auto-completion
+ * @param {Event} e - The input event
+ * @param {Function} debouncedInputHandler - The debounced input handler
+ */
+function handleInputEvent(e, debouncedInputHandler) {
+    const inputElement = e.target;
+    if (suggestionElement) {
+        const questionStart = inputElement.value;
+        const completedText = suggestionElement.dataset.suggestion;
+        if (
+            questionStart &&
+            isQuestionStart(completedText, questionStart)
+        ) {
+            displaySuggestion(inputElement, questionStart, completedText);
+            return;
+        } else {
+            // if user doesn't follow the suggestion, clear the suggestion immediately
+            cleanupSuggestion();
+        }
+    }
+
+    inputElement.style.height = "auto";
+    inputElement.style.height = inputElement.scrollHeight + "px";
+
+    if (isGeminiServiceAvailable()) {
+        debouncedInputHandler(e);
+    }
+}
+
+/**
+ * Handle keydown events for auto-completion
+ * @param {KeyboardEvent} e - The keyboard event
+ */
+function handleKeyDown(e) {
+    const inputElement = e.target;
+    switch (e.key) {
+        case "Tab":
+            if (suggestionElement) {
+                e.preventDefault();
+
+                // Prevent the last character of the inputted Korean text
+                // from being added to the end of the sentence
+                setTimeout(() => {
+                    handleTabKey(inputElement);
+                }, 1);
+            }
+            break;
+        case "Enter":
+            if (!e.shiftKey) {
+                e.preventDefault();
+                cleanupSuggestion();
+
+                const button = inputElement
+                    .closest(".question-input-container")
+                    .querySelector(".question-button");
+                if (button) {
+                    button.click();
+                }
+            }
+            break;
+    }
+}
+
+/**
+ * Setup observer to cleanup suggestions when dialog is closed
+ */
+function setupDialogCloseObserver() {
+    const containerElement = document.getElementById("dialog-container");
+    if (containerElement) {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (
+                    mutation.type === "attributes" &&
+                    mutation.attributeName === "style" &&
+                    containerElement.style.display === "none"
+                ) {
+                    cleanupSuggestion();
+                }
+            });
+        });
+        observer.observe(containerElement, { attributes: true });
+        console.debug("Added mutation observer for dialog closing");
+    }
+}
+
+/**
+ * Setup observer to handle placeholder changes and adjust input height
+ * @param {HTMLElement} inputElement - The input element to observe
+ */
+function setupPlaceholderObserver(inputElement) {
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.attributeName === "placeholder") {
+                const inputElement = mutation.target;
+                if (inputElement.textContent.length === 0) {
+                    inputElement.style.height = "auto";
+                    inputElement.style.height =
+                        inputElement.scrollHeight + "px";
+                }
+            }
+        });
+    });
+    observer.observe(inputElement, { attributes: true });
+    console.debug("Added mutation observer for placeholder changes");
+}
+
+/**
  * Initialize auto-completion for the question input
  * @param {HTMLElement} inputElement - The input element
  */
@@ -58,96 +165,18 @@ export function initAutoComplete(inputElement) {
     inputElement = newInputElement;
 
     // Add input event listener
-    inputElement.addEventListener("input", (e) => {
-        if (suggestionElement) {
-            const questionStart = e.target.value;
-            const completedText = suggestionElement.dataset.suggestion;
-            if (
-                questionStart &&
-                isQuestionStart(completedText, questionStart)
-            ) {
-                displaySuggestion(inputElement, questionStart, completedText);
-                return;
-            } else {
-                // if user doesn't follow the suggestion, clear the suggestion immediately
-                cleanupSuggestion();
-            }
-        }
-
-        inputElement.style.height = "auto";
-        inputElement.style.height = inputElement.scrollHeight + "px";
-
-        if (isGeminiServiceAvailable()) {
-            debouncedInputHandler(e);
-        }
-    });
+    inputElement.addEventListener("input", (e) => handleInputEvent(e, debouncedInputHandler));
     console.debug("Added input event listener for auto-completion");
 
     // Add tab key event listener for accepting suggestions
-    inputElement.addEventListener("keydown", (e) => {
-        switch (e.key) {
-            case "Tab":
-                if (suggestionElement) {
-                    e.preventDefault();
-
-                    // Prevent the last character of the inputted Korean text
-                    // from being added to the end of the sentence
-                    setTimeout(() => {
-                        handleTabKey(e.target);
-                    }, 1);
-                }
-                break;
-            case "Enter":
-                if (!e.shiftKey) {
-                    e.preventDefault();
-                    cleanupSuggestion();
-
-                    const button = inputElement
-                        .closest(".question-input-container")
-                        .querySelector(".question-button");
-                    if (button) {
-                        button.click();
-                    }
-                }
-                break;
-        }
-    });
+    inputElement.addEventListener("keydown", handleKeyDown);
     console.debug("Added key event listeners for auto-completion");
 
     // Add cleanup when dialog is closed
-    const containerElement = document.getElementById("dialog-container");
-    if (containerElement) {
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (
-                    mutation.type === "attributes" &&
-                    mutation.attributeName === "style" &&
-                    containerElement.style.display === "none"
-                ) {
-                    cleanupSuggestion();
-                }
-            });
-        });
-        observer.observe(containerElement, { attributes: true });
-        console.debug("Added mutation observer for dialog closing");
-    }
+    setupDialogCloseObserver();
 
     // Handle placeholder changes
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.attributeName === "placeholder") {
-                console.debug("Placeholder changed to:", mutation);
-
-                const inputElement = mutation.target;
-                if (inputElement.textContent.length === 0) {
-                    inputElement.style.height = "auto";
-                    inputElement.style.height =
-                        inputElement.scrollHeight + "px";
-                }
-            }
-        });
-    });
-    observer.observe(inputElement, { attributes: true });
+    setupPlaceholderObserver(inputElement);
 
     // Return the input element in case it was replaced
     return inputElement;
@@ -232,7 +261,6 @@ async function handleInputChange(e) {
         return;
     }
 
-    console.debug("Displaying suggestion:", completedText);
     displaySuggestion(inputElement, questionStart, completedText);
 }
 
