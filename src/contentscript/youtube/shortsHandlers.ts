@@ -1,3 +1,4 @@
+import { ObserverManager } from "../observer";
 import { detectVideoOptionClick } from "./moreOptions";
 
 // Constants
@@ -6,50 +7,7 @@ const SELECTORS = {
         "div.shortsLockupViewModelHostOutsideMetadataMenu div.yt-spec-touch-feedback-shape__fill",
 } as const;
 
-// Types
-interface ObserverConfig {
-    childList: boolean;
-    subtree?: boolean;
-}
-
-type ObserverCallback = (mutations: MutationRecord[], observer: MutationObserver) => void;
-
-/**
- * Manages MutationObserver instances and their cleanup
- */
-class ObserverManager {
-    private static instance: ObserverManager;
-    private activeObservers = new Set<MutationObserver>();
-
-    private constructor() {}
-
-    static getInstance(): ObserverManager {
-        if (!ObserverManager.instance) {
-            ObserverManager.instance = new ObserverManager();
-        }
-        return ObserverManager.instance;
-    }
-
-    createObserver(
-        target: Node,
-        callback: ObserverCallback,
-        config: ObserverConfig
-    ): MutationObserver {
-        const observer = new MutationObserver(callback);
-        observer.observe(target, config);
-        this.activeObservers.add(observer);
-        return observer;
-    }
-
-    cleanupObserver(observer: MutationObserver): void {
-        observer.disconnect();
-        this.activeObservers.delete(observer);
-    }
-
-    cleanupAll(): void {
-        this.activeObservers.forEach(this.cleanupObserver.bind(this));
-    }
-}
+const observerManager = new ObserverManager();
 
 /**
  * Manages click handlers for shorts buttons
@@ -136,7 +94,7 @@ export const setupShortsClickHandlers = async (): Promise<void> => {
 
             applyClickHandlers(node as HTMLElement);
 
-            ObserverManager.getInstance().createObserver(
+            observerManager.createObserver(
                 node,
                 (_mutations, _observer) => {
                     applyClickHandlers(node as HTMLElement);
@@ -152,7 +110,7 @@ export const setupShortsClickHandlers = async (): Promise<void> => {
         const observeHomePageContent = (element: HTMLElement): void => {
             applyClickHandlers(element);
 
-            ObserverManager.getInstance().createObserver(
+            observerManager.createObserver(
                 element,
                 (mutations, _observer) => {
                     for (const mutation of mutations) {
@@ -167,13 +125,13 @@ export const setupShortsClickHandlers = async (): Promise<void> => {
         };
 
         // for video detail page
-        observeWithSelector(
+        observerManager.observeWithSelector(
             "#page-manager > ytd-watch-flexy #related #items.yt-horizontal-list-renderer",
             applyClickHandlers
         );
 
         // for home page
-        observeParent(
+        observerManager.observeParent(
             "#page-manager > ytd-browse #contents.ytd-rich-grid-renderer",
             observeHomePageContent
         );
@@ -188,84 +146,6 @@ export const setupShortsClickHandlers = async (): Promise<void> => {
  * Cleans up all observers and click handlers
  */
 export const cleanup = (): void => {
-    ObserverManager.getInstance().cleanupAll();
+    observerManager.cleanupAll();
     ShortsButtonHandler.getInstance().cleanup();
 };
-
-function observeWithSelector(fullSelector: string, callback: (element: HTMLElement) => void): void {
-    const element = document.querySelector<HTMLElement>(fullSelector);
-    const observe = (element: HTMLElement) => {
-        callback(element);
-        ObserverManager.getInstance().createObserver(
-            element,
-            (_mutations, _observer) => {
-                callback(element);
-            },
-            {
-                childList: true,
-            }
-        );
-    };
-
-    if (!element) {
-        observeParent(fullSelector, observe);
-        return;
-    }
-
-    observe(element);
-}
-
-function observeParent(fullSelector: string, callback: (element: HTMLElement) => void): void {
-    console.debug("observeParent", fullSelector);
-    const match = fullSelector.match(/(.*[^>\s])(\s*[>\s]+\s*)([^>\s]+)$/);
-
-    let parentSelector;
-    let separator;
-    let targetSelector;
-
-    if (!match) {
-        if (fullSelector.includes("body")) {
-            console.error("unexpected fullSelector", fullSelector);
-            return;
-        }
-        parentSelector = "body";
-        separator = " ";
-        targetSelector = fullSelector;
-    } else {
-        parentSelector = match[1];
-        separator = match[2];
-        targetSelector = match[3];
-    }
-
-    const parent = document.querySelector<HTMLElement>(parentSelector);
-    const config = { childList: true, subtree: true };
-
-    if (separator.includes(">")) {
-        config.subtree = false;
-        targetSelector = `:scope > ${targetSelector}`;
-    }
-
-    const observe = (element: HTMLElement) => {
-        console.debug("observing from observeParent", element, parentSelector);
-        const observerManager = ObserverManager.getInstance();
-        observerManager.createObserver(
-            element,
-            (_mutations, observer) => {
-                const target = element.querySelector<HTMLElement>(targetSelector);
-                if (target) {
-                    callback(target);
-                    observerManager.cleanupObserver(observer);
-                    console.debug("cleanupObserver", parentSelector);
-                }
-            },
-            config
-        );
-    };
-
-    if (!parent) {
-        observeParent(parentSelector, observe);
-        return;
-    }
-
-    observe(parent);
-}
