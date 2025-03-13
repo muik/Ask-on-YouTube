@@ -119,6 +119,12 @@ export class ObserverManager {
             return;
         }
 
+        const target = parent.querySelector<HTMLElement>(targetSelector);
+        if (target) {
+            callback(target);
+            return;
+        }
+
         observe(parent);
     }
 }

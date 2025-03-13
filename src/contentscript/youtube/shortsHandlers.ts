@@ -125,9 +125,9 @@ export const setupShortsClickHandlers = async (): Promise<void> => {
         };
 
         // for video detail page
-        observerManager.observeWithSelector(
-            "#page-manager > ytd-watch-flexy #related #items.yt-horizontal-list-renderer",
-            applyClickHandlers
+        observerManager.observeParent(
+            "#page-manager > ytd-watch-flexy #related #contents.ytd-item-section-renderer", // section list in related
+            element => observeReelShelfRenderers(element, applyClickHandlers)
         );
 
         // for home page
@@ -141,6 +141,56 @@ export const setupShortsClickHandlers = async (): Promise<void> => {
         throw error;
     }
 };
+
+/**
+ * Sets up observers and click handlers for reel shelf renderers in the related section
+ * @param element - The element to observe
+ * @param applyClickHandlers - The function to apply click handlers to the reel shelf renderers
+ */
+function observeReelShelfRenderers(
+    element: HTMLElement,
+    applyClickHandlers: (element: HTMLElement) => void
+): void {
+    function observeSection(section: HTMLElement) {
+        applyClickHandlers(section);
+
+        observerManager.createObserver(
+            section,
+            (_mutations, _observer) => {
+                applyClickHandlers(section);
+            },
+            { childList: true, subtree: true }
+        );
+    }
+
+    // existing reel shelf renderers
+    element
+        .querySelectorAll<HTMLElement>(":scope > ytd-reel-shelf-renderer")
+        .forEach(observeSection);
+
+    // new reel shelf renderers
+    observerManager.createObserver(
+        element,
+        (mutations, _observer) => {
+            for (const mutation of mutations) {
+                if (mutation.type !== "childList" || mutation.addedNodes.length === 0) {
+                    continue;
+                }
+
+                for (const node of mutation.addedNodes) {
+                    if (
+                        node.nodeType !== Node.ELEMENT_NODE ||
+                        node.nodeName !== "YTD-REEL-SHELF-RENDERER"
+                    )
+                        continue;
+
+                    observeSection(node as HTMLElement);
+                }
+            }
+        },
+        { childList: true }
+    );
+}
 
 /**
  * Cleans up all observers and click handlers
