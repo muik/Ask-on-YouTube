@@ -34,14 +34,12 @@ export class ObserverManager {
     }
 
     /**
-     * Observes an element matching the given selector and applies a callback
+     * Observes an element matching the given selector, applies a callback,
+     * and continues monitoring the element for changes to its child elements only
      * @param fullSelector The CSS selector to match
      * @param callback Function to call when the target element is found
      */
-    observeWithSelector(
-        fullSelector: string,
-        callback: (element: HTMLElement) => void
-    ): void {
+    observeWithSelector(fullSelector: string, callback: (element: HTMLElement) => void): void {
         const element = document.querySelector<HTMLElement>(fullSelector);
         const observe = (element: HTMLElement) => {
             callback(element);
@@ -66,13 +64,11 @@ export class ObserverManager {
 
     /**
      * Observes a parent element for a target element matching the given selector
+     * and stops observing when the target element is found
      * @param fullSelector The full CSS selector to match
      * @param callback Function to call when the target element is found
      */
-    observeParent(
-        fullSelector: string,
-        callback: (element: HTMLElement) => void
-    ): void {
+    observeParent(fullSelector: string, callback: (element: HTMLElement) => void): void {
         console.debug("observeParent", fullSelector);
         const match = fullSelector.match(/(.*[^>\s])(\s*[>\s]+\s*)([^>\s]+)$/);
 

@@ -11,7 +11,7 @@ import {
     cleanup as cleanupShortsHandlers,
     setupShortsClickHandlers
 } from "./youtube/shortsHandlers.js";
-import { injectElements } from "./youtube/videoDetail.js";
+import { injectDetailRelatedElements } from "./youtube/videoDetail.js";
 
 Honeybadger.configure(honeybadgerConfig);
 
@@ -40,7 +40,7 @@ window.onload = async (): Promise<void> => {
         return;
     }
 
-    injectElements();
+    injectDetailRelatedElements();
     insertExtraOptions();
     injectShortcutHelp();
     setupShortsClickHandlers();
