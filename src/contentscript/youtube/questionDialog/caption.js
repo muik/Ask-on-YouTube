@@ -1,14 +1,7 @@
 import { BackgroundActions } from "../../../constants.js";
 import { Errors } from "../../../errors.js";
-import {
-    isGeminiServiceNotLoaded,
-    isGeminiServiceUnavailable,
-} from "../geminiService.js";
-import {
-    getContainerElement,
-    getDialogData,
-    isQuestionDialogClosed,
-} from "../questionView.js";
+import { isGeminiServiceNotLoaded, isGeminiServiceUnavailable } from "../geminiService.js";
+import { getContainerElement, getDialogData, isQuestionDialogClosed } from "../questionView.js";
 
 const CaptionStatus = {
     PENDING: "pending",
@@ -33,9 +26,7 @@ export function clearCaptionPending() {
 
 export async function loadCaption(event) {
     const containerElement = getContainerElement();
-    const captionElement = containerElement.querySelector(
-        ".video-info .caption"
-    );
+    const captionElement = containerElement.querySelector(".video-info .caption");
 
     if (isGeminiServiceNotLoaded()) {
         setCaptionStatus(captionElement, CaptionStatus.PENDING);
@@ -83,9 +74,7 @@ export async function loadCaption(event) {
         }
         if (error.code === Errors.GEMINI_API_KEY_NOT_VALID.code) {
             // ignore
-            console.debug(
-                "loadCaption failed, due to GEMINI_API_KEY_NOT_VALID"
-            );
+            console.debug("loadCaption failed, due to GEMINI_API_KEY_NOT_VALID");
             return;
         }
 
@@ -100,8 +89,7 @@ function getImageData(imgElement) {
     const maxWidth = 336;
     if (imgElement.naturalWidth > maxWidth) {
         canvas.width = maxWidth;
-        canvas.height =
-            imgElement.naturalHeight * (maxWidth / imgElement.naturalWidth);
+        canvas.height = imgElement.naturalHeight * (maxWidth / imgElement.naturalWidth);
     } else {
         canvas.width = imgElement.naturalWidth;
         canvas.height = imgElement.naturalHeight;
@@ -125,17 +113,13 @@ function getImageData(imgElement) {
 
 export function addCaptionLoadChangedListener(callback) {
     const containerElement = getContainerElement();
-    const captionElement = containerElement.querySelector(
-        ".video-info .caption"
-    );
+    const captionElement = containerElement.querySelector(".video-info .caption");
     captionElement.addEventListener(CAPTION_LOAD_CHANGED_EVENT, callback);
 }
 
 export function removeCaptionLoadChangedListener(callback) {
     const containerElement = getContainerElement();
-    const captionElement = containerElement.querySelector(
-        ".video-info .caption"
-    );
+    const captionElement = containerElement.querySelector(".video-info .caption");
     captionElement.removeEventListener(CAPTION_LOAD_CHANGED_EVENT, callback);
 }
 
@@ -146,12 +130,8 @@ export function setCaption(caption) {
 
     getDialogData().videoInfo.caption = caption;
     const containerElement = getContainerElement();
-    const thumbnailElement = containerElement.querySelector(
-        ".video-info img.thumbnail"
-    );
-    const captionElement = containerElement.querySelector(
-        ".video-info .caption"
-    );
+    const thumbnailElement = containerElement.querySelector(".video-info img.thumbnail");
+    const captionElement = containerElement.querySelector(".video-info .caption");
 
     thumbnailElement.setAttribute("title", caption);
     captionElement.textContent = caption;
@@ -180,25 +160,19 @@ class CaptionLoadChangedEvent extends Event {
 
 export function setCaptionUnavailable() {
     const containerElement = getContainerElement();
-    const captionElement = containerElement.querySelector(
-        ".video-info .caption"
-    );
+    const captionElement = containerElement.querySelector(".video-info .caption");
     setCaptionStatus(captionElement, CaptionStatus.UNAVAILABLE);
 }
 
 function getCaptionStatus() {
     const containerElement = getContainerElement();
-    const captionElement = containerElement.querySelector(
-        ".video-info .caption"
-    );
+    const captionElement = containerElement.querySelector(".video-info .caption");
     return captionElement.getAttribute("status");
 }
 
 export function loadCaptionError() {
     const containerElement = getContainerElement();
-    const captionElement = containerElement.querySelector(
-        ".video-info .caption"
-    );
+    const captionElement = containerElement.querySelector(".video-info .caption");
     setCaptionStatus(captionElement, CaptionStatus.ERROR);
 }
 
@@ -206,11 +180,7 @@ export function isCaptionResolved(status = null) {
     if (!status) {
         status = getCaptionStatus();
     }
-    if (
-        !status ||
-        status === CaptionStatus.PENDING ||
-        status === CaptionStatus.LOADING
-    ) {
+    if (!status || status === CaptionStatus.PENDING || status === CaptionStatus.LOADING) {
         return false;
     }
     return true;
