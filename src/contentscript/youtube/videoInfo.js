@@ -137,7 +137,24 @@ export function getVideoInfoFromMainVideoOptionMenu(target) {
         return getVideoInfoFromShortsItem(target);
     }
 
-    const menuButton = target.closest("ytd-menu-renderer");
+    const expectedMenuButton =
+        target.parentElement.parentElement.parentElement.parentElement.parentElement;
+    if (expectedMenuButton.nodeName === "BUTTON-VIEW-MODEL") {
+        const adButtonSelector = "ytwReelsPlayerOverlayLayoutViewModelHostMenuButton";
+        if (expectedMenuButton.classList.contains(adButtonSelector)) {
+            // skip ad on shorts page
+            return {
+                type: ClickElementType.OTHER,
+            };
+        }
+    }
+
+    let menuButton = expectedMenuButton;
+    if (expectedMenuButton.nodeName !== "YTD-MENU-RENDERER") {
+        console.debug("expectedMenuButton", expectedMenuButton);
+        menuButton = target.closest("ytd-menu-renderer");
+    }
+
     if (!menuButton) {
         console.debug(
             "No menu button found",
