@@ -13,8 +13,9 @@ import { Errors } from "../../errors.js";
  * @returns {ClickResult | undefined} - The click result. If undefined, this is not the correct type of element.
  */
 export function getVideoInfo(target) {
-    return getVideoInfoFromItemVideoOptionMenu(target) ||
-           getVideoInfoFromMainVideoOptionMenu(target);
+    return (
+        getVideoInfoFromItemVideoOptionMenu(target) || getVideoInfoFromMainVideoOptionMenu(target)
+    );
 }
 
 /**
@@ -23,10 +24,7 @@ export function getVideoInfo(target) {
  * @returns {ClickResult | undefined} - The click result. If undefined, this is not the correct type of element and other options need to be considered.
  */
 export function getVideoInfoFromItemVideoOptionMenu(target) {
-    if (
-        !target.parentElement ||
-        !target.parentElement.classList.contains("yt-icon")
-    ) {
+    if (!target.parentElement || !target.parentElement.classList.contains("yt-icon")) {
         // not this type of element, need to find other options
         return;
     }
@@ -63,8 +61,8 @@ export function getVideoInfoFromItemVideoOptionMenu(target) {
     }
 
     // find the class name like ytd-*-renderer
-    const rendererClassName = Array.from(menuButton.classList).find(
-        (className) => className.startsWith("ytd-")
+    const rendererClassName = Array.from(menuButton.classList).find(className =>
+        className.startsWith("ytd-")
     );
     if (!rendererClassName) {
         console.debug("No renderer class name found", menuButton);
@@ -141,14 +139,18 @@ export function getVideoInfoFromMainVideoOptionMenu(target) {
 
     const menuButton = target.closest("ytd-menu-renderer");
     if (!menuButton) {
-        console.debug("No menu button found", target);
+        console.debug(
+            "No menu button found",
+            target,
+            target.parentElement.parentElement.parentElement.parentElement.parentElement
+        );
         return {
             type: ClickElementType.OTHER,
         };
     }
 
-    const rendererClassName = Array.from(menuButton.classList).find(
-        (className) => className.startsWith("ytd-")
+    const rendererClassName = Array.from(menuButton.classList).find(className =>
+        className.startsWith("ytd-")
     );
     if (!rendererClassName) {
         console.debug("No renderer class name found", menuButton);
@@ -216,12 +218,7 @@ export function getVideoInfoFromShortsDetail(videoContainer) {
     const title = videoContainer.querySelector("h2").textContent.trim();
 
     if (!title || !id) {
-        console.debug(
-            "Unexpected shorts detail page",
-            id,
-            title,
-            videoContainer
-        );
+        console.debug("Unexpected shorts detail page", id, title, videoContainer);
         return {
             type: ClickElementType.UNEXPECTED,
         };
@@ -241,10 +238,7 @@ export function getVideoInfoFromShortsDetail(videoContainer) {
  * @param {Element} linkElement - The link element.
  * @returns {ClickResult | undefined} - The click result. If undefined, this is not the correct type of element and other options need to be considered.
  */
-function getVideoInfoFromShortsLinkElement(
-    linkElement,
-    thumbnailElement = null
-) {
+function getVideoInfoFromShortsLinkElement(linkElement, thumbnailElement = null) {
     if (!linkElement || !linkElement.href) {
         console.debug("No link element found", linkElement);
         return {
@@ -309,4 +303,4 @@ export const ClickElementType = {
  * @typedef {Object} ClickResult
  * @property {ClickElementType} [type] - The type of click event
  * @property {VideoInfo} [videoInfo] - The video information if available
- */ 
+ */
