@@ -86,24 +86,56 @@ body.dark-mode .description {
     align-items: center;
     gap: 10px;
     font-size: 14px;
+    width: 100%;
 }
 .inline-label-input label {
-    width: 100px;
+    min-width: 100px;
+    flex-shrink: 0;
 }
-.inline-label-input input {
+.input-with-button {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex: 1;
+}
+.input-with-button input {
+    flex: 1;
     width: 100%;
-    line-height: 1.2;
-    border: 1px solid #ccc; /* Default border */
-    background-color: white; /* Default input background */
-    color: #333; /* Default input text color */
-    font-size: 14px;
-    padding: 4px;
+    padding: 8px;
+    border: 1px solid #ccc;
     border-radius: 4px;
+    font-size: 14px;
+    line-height: 1.2;
+    background-color: white;
+    color: #333;
 }
-body.dark-mode .inline-label-input input {
-    border-color: #666; /* Darker border in dark mode */
-    background-color: #333; /* Dark input background in dark mode */
-    color: #eee; /* Light input text color in dark mode */
+.show-hide-button {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+    width: auto; /* Override the global button width: 100% */
+}
+.show-hide-button:hover {
+    background-color: #e9ecef;
+}
+body.dark-mode .input-with-button input {
+    border-color: #666;
+    background-color: #333;
+    color: #eee;
+}
+body.dark-mode .show-hide-button {
+    background-color: #2d2d2d;
+    border-color: #444;
+    color: #fff;
+}
+body.dark-mode .show-hide-button:hover {
+    background-color: #3d3d3d;
 }
 .inline-label-input + .status-message {
     margin-top: 5px;

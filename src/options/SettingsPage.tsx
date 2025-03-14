@@ -22,6 +22,7 @@ const SettingsPage: React.FC = () => {
     const [geminiAPIKey, setGeminiAPIKey] = useState<string>("");
     const [statusMessage, setStatusMessage] = useState<string>("");
     const [isScreenshotOpen, setIsScreenshotOpen] = useState<boolean>(false);
+    const [showApiKey, setShowApiKey] = useState<boolean>(false);
 
     useEffect(() => {
         setMessages();
@@ -101,15 +102,25 @@ const SettingsPage: React.FC = () => {
             <div>
                 <div className="inline-label-input">
                     <label htmlFor="geminiAPIKey">API Key</label>
-                    <input
-                        type="password"
-                        id="geminiAPIKey"
-                        value={geminiAPIKey}
-                        onChange={handleGeminiAPIKeyChange}
-                        placeholder={chrome.i18n.getMessage(
-                            "geminiAPIKeyPlaceholder"
-                        )}
-                    />
+                    <div className="input-with-button">
+                        <input
+                            type={showApiKey ? "text" : "password"}
+                            id="geminiAPIKey"
+                            value={geminiAPIKey}
+                            onChange={handleGeminiAPIKeyChange}
+                            placeholder={chrome.i18n.getMessage(
+                                "geminiAPIKeyPlaceholder"
+                            )}
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowApiKey(!showApiKey)}
+                            className="show-hide-button"
+                            aria-label={showApiKey ? chrome.i18n.getMessage("hideAPIKey") : chrome.i18n.getMessage("showAPIKey")}
+                        >
+                            {showApiKey ? chrome.i18n.getMessage("hide") : chrome.i18n.getMessage("show")}
+                        </button>
+                    </div>
                 </div>
                 <div
                     className={`status-message ${

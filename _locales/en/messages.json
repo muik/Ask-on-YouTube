@@ -100,5 +100,17 @@
     },
     "feedback": {
         "message": "Feedback"
+    },
+    "show": {
+        "message": "Show"
+    },
+    "hide": {
+        "message": "Hide"
+    },
+    "showAPIKey": {
+        "message": "Show API Key"
+    },
+    "hideAPIKey": {
+        "message": "Hide API Key"
     }
 }

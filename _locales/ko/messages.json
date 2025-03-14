@@ -97,5 +97,17 @@
     },
     "feedback": {
         "message": "문의하기"
+    },
+    "show": {
+        "message": "표시"
+    },
+    "hide": {
+        "message": "숨기기"
+    },
+    "showAPIKey": {
+        "message": "API 키 표시"
+    },
+    "hideAPIKey": {
+        "message": "API 키 숨기기"
     }
 }
