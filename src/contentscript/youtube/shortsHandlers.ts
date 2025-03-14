@@ -81,7 +81,6 @@ export const setupShortsClickHandlers = async (): Promise<void> => {
         const applyClickHandlers = (element: HTMLElement) => {
             const buttons = element.querySelectorAll<HTMLElement>(SELECTORS.SHORTS_BUTTON);
             shortsHandler.attachClickHandlers(buttons);
-            console.debug("attachClickHandlers", buttons.length);
         };
 
         // for shorts group section on home page

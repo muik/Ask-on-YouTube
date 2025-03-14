@@ -63,7 +63,6 @@ export function injectExtraOptions() {
                             continue;
                         }
 
-                        console.debug("footer", footer);
                         insertExtraOptionsToFooter(footer);
                         observerManager.cleanupObserver(observer);
                         return;

@@ -56,8 +56,6 @@ export async function loadGeminiServiceAvailable() {
 }
 
 function onGeminiServiceAvailableChanged(available) {
-    console.debug("Gemini service available changed:", available);
-
     if (available) {
         loadCaptionIfPending();
     } else {

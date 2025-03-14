@@ -64,7 +64,6 @@ export async function loadCaption(event) {
         if (response.caption) {
             setCaption(response.caption);
         }
-        console.debug("loadCaption caption:", response.caption);
     } catch (error) {
         setCaptionStatus(captionElement, CaptionStatus.ERROR);
 

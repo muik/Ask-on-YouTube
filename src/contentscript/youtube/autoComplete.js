@@ -150,8 +150,6 @@ function setupDisabledStateObserver(inputElement) {
 export function initAutoComplete(inputElement) {
     if (!inputElement) return;
 
-    console.debug("Initializing auto-completion for:", inputElement);
-
     // Clean up any existing suggestion element
     cleanupSuggestion();
 
@@ -165,11 +163,9 @@ export function initAutoComplete(inputElement) {
 
     // Add input event listener
     inputElement.addEventListener("input", e => handleInputEvent(e, debouncedInputHandler));
-    console.debug("Added input event listener for auto-completion");
 
     // Add tab key event listener for accepting suggestions
     inputElement.addEventListener("keydown", handleKeyDown);
-    console.debug("Added key event listeners for auto-completion");
 
     // Add cleanup when dialog is closed
     setupDialogCloseObserver();
