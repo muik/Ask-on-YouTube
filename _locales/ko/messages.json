@@ -91,5 +91,11 @@
     },
     "attachFilename": {
         "message": "자막.txt"
+    },
+    "privacy": {
+        "message": "개인정보 처리방침"
+    },
+    "feedback": {
+        "message": "문의하기"
     }
 }

@@ -94,5 +94,11 @@
     },
     "chatgptMorePages": {
         "message": "Do not respond yet. There are more pages to come."
+    },
+    "privacy": {
+        "message": "Privacy Policy"
+    },
+    "feedback": {
+        "message": "Feedback"
     }
 }

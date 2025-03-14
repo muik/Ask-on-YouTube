@@ -147,6 +147,23 @@ const SettingsPage: React.FC = () => {
                     alt="Example screenshot"
                 />
             </div>
+            <div className="footer">
+                <a href="https://muik.github.io/Ask-on-YouTube/pages/privacy.html">{chrome.i18n.getMessage("privacy")}</a>
+                <a
+                    href={`mailto:muikor+ytq@gmail.com?subject=[Ask%20on%20YouTube]%20${encodeURIComponent(chrome.i18n.getMessage("feedback"))}`}
+                    target="_blank"
+                    rel="noreferrer"
+                >
+                    {chrome.i18n.getMessage("feedback")}
+                </a>
+                <a 
+                    href="https://github.com/muik/Ask-on-YouTube" 
+                    target="_blank"
+                    rel="noreferrer"
+                >
+                    GitHub
+                </a>
+            </div>
         </div>
     );
 };
