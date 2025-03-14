@@ -49,7 +49,10 @@ export async function loadCaption(event) {
 
     setCaptionStatus(captionElement, CaptionStatus.LOADING);
 
-    const thumbnailElement = event.target;
+    // When the event is triggered from a pending state, event.target will be null
+    const thumbnailElement =
+        event.target || containerElement.querySelector(".video-info img.thumbnail");
+
     const imageUrl = thumbnailElement.getAttribute("src");
     const imageData = getImageData(thumbnailElement);
 
