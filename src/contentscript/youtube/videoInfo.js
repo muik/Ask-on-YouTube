@@ -211,7 +211,7 @@ function getVideoInfoFromShortsItem(target) {
  * @param {Element} rendererElement - The renderer element.
  * @returns {ClickResult | undefined} - The click result. If undefined, this is not the correct type of element and other options need to be considered.
  */
-function getVideoInfoFromShortsDetail(videoContainer) {
+export function getVideoInfoFromShortsDetail(videoContainer) {
     const id = window.location.pathname.split("/")[2];
     const title = videoContainer.querySelector("h2").textContent.trim();
 
