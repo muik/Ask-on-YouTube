@@ -4,7 +4,7 @@ import { BackgroundActions } from "../constants.js";
 import { handleQuestionShortcut } from "./youtube/keyboardShortcuts.js";
 import {
     detectVideoOptionClick,
-    insertExtraOptions,
+    injectExtraOptions,
 } from "./youtube/moreOptions.js";
 import { injectShortcutHelp } from "./youtube/shortcutHelp.js";
 import {
@@ -41,7 +41,7 @@ window.onload = async (): Promise<void> => {
     }
 
     injectDetailRelatedElements();
-    insertExtraOptions();
+    injectExtraOptions();
     injectShortcutHelp();
     setupShortsClickHandlers();
 

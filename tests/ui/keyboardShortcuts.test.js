@@ -29,7 +29,7 @@ const mockFindSimpleQuestionInputShown = jest.fn();
 jest.mock("../../src/contentscript/youtube/moreOptions.js", () => ({
     findQuestionMenuShown: mockFindQuestionMenuShown,
     detectVideoOptionClick: jest.fn(),
-    insertExtraOptions: jest.fn(),
+    injectExtraOptions: jest.fn(),
 }));
 
 jest.mock("../../src/contentscript/youtube/simpleQuestion.js", () => ({

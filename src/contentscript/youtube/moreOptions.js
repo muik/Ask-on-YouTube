@@ -1,5 +1,6 @@
 import { BackgroundActions } from "../../constants.js";
 import { Errors } from "../../errors.js";
+import { ObserverManager } from "../observer.ts";
 import { waitForElm } from "../utils.js";
 import { showQuestionDialog } from "./questionView.js";
 import { getQuestionMarkSvg } from "./simpleQuestion.js";
@@ -30,6 +31,8 @@ const focused = {};
 const useMarkElements = [];
 let questionMenuUsedBefore;
 
+const observerManager = new ObserverManager();
+
 /**
  * Find the question menu in the shown dropdown
  * @returns {Element|null} The question button element if found, null otherwise
@@ -43,16 +46,73 @@ export function findQuestionMenuShown() {
 /**
  * Insert extra options ui into the footer of more options dropdown
  */
-export function insertExtraOptions() {
+export function injectExtraOptions() {
     // for video item
-    waitForElm(`${dropdownSelector} ytd-menu-popup-renderer #footer`).then(
-        insertExtraOptionsToFooter
-    );
+    observerManager.observeParent(`body > ytd-app > ytd-popup-container`, container => {
+        observerManager.createObserver(
+            container,
+            (mutations, observer) => {
+                for (const mutation of mutations) {
+                    for (const node of mutation.addedNodes) {
+                        if (node.nodeType !== Node.ELEMENT_NODE || !node.matches(dropdownSelector)) {
+                            continue;
+                        }
+
+                        const footer = node.querySelector(`ytd-menu-popup-renderer #footer`);
+                        if (!footer) {
+                            continue;
+                        }
+
+                        console.debug("footer", footer);
+                        insertExtraOptionsToFooter(footer);
+                        observerManager.cleanupObserver(observer);
+                        return;
+                    }
+                }
+            },
+            { childList: true }
+        );
+    });
 
     // for shorts item
-    waitForElm(
-        `${dropdownSelector} .yt-contextual-sheet-layout-wiz__footer-container`
-    ).then(insertExtraOptionsToFooter);
+    observerManager.observeParent(`body > ytd-app > ytd-popup-container`, container => {
+        observerManager.createObserver(
+            container,
+            (mutations, observer) => {
+                for (const mutation of mutations) {
+                    for (const node of mutation.addedNodes) {
+                        if (node.nodeType !== Node.ELEMENT_NODE || !node.matches(dropdownSelector)) {
+                            continue;
+                        }
+
+                        const sheetViewModel = node.querySelector("yt-sheet-view-model");
+                        if (!sheetViewModel) {
+                            continue;
+                        }
+
+                        observerManager.cleanupObserver(observer);
+                        observerManager.createObserver(
+                            sheetViewModel,
+                            (mutations, observer) => {
+                                const footer = sheetViewModel.querySelector(
+                                    ".yt-contextual-sheet-layout-wiz__footer-container"
+                                );
+                                if (!footer) {
+                                    return;
+                                }
+
+                                insertExtraOptionsToFooter(footer);
+                                observerManager.cleanupObserver(observer);
+                            },
+                            { childList: true, subtree: true }
+                        );
+                        return;
+                    }
+                }
+            },
+            { childList: true }
+        );
+    });
 }
 
 function insertExtraOptionsToFooter(footerElement) {
