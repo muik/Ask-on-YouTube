@@ -1,12 +1,12 @@
 {
     "compilerOptions": {
-        "target": "ES2018",
-        "module": "commonjs",
+        "target": "ESNext",
+        "module": "ESNext",
         "lib": ["dom", "dom.iterable", "esnext"],
         "jsx": "react",
 
         /* Modules */
-        "moduleResolution": "node",
+        "moduleResolution": "Node",
         "baseUrl": ".",
         "resolveJsonModule": true,
         "allowJs": true,

@@ -10,7 +10,7 @@ import {
     loadQuestionOptions,
     resetQuestions,
     setQuestionOptionsView,
-} from "./questionDialog/questionOptions.js";
+} from "./questionDialog/questionOptions.jsx";
 import { getTitleTokens, setTitleToken } from "./questionDialog/titleToken.js";
 
 export const containerId = "dialog-container";

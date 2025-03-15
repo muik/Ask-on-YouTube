@@ -2,46 +2,69 @@
  * @jest-environment jsdom
  */
 
+import { jest } from "@jest/globals";
+
 // Mock all dependencies
-jest.mock("@honeybadger-io/js", () => ({
-    default: {
-        configure: jest.fn(),
-    },
+const mockHoneybadger = {
+    configure: jest.fn(),
+};
+
+jest.unstable_mockModule("@honeybadger-io/js", () => ({
+    default: mockHoneybadger,
 }));
 
-jest.mock("../../src/config.js", () => ({
+jest.unstable_mockModule("../../src/config.js", () => ({
+    default: {
+        MAX_QUESTIONS_COUNT: 5,
+        MAX_HISTORY_SIZE: 50,
+        MAX_HISTORY_SIZE_IN_PROMPT: 10,
+        REF_CODE: "ytq",
+    },
     honeybadgerConfig: {},
 }));
 
-jest.mock("../../src/constants.js", () => ({
+jest.unstable_mockModule("../../src/constants.js", () => ({
     BackgroundActions: {},
+    QuestionOptionKeys: {
+        FAVORITES: "favorites",
+        RECENTS: "recents",
+        SUGGESTIONS: "suggestions",
+    },
 }));
 
-jest.mock("../../src/contentscript/youtube/videoDetail.js", () => ({
+jest.unstable_mockModule("../../src/contentscript/youtube/videoDetail.js", () => ({
     injectElements: jest.fn(),
 }));
 
 // Create mock functions
 const mockFindQuestionMenuShown = jest.fn();
 const mockFindSimpleQuestionInputShown = jest.fn();
+const mockShowQuestionDialog = jest.fn();
+const mockGetVideoInfoFromShortsDetail = jest.fn();
 
 // Mock the modules
-jest.mock("../../src/contentscript/youtube/moreOptions.js", () => ({
+jest.unstable_mockModule("../../src/contentscript/youtube/moreOptions.js", () => ({
     findQuestionMenuShown: mockFindQuestionMenuShown,
     detectVideoOptionClick: jest.fn(),
     injectExtraOptions: jest.fn(),
 }));
 
-jest.mock("../../src/contentscript/youtube/simpleQuestion.js", () => ({
+jest.unstable_mockModule("../../src/contentscript/youtube/simpleQuestion.js", () => ({
     findSimpleQuestionInputShown: mockFindSimpleQuestionInputShown,
 }));
 
+jest.unstable_mockModule("../../src/contentscript/youtube/questionView.js", () => ({
+    showQuestionDialog: mockShowQuestionDialog,
+}));
+
+jest.unstable_mockModule("../../src/contentscript/youtube/videoInfo.js", () => ({
+    getVideoInfoFromShortsDetail: mockGetVideoInfoFromShortsDetail,
+}));
+
 // Import the functions we want to test
-import { jest } from "@jest/globals";
-import {
-    handleQuestionShortcut,
-    isVideoDetailPage,
-} from "../../src/contentscript/youtube/keyboardShortcuts.js";
+const { handleQuestionShortcut, isVideoDetailPage } = await import(
+    "../../src/contentscript/youtube/keyboardShortcuts.js"
+);
 
 describe("Keyboard Shortcuts", () => {
     let mockEvent;
@@ -141,37 +164,25 @@ describe("Keyboard Shortcuts", () => {
         });
 
         test("should click question button if dropdown menu is shown", () => {
-            // Mock the dropdown query
-            mockQuestionButton.setAttribute("target-value", "question");
-            document.querySelector.mockReturnValueOnce(mockQuestionButton);
+            // Mock findQuestionMenuShown to return a button
+            mockFindQuestionMenuShown.mockReturnValue(mockQuestionButton);
 
             handleQuestionShortcut(mockEvent);
 
             expect(mockEvent.preventDefault).toHaveBeenCalled();
-            expect(document.querySelector).toHaveBeenCalledWith(
-                "tp-yt-iron-dropdown.ytd-popup-container:not([aria-hidden='true']) .ytq-extra-options .option-item[target-value=question]"
-            );
             expect(mockQuestionButton.click).toHaveBeenCalled();
         });
 
         test("should focus question input if on video page and input is shown", () => {
-            // Mock the dropdown query to return null (no dropdown shown)
-            document.querySelector.mockReturnValueOnce(null);
+            // Mock findQuestionMenuShown to return null (no dropdown shown)
+            mockFindQuestionMenuShown.mockReturnValue(null);
 
-            // Mock the input query
-            const mockContainer = document.createElement("div");
-            mockContainer.style.display = "block";
-            mockContainer.querySelector = jest
-                .fn()
-                .mockReturnValue(mockQuestionInput);
-            document.querySelector.mockReturnValueOnce(mockContainer);
+            // Mock findSimpleQuestionInputShown to return an input
+            mockFindSimpleQuestionInputShown.mockReturnValue(mockQuestionInput);
 
             handleQuestionShortcut(mockEvent);
 
             expect(mockEvent.preventDefault).toHaveBeenCalled();
-            expect(document.querySelector).toHaveBeenCalledWith(
-                "tp-yt-iron-dropdown.ytd-popup-container:not([aria-hidden='true']) .ytq-extra-options .option-item[target-value=question]"
-            );
             expect(mockQuestionInput.focus).toHaveBeenCalled();
         });
 
@@ -180,16 +191,34 @@ describe("Keyboard Shortcuts", () => {
                 "https://www.youtube.com/feed/subscriptions"
             );
 
-            // Mock the dropdown query to return null (no dropdown shown)
-            document.querySelector.mockReturnValueOnce(null);
+            // Mock findQuestionMenuShown to return null (no dropdown shown)
+            mockFindQuestionMenuShown.mockReturnValue(null);
 
             handleQuestionShortcut(mockEvent);
 
             expect(mockEvent.preventDefault).toHaveBeenCalled();
-            expect(document.querySelector).toHaveBeenCalledWith(
-                "tp-yt-iron-dropdown.ytd-popup-container:not([aria-hidden='true']) .ytq-extra-options .option-item[target-value=question]"
-            );
             expect(mockQuestionInput.focus).not.toHaveBeenCalled();
+        });
+
+        test("should show question dialog on shorts page", () => {
+            // Set location to shorts page
+            window.location = new URL("https://www.youtube.com/shorts/test123");
+
+            // Mock findQuestionMenuShown to return null (no dropdown shown)
+            mockFindQuestionMenuShown.mockReturnValue(null);
+
+            // Mock querySelector for shorts container
+            const mockContainer = document.createElement("div");
+            document.querySelector.mockReturnValue(mockContainer);
+
+            // Mock getVideoInfoFromShortsDetail
+            const mockVideoInfo = { id: "test123", title: "Test Video" };
+            mockGetVideoInfoFromShortsDetail.mockReturnValue({ videoInfo: mockVideoInfo });
+
+            handleQuestionShortcut(mockEvent);
+
+            expect(mockEvent.preventDefault).toHaveBeenCalled();
+            expect(mockShowQuestionDialog).toHaveBeenCalledWith(mockVideoInfo);
         });
     });
 });

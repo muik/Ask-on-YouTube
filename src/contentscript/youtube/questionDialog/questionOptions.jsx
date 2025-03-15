@@ -1,3 +1,5 @@
+import React from 'react';
+import { createRoot } from 'react-dom/client';
 import { BackgroundActions, QuestionOptionKeys } from "../../../constants.js";
 import { Errors, Info } from "../../../errors.js";
 import {
@@ -12,6 +14,7 @@ import {
     removeCaptionLoadChangedListener,
     setCaption,
 } from "./caption.js";
+import QuestionItem from './questionItem';
 
 /**
  * Load the question options on initial load
@@ -258,20 +261,17 @@ function setQuestions(questions, containerElement = null) {
     const suggestionsElement = containerElement.querySelector("ul.suggestions");
     suggestionsElement.innerHTML = "";
 
-    questions.forEach((question) => {
-        const li = document.createElement("li");
-        li.innerHTML = `<span class="question">${question}</span><button class="request">&gt;</button>`;
-        li.querySelector("span.question").addEventListener(
-            "click",
-            textToInputClickListener
-        );
-        li.querySelector("button.request").addEventListener(
-            "click",
-            textRequestButtonClickListener
-        );
-
-        suggestionsElement.appendChild(li);
-    });
+    const root = createRoot(suggestionsElement);
+    root.render(
+        questions.map((question, index) => (
+            <QuestionItem
+                key={index}
+                question={question}
+                onQuestionClick={textToInputClickListener}
+                onRequestClick={textRequestButtonClickListener}
+            />
+        ))
+    );
 }
 
 function textRequestButtonClickListener(e) {

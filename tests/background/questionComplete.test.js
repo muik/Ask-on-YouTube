@@ -3,193 +3,184 @@ import { jest } from "@jest/globals";
 // Create mock functions
 const mockGetHistoryText = jest.fn();
 const mockGenerateJsonContent = jest.fn();
+const mockHandleError = jest.fn();
+const mockGetApiKeyRequired = jest.fn();
+const mockGetQuestionHistory = jest.fn();
 
-// Mock the modules
-jest.mock("../../src/background/suggestQuestions.js", () => ({
-    getHistoryText: (...args) => mockGetHistoryText(...args),
+// Mock the modules using unstable_mockModule
+jest.unstable_mockModule("../../src/background/suggestQuestions.js", () => ({
+    getHistoryText: mockGetHistoryText
 }));
 
-jest.mock("../../src/background/geminiApi.js", () => ({
-    generateJsonContent: (...args) => mockGenerateJsonContent(...args),
+jest.unstable_mockModule("../../src/background/geminiApi.js", () => ({
+    generateJsonContent: mockGenerateJsonContent
 }));
 
-// Create a test implementation of requestQuestionComplete that matches the original
-// This is necessary because we can't directly access the non-exported function
-async function testRequestQuestionComplete({
-    questionStart,
-    videoInfo,
-    history = [],
-    apiKey = undefined,
-}) {
-    const historyInline = mockGetHistoryText(history);
+jest.unstable_mockModule("../../src/background/handlers.js", () => ({
+    handleError: () => mockHandleError
+}));
 
-    const promptFormat = `The title of the youtube video: \`{title}\`
-The caption of the youtube video: \`{caption}\`
+jest.unstable_mockModule("../../src/background/settingsLoader.js", () => ({
+    getApiKeyRequired: mockGetApiKeyRequired
+}));
 
-Your task is to complete a full question sentence starts with \`{questionStart}\`.
+jest.unstable_mockModule("../../src/background/questionHistory.ts", () => ({
+    getQuestionHistory: mockGetQuestionHistory
+}));
 
-The user's recent question history: \`\`\`
-{history}
-\`\`\``;
+jest.unstable_mockModule("../../src/errors.js", () => ({
+    Errors: {
+        INVALID_REQUEST: "INVALID_REQUEST"
+    }
+}));
 
-    const prompt = promptFormat
-        .replace("{title}", videoInfo.title)
-        .replace("{caption}", videoInfo.caption)
-        .replace("{questionStart}", questionStart)
-        .replace("{history}", historyInline);
+// Import the functions after setting up mocks
+const { getQuestionComplete } = await import("../../src/background/questionComplete.js");
 
-    // We're using the mock function directly
-    return await mockGenerateJsonContent(prompt, {
-        systemInstruction: expect.any(String),
-        responseSchema: expect.any(Object),
-        apiKey,
-    });
-}
+describe("questionComplete", () => {
+    let mockSendResponse;
 
-describe("requestQuestionComplete", () => {
     beforeEach(() => {
         // Clear all mocks before each test
         jest.clearAllMocks();
+        mockSendResponse = jest.fn();
 
         // Setup default mock implementations
-        mockGetHistoryText.mockImplementation((history) => {
-            if (!history || history.length === 0) {
-                return "No history";
-            }
-            return "Mocked history text";
-        });
-
+        mockGetHistoryText.mockReturnValue("No history");
         mockGenerateJsonContent.mockResolvedValue({
-            questionComplete: "What is the complete question?",
+            questionComplete: "What is the complete question?"
+        });
+        mockGetApiKeyRequired.mockResolvedValue("test-api-key");
+        mockGetQuestionHistory.mockResolvedValue([]);
+    });
+
+    describe("getQuestionComplete", () => {
+        it("should handle invalid request", () => {
+            // Test with missing questionStart
+            getQuestionComplete({ videoInfo: {} }, mockSendResponse);
+            expect(mockHandleError).toHaveBeenCalledWith("INVALID_REQUEST");
+
+            // Test with missing videoInfo
+            getQuestionComplete({ questionStart: "What is" }, mockSendResponse);
+            expect(mockHandleError).toHaveBeenCalledWith("INVALID_REQUEST");
+        });
+
+        it("should process valid request successfully", async () => {
+            const request = {
+                questionStart: "What is",
+                videoInfo: {
+                    title: "Test Video",
+                    caption: "Test Caption"
+                }
+            };
+
+            const result = getQuestionComplete(request, mockSendResponse);
+            expect(result).toBe(true);
+
+            // Wait for all promises to resolve
+            await new Promise(process.nextTick);
+
+            expect(mockGetQuestionHistory).toHaveBeenCalled();
+            expect(mockGetApiKeyRequired).toHaveBeenCalled();
+            expect(mockGenerateJsonContent).toHaveBeenCalledWith(
+                expect.stringContaining("Test Video"),
+                expect.objectContaining({
+                    apiKey: "test-api-key",
+                    systemInstruction: expect.any(String),
+                    responseSchema: expect.any(Object)
+                })
+            );
+            expect(mockSendResponse).toHaveBeenCalledWith({
+                questionComplete: "What is the complete question?"
+            });
+        });
+
+        it("should handle errors during processing", async () => {
+            const request = {
+                questionStart: "What is",
+                videoInfo: {
+                    title: "Test Video",
+                    caption: "Test Caption"
+                }
+            };
+
+            // Mock an error in generateJsonContent
+            const testError = new Error("API Error");
+            mockGenerateJsonContent.mockRejectedValueOnce(testError);
+
+            getQuestionComplete(request, mockSendResponse);
+
+            // Wait for all promises to resolve
+            await new Promise(process.nextTick);
+
+            expect(mockHandleError).toHaveBeenCalledWith(testError);
         });
     });
 
-    it("should format the prompt correctly and call generateJsonContent", async () => {
-        // Arrange
-        const questionStart = "What is";
-        const videoInfo = {
-            title: "Test Video Title",
-            caption: "Test Video Caption",
-        };
-        const history = [];
-        const apiKey = "test-api-key";
+    describe("requestQuestionComplete", () => {
+        it("should format the prompt correctly and call generateJsonContent", async () => {
+            const request = {
+                questionStart: "What is",
+                videoInfo: {
+                    title: "Test Video Title",
+                    caption: "Test Video Caption"
+                }
+            };
 
-        // Act
-        const result = await testRequestQuestionComplete({
-            questionStart,
-            videoInfo,
-            history,
-            apiKey,
+            const result = getQuestionComplete(request, mockSendResponse);
+            expect(result).toBe(true);
+
+            // Wait for all promises to resolve
+            await new Promise(process.nextTick);
+
+            expect(mockGetHistoryText).toHaveBeenCalledWith([]);
+            expect(mockGenerateJsonContent).toHaveBeenCalledWith(
+                expect.stringContaining("Test Video Title"),
+                expect.objectContaining({
+                    apiKey: "test-api-key",
+                    systemInstruction: expect.any(String),
+                    responseSchema: expect.any(Object)
+                })
+            );
         });
 
-        // Assert
-        expect(mockGetHistoryText).toHaveBeenCalledWith(history);
+        it("should handle history correctly", async () => {
+            const request = {
+                questionStart: "How does",
+                videoInfo: {
+                    title: "Another Test Video",
+                    caption: "Another Test Caption"
+                }
+            };
 
-        // Check that generateJsonContent was called with the correct parameters
-        expect(mockGenerateJsonContent).toHaveBeenCalledTimes(1);
-
-        const expectedPrompt = `The title of the youtube video: \`Test Video Title\`
-The caption of the youtube video: \`Test Video Caption\`
-
-Your task is to complete a full question sentence starts with \`What is\`.
-
-The user's recent question history: \`\`\`
-No history
-\`\`\``;
-
-        expect(mockGenerateJsonContent).toHaveBeenCalledWith(
-            expectedPrompt,
-            expect.objectContaining({
-                apiKey: "test-api-key",
-                systemInstruction: expect.any(String),
-                responseSchema: expect.any(Object),
-            })
-        );
-
-        // Check the result
-        expect(result).toEqual({
-            questionComplete: "What is the complete question?",
-        });
-    });
-
-    it("should handle history correctly", async () => {
-        // Arrange
-        const questionStart = "How does";
-        const videoInfo = {
-            title: "Another Test Video",
-            caption: "Another Test Caption",
-        };
-        const history = [
-            {
+            const history = [{
                 videoInfo: {
                     title: "Previous Video",
-                    caption: "Previous Caption",
+                    caption: "Previous Caption"
                 },
-                question: "What is the meaning of life?",
-            },
-        ];
+                question: "What is the meaning of life?"
+            }];
 
-        // Mock getHistoryText to return a specific string for this test
-        mockGetHistoryText.mockReturnValueOnce(
-            "- Title: `Previous Video`\n  Caption: `Previous Caption`\n  Question: `What is the meaning of life?`"
-        );
+            mockGetQuestionHistory.mockResolvedValueOnce(history);
+            mockGetHistoryText.mockReturnValueOnce(
+                "- Title: `Previous Video`\n  Caption: `Previous Caption`\n  Question: `What is the meaning of life?`"
+            );
 
-        // Act
-        const result = await testRequestQuestionComplete({
-            questionStart,
-            videoInfo,
-            history,
+            const result = getQuestionComplete(request, mockSendResponse);
+            expect(result).toBe(true);
+
+            // Wait for all promises to resolve
+            await new Promise(process.nextTick);
+
+            expect(mockGetHistoryText).toHaveBeenCalledWith(history);
+            expect(mockGenerateJsonContent).toHaveBeenCalledWith(
+                expect.stringContaining("Another Test Video"),
+                expect.objectContaining({
+                    apiKey: "test-api-key",
+                    systemInstruction: expect.any(String),
+                    responseSchema: expect.any(Object)
+                })
+            );
         });
-
-        // Assert
-        expect(mockGetHistoryText).toHaveBeenCalledWith(history);
-
-        const expectedPrompt = `The title of the youtube video: \`Another Test Video\`
-The caption of the youtube video: \`Another Test Caption\`
-
-Your task is to complete a full question sentence starts with \`How does\`.
-
-The user's recent question history: \`\`\`
-- Title: \`Previous Video\`
-  Caption: \`Previous Caption\`
-  Question: \`What is the meaning of life?\`
-\`\`\``;
-
-        expect(mockGenerateJsonContent).toHaveBeenCalledWith(
-            expectedPrompt,
-            expect.objectContaining({
-                apiKey: undefined, // Default value when not provided
-                systemInstruction: expect.any(String),
-                responseSchema: expect.any(Object),
-            })
-        );
-
-        expect(result).toEqual({
-            questionComplete: "What is the complete question?",
-        });
-    });
-
-    it("should handle API errors gracefully", async () => {
-        // Arrange
-        const questionStart = "Why is";
-        const videoInfo = {
-            title: "Error Test Video",
-            caption: "Error Test Caption",
-        };
-
-        // Mock generateJsonContent to throw an error
-        const testError = new Error("API Error");
-        mockGenerateJsonContent.mockRejectedValueOnce(testError);
-
-        // Act & Assert
-        await expect(
-            testRequestQuestionComplete({
-                questionStart,
-                videoInfo,
-            })
-        ).rejects.toThrow("API Error");
-
-        expect(mockGetHistoryText).toHaveBeenCalledWith([]);
-        expect(mockGenerateJsonContent).toHaveBeenCalledTimes(1);
     });
 });

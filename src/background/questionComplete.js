@@ -1,8 +1,8 @@
 import { Errors } from "../errors.js";
 import { generateJsonContent } from "./geminiApi.js";
 import { handleError } from "./handlers.js";
+import { getQuestionHistory } from "./questionHistory.ts";
 import { getApiKeyRequired } from "./settingsLoader.js";
-import { getQuestionHistory } from "./questionHistory.js";
 import { getHistoryText } from "./suggestQuestions.js";
 
 /**
