@@ -1,6 +1,7 @@
 import { BackgroundActions } from "../../constants.js";
+import { Errors } from "../../errors.js";
 import { isGeminiServiceAvailable } from "./geminiService.js";
-import { getDialogData } from "./questionView.js";
+import { getDialogData, setInputError } from "./questionView.js";
 
 /**
  * Debounce function to limit the rate at which a function can fire
@@ -204,11 +205,21 @@ async function handleInputChange(e) {
 
     // Request question completion from background script
     const startTime = performance.now();
-    const response = await chrome.runtime.sendMessage({
-        action: BackgroundActions.GET_QUESTION_COMPLETE,
-        questionStart,
-        videoInfo,
-    });
+    let response;
+    try {
+        response = await chrome.runtime.sendMessage({
+            action: BackgroundActions.GET_QUESTION_COMPLETE,
+            questionStart,
+            videoInfo,
+        });
+    } catch (error) {
+        if (error.message === "Extension context invalidated.") {
+            setInputError({ message: Errors.EXTENSION_CONTEXT_INVALIDATED.message });
+            return;
+        }
+        console.error("Error getting question completion:", error);
+        return;
+    }
     const endTime = performance.now();
     console.debug("Question completion response time:", (endTime - startTime).toFixed(1), "ms");
 

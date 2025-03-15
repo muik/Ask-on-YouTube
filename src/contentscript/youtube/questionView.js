@@ -233,7 +233,7 @@ function resetRequesting(containerElement = null) {
     inputElement.removeAttribute("disabled");
 }
 
-function setInputError({ message = "", type = "error" }, containerElement = null) {
+export function setInputError({ message = "", type = "error" }, containerElement = null) {
     containerElement = containerElement || getContainerElement();
     const inputErrorElement = containerElement.querySelector("#question-input-error");
     inputErrorElement.textContent = message;
