@@ -6,6 +6,10 @@ Honeybadger.configure(honeybadgerConfig);
 
 window.onload = () => {
     const settingsBtn = document.getElementById("settings-btn");
+    if (!settingsBtn) {
+        console.log("Settings button not found");
+        return;
+    }
     settingsBtn.addEventListener("click", (e) => {
         e.preventDefault();
 
