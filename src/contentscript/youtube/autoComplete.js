@@ -22,6 +22,9 @@ function debounce(func, wait) {
 let suggestionElement = null;
 // Track the last input value that triggered a request
 let lastRequestedInput = null;
+// Track active request IDs
+let currentRequestId = 0;
+let activeRequestId = null;
 
 // Minimum characters required to trigger auto-completion
 const MIN_CHARS = 2;
@@ -145,13 +148,22 @@ function setupDisabledStateObserver(inputElement) {
 }
 
 /**
+ * Cancel any pending question completion request
+ */
+function cancelPendingRequest() {
+    // Increment the request ID to invalidate any pending requests
+    currentRequestId++;
+    activeRequestId = null;
+}
+
+/**
  * Initialize auto-completion for the question input
  * @param {HTMLElement} inputElement - The input element
  */
 export function initAutoComplete(inputElement) {
     if (!inputElement) return;
 
-    // Clean up any existing suggestion element
+    // Clean up any existing suggestion element and pending request
     cleanupSuggestion();
 
     // Create debounced handler for input changes
@@ -203,6 +215,10 @@ async function handleInputChange(e) {
 
     const { videoInfo } = getDialogData();
 
+    // Create a new request ID for this request
+    const requestId = ++currentRequestId;
+    activeRequestId = requestId;
+
     // Request question completion from background script
     const startTime = performance.now();
     let response;
@@ -221,7 +237,14 @@ async function handleInputChange(e) {
         return;
     }
 
-    // TODO: cancel when new request is sent or the dialog is closed
+    // If this request is no longer the active request, ignore the response
+    if (requestId !== activeRequestId) {
+        console.debug('Question completion request was cancelled or superseded', {
+            requestId,
+            activeRequestId
+        });
+        return;
+    }
 
     const endTime = performance.now();
     console.debug("Question completion response time:", (endTime - startTime).toFixed(1), "ms");
@@ -358,7 +381,7 @@ function handleTabKey(inputElement) {
 }
 
 /**
- * Clean up the suggestion element
+ * Clean up the suggestion element and cancel any pending requests
  */
 export function cleanupSuggestion() {
     const inputElement = document.querySelector(".ytq-form textarea.question-input");
@@ -373,6 +396,9 @@ export function cleanupSuggestion() {
         suggestionElement.remove();
         suggestionElement = null;
     }
+
+    // Cancel any pending request when cleaning up
+    cancelPendingRequest();
 
     adjustInputHeight(inputElement);
 }
