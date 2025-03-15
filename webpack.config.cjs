@@ -5,7 +5,8 @@ const webpack = require("webpack"),
     WriteFilePlugin = require("write-file-webpack-plugin"),
     MiniCssExtractPlugin = require("mini-css-extract-plugin"),
     CssMinimizerPlugin = require("css-minimizer-webpack-plugin"),
-    TerserPlugin = require("terser-webpack-plugin");
+    TerserPlugin = require("terser-webpack-plugin"),
+    HoneybadgerSourceMapPlugin = require("@honeybadger-io/webpack");
 
 if (process.env.NODE_ENV == null) {
     process.env.NODE_ENV = "development";
@@ -17,6 +18,12 @@ const plugins = [
         "process.env": {
             ENV: JSON.stringify(ENV),
         },
+    }),
+    new HoneybadgerSourceMapPlugin({
+        apiKey: "hbp_3jSfbmWLloU7jlmLHm6IiD9JebrjGz4wnmUY",
+        assetsUrl: "chrome-extension://__MSG_@@extension_id__/",
+        revision: process.env.npm_package_version,
+        silent: ENV === "development", // Don't show warnings in development mode
     }),
     new CopyWebpackPlugin({
         patterns: [
@@ -49,18 +56,7 @@ const plugins = [
     }),
 ];
 
-const fileExtensions = [
-    "jpg",
-    "jpeg",
-    "png",
-    "gif",
-    "eot",
-    "otf",
-    "svg",
-    "ttf",
-    "woff",
-    "woff2",
-];
+const fileExtensions = ["jpg", "jpeg", "png", "gif", "eot", "otf", "svg", "ttf", "woff", "woff2"];
 const moduleRules = [
     {
         test: /\.(js|jsx|ts|tsx)$/,
@@ -109,18 +105,8 @@ const config = {
             path.join(__dirname, "src", "css", "dialog.css"),
             path.join(__dirname, "src", "css", "extraOptions.css"),
         ],
-        "contentscript/chatgpt": path.join(
-            __dirname,
-            "src",
-            "contentscript",
-            "chatgpt.js"
-        ),
-        "contentscript/welcome": path.join(
-            __dirname,
-            "src",
-            "contentscript",
-            "welcome.js"
-        ),
+        "contentscript/chatgpt": path.join(__dirname, "src", "contentscript", "chatgpt.js"),
+        "contentscript/welcome": path.join(__dirname, "src", "contentscript", "welcome.js"),
         background: [
             path.join(__dirname, "src", "vendor", "honeybadger.ext.min.js"),
             path.join(__dirname, "src", "background.js"),
@@ -147,8 +133,8 @@ const config = {
         extensions: [".ts", ".tsx", ".js", ".jsx"],
         extensionAlias: {
             ".js": [".ts", ".js"],
-            ".jsx": [".tsx", ".jsx"]
-        }
+            ".jsx": [".tsx", ".jsx"],
+        },
     },
 };
 

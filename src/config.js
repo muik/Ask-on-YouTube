@@ -25,6 +25,7 @@ export const honeybadgerConfig = {
     enableUncaught: true, // Report uncaught exceptions
     enableUnhandledRejection: true, // Report unhandled promise rejections
     breadcrumbsEnabled: true, // Enable breadcrumbs for better debugging
+    assetsUrl: 'chrome-extension://' + chrome.runtime.id + '/', // Match webpack source map URL
 };
 
 export default Config;
