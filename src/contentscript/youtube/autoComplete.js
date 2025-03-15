@@ -220,6 +220,9 @@ async function handleInputChange(e) {
         console.error("Error getting question completion:", error);
         return;
     }
+
+    // TODO: cancel when new request is sent or the dialog is closed
+
     const endTime = performance.now();
     console.debug("Question completion response time:", (endTime - startTime).toFixed(1), "ms");
 
@@ -357,7 +360,7 @@ function handleTabKey(inputElement) {
 /**
  * Clean up the suggestion element
  */
-function cleanupSuggestion() {
+export function cleanupSuggestion() {
     const inputElement = document.querySelector(".ytq-form textarea.question-input");
 
     if (suggestionElement) {

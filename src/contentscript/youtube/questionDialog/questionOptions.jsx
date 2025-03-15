@@ -1,5 +1,5 @@
-import React from 'react';
-import { createRoot } from 'react-dom/client';
+import React from "react";
+import { createRoot } from "react-dom/client";
 import { BackgroundActions, QuestionOptionKeys } from "../../../constants.js";
 import { Errors, Info } from "../../../errors.js";
 import {
@@ -14,7 +14,7 @@ import {
     removeCaptionLoadChangedListener,
     setCaption,
 } from "./caption.js";
-import QuestionItem from './questionItem';
+import QuestionItem from "./questionItem";
 
 /**
  * Load the question options on initial load
@@ -35,11 +35,9 @@ export function loadQuestionOptions(containerElement) {
  */
 export function setQuestionOptionsView(containerElement) {
     // question options click event
-    containerElement
-        .querySelectorAll(".question-options .title")
-        .forEach((el) => {
-            el.addEventListener("click", onQuestionOptionClick);
-        });
+    containerElement.querySelectorAll(".question-options .title").forEach(el => {
+        el.addEventListener("click", onQuestionOptionClick);
+    });
 }
 
 /**
@@ -48,16 +46,29 @@ export function setQuestionOptionsView(containerElement) {
  */
 export function resetQuestions(containerElement = null) {
     containerElement = containerElement || getContainerElement();
-    containerElement.querySelector("ul.suggestions").innerHTML = "";
+
+    // cleanup React root by rendering empty content
+    if (suggestionsRoot) {
+        suggestionsRoot.render(null);
+    }
 
     // remove message
-    const messageElement = containerElement.querySelector(
-        "#question-suggestions-error"
-    );
+    const messageElement = containerElement.querySelector("#question-suggestions-error");
     messageElement.innerHTML = "";
     messageElement.removeAttribute("type");
 
     setQuestionsError(null, containerElement);
+}
+
+/**
+ * Cleanup the question options component
+ * Unmounts the React root and clears references
+ */
+export function cleanupQuestionOptions() {
+    if (suggestionsRoot) {
+        suggestionsRoot.unmount();
+        suggestionsRoot = null;
+    }
 }
 
 async function loadLastQuestionOption(containerElement) {
@@ -70,10 +81,7 @@ async function loadLastQuestionOption(containerElement) {
         });
 
         if (chrome.runtime.lastError) {
-            console.error(
-                "requestLastQuestionOption lastError:",
-                chrome.runtime.lastError
-            );
+            console.error("requestLastQuestionOption lastError:", chrome.runtime.lastError);
             throw Errors.UNKNOWN_ERROR;
         }
 
@@ -85,10 +93,7 @@ async function loadLastQuestionOption(containerElement) {
         }
 
         if (!response.option) {
-            console.error(
-                "requestLastQuestionOption Error: no option",
-                response
-            );
+            console.error("requestLastQuestionOption Error: no option", response);
             throw Errors.INVALID_RESPONSE;
         }
 
@@ -124,7 +129,7 @@ async function requestQuestions(option) {
 
         if (option === QuestionOptionKeys.SUGGESTIONS) {
             if (!isCaptionResolved()) {
-                requestQuestionsPendingListener = (event) => {
+                requestQuestionsPendingListener = event => {
                     if (event.isResolved) {
                         requestQuestions(option);
                     }
@@ -150,10 +155,7 @@ async function requestQuestions(option) {
     } catch (error) {
         setRequestQuestionsError(error);
     } finally {
-        if (
-            isQuestionOptionActive(option) &&
-            !requestQuestionsPendingListener
-        ) {
+        if (isQuestionOptionActive(option) && !requestQuestionsPendingListener) {
             hideProgressSpinner();
         }
     }
@@ -168,9 +170,7 @@ function validateQuestionOption(option) {
 
 function setQuestionsError(error, containerElement = null) {
     containerElement = containerElement || getContainerElement();
-    const messageElement = containerElement.querySelector(
-        "#question-suggestions-error"
-    );
+    const messageElement = containerElement.querySelector("#question-suggestions-error");
 
     if (!error) {
         messageElement.innerHTML = "";
@@ -252,44 +252,55 @@ function handleQuestionsResponse(response) {
     setQuestions(response.questions);
 }
 
+let suggestionsRoot = null;
+
 function setQuestions(questions, containerElement = null) {
     if (!questions || questions.length === 0) {
         return;
     }
 
-    containerElement = containerElement || getContainerElement();
-    const suggestionsElement = containerElement.querySelector("ul.suggestions");
-    suggestionsElement.innerHTML = "";
+    if (!suggestionsRoot) {
+        containerElement = containerElement || getContainerElement();
+        const suggestionsElement = containerElement.querySelector("ul.suggestions");
+        suggestionsElement.innerHTML = ""; // Clear any existing HTML content
+        suggestionsRoot = createRoot(suggestionsElement);
+    }
 
-    const root = createRoot(suggestionsElement);
-    root.render(
+    suggestionsRoot.render(
         questions.map((question, index) => (
             <QuestionItem
                 key={index}
                 question={question}
-                onQuestionClick={textToInputClickListener}
-                onRequestClick={textRequestButtonClickListener}
+                onQuestionClick={handleQuestionItemClick}
+                onOptionClick={handleQuestionOptionClick}
             />
         ))
     );
 }
 
-function textRequestButtonClickListener(e) {
+function handleQuestionItemClick(e) {
     e.preventDefault();
-    e.target.previousElementSibling.click();
+
+    // set question input value
+    e.target.closest("li").querySelector("button.option").click();
+
+    // request question
     e.target
         .closest("#contents")
         .querySelector(".question-input-container .question-button")
         .click();
 }
 
+function handleQuestionOptionClick(e) {
+    e.target = e.target.closest("li").querySelector("span.question");
+    textToInputClickListener(e);
+}
+
 function showProgressSpinner(containerElement = null) {
     containerElement = containerElement || getContainerElement();
     const spinnerElement = containerElement.querySelector("#spinner");
     spinnerElement.removeAttribute("hidden");
-    const paperSpinnerElement = spinnerElement.querySelector(
-        "tp-yt-paper-spinner"
-    );
+    const paperSpinnerElement = spinnerElement.querySelector("tp-yt-paper-spinner");
     paperSpinnerElement.removeAttribute("aria-hidden");
     paperSpinnerElement.setAttribute("active", "");
 }

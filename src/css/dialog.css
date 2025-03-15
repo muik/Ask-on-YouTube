@@ -1,10 +1,7 @@
 .ytq-dialog {
     display: block;
     margin: 24px 40px;
-    background: var(
-        --paper-dialog-background-color,
-        var(--primary-background-color)
-    );
+    background: var(--paper-dialog-background-color, var(--primary-background-color));
     color: var(--yt-spec-text-primary);
     font-family: "Roboto", "Noto", sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -13,8 +10,7 @@
     line-height: 20px;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 0 24px 12px
-        var(--paper-dialog-shadow-color, rgba(0, 0, 0, 0.15));
+    box-shadow: 0 0 24px 12px var(--paper-dialog-shadow-color, rgba(0, 0, 0, 0.15));
 }
 .ytq-dialog > *:first-child {
     margin-top: 24px;
@@ -165,20 +161,26 @@
     line-height: 1.5;
 }
 .ytq-dialog .question-suggestions li button {
-    background: var(--yt-spec-badge-chip-background);
+    background: transparent;
     border: none;
     border-radius: 18px;
     padding: 0 12px;
-    line-height: 32px;
+    min-height: 32px;
+    line-height: 0;
     cursor: pointer;
     color: var(--yt-spec-text-secondary);
     margin: 4px;
 }
 .ytq-dialog .question-suggestions li button:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--yt-spec-badge-chip-background);
 }
 .ytq-dialog .question-suggestions li button:active {
-    background: rgba(255, 255, 255, 0.3);
+    background: var(--yt-spec-text-primary);
+    color: var(--yt-spec-text-primary-inverse);
+}
+
+.ytq-dialog .question-suggestions li button svg {
+    fill: var(--yt-spec-text-secondary);
 }
 
 .ytq-dialog .question-suggestions .question-options {
