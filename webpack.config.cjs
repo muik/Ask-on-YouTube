@@ -21,9 +21,9 @@ const plugins = [
     }),
     new HoneybadgerSourceMapPlugin({
         apiKey: "hbp_3jSfbmWLloU7jlmLHm6IiD9JebrjGz4wnmUY",
-        assetsUrl: "chrome-extension://__MSG_@@extension_id__/",
+        assetsUrl: "chrome-extension://gdcabhbeojofokajoomgoclohimfnfjb",
         revision: process.env.npm_package_version,
-        silent: ENV === "development", // Don't show warnings in development mode
+        deploy: true,
     }),
     new CopyWebpackPlugin({
         patterns: [
@@ -96,7 +96,7 @@ const moduleRules = [
 
 const config = {
     target: "web",
-    devtool: "cheap-module-source-map",
+    devtool: ENV === "production" ? "source-map" : "cheap-module-source-map",
     mode: process.env.NODE_ENV || "development",
     entry: {
         "contentscript/youtube": [
@@ -137,9 +137,5 @@ const config = {
         },
     },
 };
-
-if (ENV === "development") {
-    config.devtool = "cheap-module-source-map";
-}
 
 module.exports = config;

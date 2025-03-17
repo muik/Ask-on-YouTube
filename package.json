@@ -1,6 +1,6 @@
 {
     "name": "ask-on-youtube",
-    "version": "1.1.2",
+    "version": "1.1.3",
     "description": "Ask on YouTube",
     "main": "background.js",
     "type": "module",
@@ -11,7 +11,7 @@
         "build-release": "npm run lint && npm run clean && NODE_ENV=production webpack && npm run zip",
         "watch": "nodemon --watch src/ --watch webpack.config.cjs --watch manifest.json --watch _locales --ext js,ts,jsx,tsx,html,css,json --exec 'npm run build'",
         "test": "NODE_OPTIONS=--experimental-vm-modules npx jest",
-        "zip": "zip -r $npm_package_name-v$npm_package_version.zip dist"
+        "zip": "zip -r $npm_package_name-v$npm_package_version.zip dist -x \"*.map\""
     },
     "repository": {
         "type": "git",
