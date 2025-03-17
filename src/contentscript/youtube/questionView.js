@@ -96,14 +96,13 @@ function setQuestionDialogContent(videoInfo) {
     const containerElement = getContainerElement();
     containerElement.setAttribute("video-id", videoInfo.id);
 
-    const inputElement = containerElement.querySelector("textarea.question-input");
     const titleElement = containerElement.querySelector(".title");
     const captionElement = containerElement.querySelector(".video-info .caption");
     titleElement.innerHTML = "";
     captionElement.innerHTML = "";
 
     const titleTokens = getTitleTokens(videoInfo.title);
-    titleTokens.forEach(setTitleToken(titleElement, inputElement));
+    titleTokens.forEach(setTitleToken(titleElement));
 
     const thumbnailElement = containerElement.querySelector("img.thumbnail");
     thumbnailElement.setAttribute("src", getVideoThumbnailUrl(videoInfo));
@@ -125,7 +124,7 @@ export function textToInputClickListener(e) {
         // focus on the input field, and move the cursor to the end of the text
         inputElement.focus();
         inputElement.setSelectionRange(text.length, text.length);
-        inputElement.dispatchEvent(new Event("input"));
+        inputElement.dispatchEvent(new CustomEvent("input"));
     }
 }
 

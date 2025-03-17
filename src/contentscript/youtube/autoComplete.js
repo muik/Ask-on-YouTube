@@ -69,7 +69,7 @@ function handleInputEvent(e, debouncedInputHandler) {
 
     adjustInputHeight(inputElement);
 
-    if (isGeminiServiceAvailable()) {
+    if (!(e instanceof CustomEvent) && isGeminiServiceAvailable()) {
         debouncedInputHandler(e);
     }
 }

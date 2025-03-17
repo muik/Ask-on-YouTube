@@ -1,3 +1,5 @@
+import { textToInputClickListener } from "../questionView.js";
+
 const TokenTypes = {
     INPUTABLE: "inputable",
     SEPARATOR: "separator",
@@ -46,10 +48,7 @@ export function getTitleTokens(inputString) {
     return tokens;
 }
 
-export function setTitleToken(titleElement, inputElement) {
-    const onTitleTokenClick = (e) => {
-        inputElement.value = e.target.textContent;
-    };
+export function setTitleToken(titleElement) {
     return (token) => {
         const spanElement = document.createElement("span");
         spanElement.textContent = token.text;
@@ -57,7 +56,7 @@ export function setTitleToken(titleElement, inputElement) {
         titleElement.appendChild(spanElement);
 
         if (token.type === TokenTypes.INPUTABLE) {
-            spanElement.addEventListener("click", onTitleTokenClick);
+            spanElement.addEventListener("click", textToInputClickListener);
         }
     };
 }
