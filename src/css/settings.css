@@ -229,9 +229,23 @@ body.dark-mode a:visited {
     background-color: inherit;
 }
 
+.footer .version {
+    color: #888;
+    font-size: 0.9em;
+}
+
+body.dark-mode .footer .version {
+    color: #666;
+}
+
 .footer a {
     color: var(--text-secondary);
     text-decoration: none;
+    margin: 0 1rem;
+}
+
+.footer a,
+.footer span {
     margin: 0 1rem;
 }
 

@@ -174,6 +174,12 @@ const SettingsPage: React.FC = () => {
                 >
                     GitHub
                 </a>
+                <span 
+                    className="version" 
+                    title={`${chrome.i18n.getMessage("shortExtensionName")} v${chrome.runtime.getManifest().version}`}
+                >
+                    v{chrome.runtime.getManifest().version}
+                </span>
             </div>
         </div>
     );
