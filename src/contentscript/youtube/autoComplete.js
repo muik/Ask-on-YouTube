@@ -204,6 +204,10 @@ async function handleInputChange(e) {
 
     console.debug("Input changed:", questionStart);
 
+    if (inputElement.hasAttribute("disabled")) {
+        return;
+    }
+
     // Clear suggestion if input is too short or recently accepted a suggestion
     if (questionStart.replace(/\s+/g, "").length < MIN_CHARS) {
         console.debug("Input too short, clearing suggestion");
