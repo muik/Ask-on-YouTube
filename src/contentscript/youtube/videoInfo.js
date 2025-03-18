@@ -80,6 +80,10 @@ export function getVideoInfoFromItemVideoOptionMenu(target) {
         }; // Exit if no video container is identified
     }
 
+    if (rendererClassName === "ytd-notification-renderer") {
+        return getVideoInfoFromNotification(videoContainer);
+    }
+
     // Locate an <a> tag within the container that links to the video
     const linkElement = videoContainer.querySelector("a#thumbnail");
     if (!linkElement || !linkElement.href) {
@@ -113,6 +117,53 @@ export function getVideoInfoFromItemVideoOptionMenu(target) {
             id: id,
             title: title,
             thumbnail: thumbnail,
+        },
+    };
+}
+
+/**
+ * Extracts the video info from the notification.
+ * @param {Element} videoContainer - The video container.
+ * @returns {ClickResult | undefined} - The click result. If undefined, this is not the correct type of element and other options need to be considered.
+ */
+function getVideoInfoFromNotification(videoContainer) {
+    const linkElement = videoContainer.querySelector(":scope > a");
+
+    if (!linkElement || !linkElement.href) {
+        console.debug("No link element found", videoContainer);
+        return {
+            type: ClickElementType.OTHER,
+        };
+    }
+
+    const titleElement = linkElement.querySelector(
+        ":scope > div.text > yt-formatted-string > span:last-child"
+    );
+    const thumbnailElement = linkElement.querySelector(":scope > div.thumbnail-container img");
+
+    if (!titleElement || !titleElement.textContent) {
+        console.debug("No video title found", videoContainer);
+        return {
+            type: ClickElementType.OTHER,
+        };
+    }
+    if (!thumbnailElement || !thumbnailElement.src) {
+        console.debug("No thumbnail element found", videoContainer);
+        return {
+            type: ClickElementType.OTHER,
+        };
+    }
+
+    const url = new URL(linkElement.href);
+    const id = url.searchParams.get("v");
+    const title = titleElement.textContent.trim();
+    const thumbnail = thumbnailElement.src;
+
+    return {
+        videoInfo: {
+            id,
+            title,
+            thumbnail,
         },
     };
 }
