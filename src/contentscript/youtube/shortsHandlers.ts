@@ -133,9 +133,16 @@ export const setupShortsClickHandlers = async (): Promise<void> => {
 
         // for /feed/history page
         observerManager.observeParent(
-            "#page-manager > ytd-browse #contents.ytd-item-section-renderer",
-            element => observeReelShelfRenderers(element, applyClickHandlers),
+            "#page-manager > ytd-browse[page-subtype='history'] > ytd-two-column-browse-results-renderer > #primary > ytd-section-list-renderer > #contents",
+            element => observeShortsInItemSections(element, applyClickHandlers),
             () => window.location.pathname === "/feed/history"
+        );
+
+        // for channel page
+        observerManager.observeParent(
+            "#page-manager > ytd-browse[page-subtype='channels'] > ytd-two-column-browse-results-renderer > #primary > ytd-section-list-renderer > #contents",
+            element => observeShortsInItemSections(element, applyClickHandlers),
+            () => window.location.pathname.startsWith("/@")
         );
 
         // for home page
@@ -194,6 +201,44 @@ function observeReelShelfRenderers(
                         continue;
 
                     observeSection(node as HTMLElement);
+                }
+            }
+        },
+        { childList: true }
+    );
+}
+
+/**
+ * Observes and processes content sections for history and channel pages
+ * @param element - The element to observe
+ * @param applyClickHandlers - The function to apply click handlers
+ */
+function observeShortsInItemSections(
+    element: HTMLElement,
+    applyClickHandlers: (element: HTMLElement) => void
+): void {
+    const contents = element.querySelectorAll<HTMLElement>("#contents.ytd-item-section-renderer");
+    contents.forEach(content => observeReelShelfRenderers(content, applyClickHandlers));
+
+    observerManager.createObserver(
+        element,
+        (mutations, _observer) => {
+            for (const mutation of mutations) {
+                if (mutation.type !== "childList" || mutation.addedNodes.length === 0) continue;
+
+                for (const node of mutation.addedNodes) {
+                    if (
+                        node.nodeType !== Node.ELEMENT_NODE ||
+                        node.nodeName !== "YTD-ITEM-SECTION-RENDERER"
+                    )
+                        continue;
+
+                    const contents = (node as HTMLElement).querySelectorAll<HTMLElement>(
+                        "#contents.ytd-item-section-renderer"
+                    );
+                    contents.forEach(content =>
+                        observeReelShelfRenderers(content, applyClickHandlers)
+                    );
                 }
             }
         },
