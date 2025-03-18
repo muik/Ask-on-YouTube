@@ -29,7 +29,7 @@ let activeRequestId = null;
 // Minimum characters required to trigger auto-completion
 const MIN_CHARS = 2;
 // Debounce delay in milliseconds
-const DEBOUNCE_DELAY = 300;
+const DEBOUNCE_DELAY = 200;
 
 function normalizeText(text) {
     return text.toLowerCase();
