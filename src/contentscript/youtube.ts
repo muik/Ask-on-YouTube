@@ -2,14 +2,11 @@ import Honeybadger from "@honeybadger-io/js";
 import { honeybadgerConfig } from "../config.js";
 import { BackgroundActions } from "../constants.js";
 import { handleQuestionShortcut } from "./youtube/keyboardShortcuts.js";
-import {
-    detectVideoOptionClick,
-    injectExtraOptions,
-} from "./youtube/moreOptions.js";
+import { detectVideoOptionClick, injectExtraOptions } from "./youtube/moreOptions.js";
 import { injectShortcutHelp } from "./youtube/shortcutHelp.js";
 import {
     cleanup as cleanupShortsHandlers,
-    setupShortsClickHandlers
+    setupShortsClickHandlers,
 } from "./youtube/shortsHandlers.js";
 import { injectDetailRelatedElements } from "./youtube/videoDetail.js";
 

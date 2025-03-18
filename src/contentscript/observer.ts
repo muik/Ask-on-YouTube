@@ -68,7 +68,11 @@ export class ObserverManager {
      * @param fullSelector The full CSS selector to match
      * @param callback Function to call when the target element is found
      */
-    observeParent(fullSelector: string, callback: (element: HTMLElement) => void): void {
+    observeParent(
+        fullSelector: string,
+        callback: (element: HTMLElement) => void,
+        condition: () => boolean = () => true
+    ): void {
         const match = fullSelector.match(/(.*[^>\s])(\s*[>\s]+\s*)([^>\s]+)$/);
 
         let parentSelector;
@@ -98,9 +102,22 @@ export class ObserverManager {
         }
 
         const observe = (element: HTMLElement) => {
+            if (condition()) {
+                const target = element.querySelector<HTMLElement>(targetSelector);
+                if (target) {
+                    console.debug("found target", target, parentSelector, targetSelector);
+                    callback(target);
+                    return;
+                }
+            }
+
             this.createObserver(
                 element,
                 (_mutations: MutationRecord[], observer: MutationObserver) => {
+                    if (!condition()) {
+                        return;
+                    }
+
                     const target = element.querySelector<HTMLElement>(targetSelector);
                     if (target) {
                         callback(target);
@@ -112,13 +129,7 @@ export class ObserverManager {
         };
 
         if (!parent) {
-            this.observeParent(parentSelector, observe);
-            return;
-        }
-
-        const target = parent.querySelector<HTMLElement>(targetSelector);
-        if (target) {
-            callback(target);
+            this.observeParent(parentSelector, observe, condition);
             return;
         }
 

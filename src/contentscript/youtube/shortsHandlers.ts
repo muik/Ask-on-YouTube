@@ -34,13 +34,9 @@ class ShortsButtonHandler {
     attachClickHandler(element: HTMLElement): void {
         if (this.processedElements.has(element)) return;
 
-        const debugHandler = (e: Event) => {
-            console.debug("shorts button clicked", e.target);
-        };
-        element.addEventListener("click", debugHandler);
         element.addEventListener("click", detectVideoOptionClick);
 
-        this.elementHandlers.set(element, [debugHandler, detectVideoOptionClick]);
+        this.elementHandlers.set(element, [detectVideoOptionClick]);
         this.processedElements.add(element);
     }
 
@@ -126,13 +122,27 @@ export const setupShortsClickHandlers = async (): Promise<void> => {
         // for video detail page
         observerManager.observeParent(
             "#page-manager > ytd-watch-flexy #related #contents.ytd-item-section-renderer", // section list in related
-            element => observeReelShelfRenderers(element, applyClickHandlers)
+            element => observeReelShelfRenderers(element, applyClickHandlers),
+            () => window.location.pathname === "/watch" && window.location.search.includes("v=")
+        );
+        observerManager.observeParent(
+            "#page-manager > ytd-watch-flexy #related > ytd-watch-next-secondary-results-renderer > #items",
+            element => observeReelShelfRenderers(element, applyClickHandlers),
+            () => window.location.pathname === "/watch" && window.location.search.includes("v=")
+        );
+
+        // for /feed/history page
+        observerManager.observeParent(
+            "#page-manager > ytd-browse #contents.ytd-item-section-renderer",
+            element => observeReelShelfRenderers(element, applyClickHandlers),
+            () => window.location.pathname === "/feed/history"
         );
 
         // for home page
         observerManager.observeParent(
             "#page-manager > ytd-browse #contents.ytd-rich-grid-renderer",
-            observeHomePageContent
+            observeHomePageContent,
+            () => window.location.pathname === "/"
         );
     } catch (error) {
         // Keep top-level error handling to prevent the extension from breaking
