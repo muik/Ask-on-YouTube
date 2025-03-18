@@ -1,8 +1,5 @@
 import { BackgroundActions } from "../../constants.js";
-import {
-    loadCaptionIfPending,
-    setCaptionUnavailable,
-} from "./questionDialog/caption.js";
+import { loadCaptionIfPending, setCaptionUnavailable } from "./questionDialog/caption.js";
 
 // Flag to enable/disable auto-completion functionality
 let geminiServiceAvailable = null;
@@ -37,7 +34,7 @@ export async function loadGeminiServiceAvailable() {
 
         if (chrome.runtime.lastError) {
             console.error(
-                "Failed to load gemini service available:",
+                "Failed to load gemini service available - lastError:",
                 chrome.runtime.lastError
             );
             return;
@@ -50,7 +47,9 @@ export async function loadGeminiServiceAvailable() {
 
         setGeminiServiceAvailable(response.isAvailable);
     } catch (error) {
-        console.error("Failed to load gemini service available:", error);
+        if (error.message !== "Extension context invalidated.") {
+            console.error("Failed to load gemini service available:", error);
+        }
         setGeminiServiceAvailable(false);
     }
 }
