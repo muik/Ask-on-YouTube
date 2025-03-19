@@ -7,6 +7,38 @@ interface ObserverConfig {
 
 type ObserverCallback = (mutations: MutationRecord[], observer: MutationObserver) => void;
 
+interface ParsedSelector {
+    parentSelector: string;
+    separator: string;
+    targetSelector: string;
+}
+
+/**
+ * Parses a CSS selector into its parent, separator, and target components
+ * @param fullSelector The full CSS selector to parse
+ * @returns Parsed selector components or null if invalid
+ */
+function parseSelector(fullSelector: string): ParsedSelector {
+    const match = fullSelector.match(/(.*[^>\s])(\s*[>\s]+\s*)([^>\s]+)$/);
+
+    if (!match) {
+        if (fullSelector.includes("body")) {
+            throw new Error(`Unexpected fullSelector: ${fullSelector}`);
+        }
+        return {
+            parentSelector: "body",
+            separator: " ",
+            targetSelector: fullSelector
+        };
+    }
+
+    return {
+        parentSelector: match[1],
+        separator: match[2],
+        targetSelector: match[3]
+    };
+}
+
 /**
  * Manages MutationObserver instances and their cleanup
  */
@@ -65,35 +97,26 @@ export class ObserverManager {
     /**
      * Observes a parent element for a target element matching the given selector
      * and stops observing when the target element is found
+     * if the target element is found, the callback is called and the observer is cleaned up
+     * else the observer continues to observe the parent element for changes to its child elements
      * @param fullSelector The full CSS selector to match
      * @param callback Function to call when the target element is found
+     * @param condition Function to determine if observing should continue to be performed
      */
     observeParent(
         fullSelector: string,
         callback: (element: HTMLElement) => void,
         condition: () => boolean = () => true
     ): void {
-        const match = fullSelector.match(/(.*[^>\s])(\s*[>\s]+\s*)([^>\s]+)$/);
-
-        let parentSelector;
-        let separator;
-        let targetSelector;
-
-        if (!match) {
-            if (fullSelector.includes("body")) {
-                console.error("unexpected fullSelector", fullSelector);
-                return;
-            }
-            parentSelector = "body";
-            separator = " ";
-            targetSelector = fullSelector;
-        } else {
-            parentSelector = match[1];
-            separator = match[2];
-            targetSelector = match[3];
+        const target = document.querySelector<HTMLElement>(fullSelector);
+        if (target) {
+            callback(target);
+            return;
         }
 
-        const parent = document.querySelector<HTMLElement>(parentSelector);
+        const parsed = parseSelector(fullSelector);
+        const { parentSelector, separator } = parsed;
+        let { targetSelector } = parsed;
         const config = { childList: true, subtree: true };
 
         if (separator.includes(">")) {
@@ -128,11 +151,6 @@ export class ObserverManager {
             );
         };
 
-        if (!parent) {
-            this.observeParent(parentSelector, observe, condition);
-            return;
-        }
-
-        observe(parent);
+        this.observeParent(parentSelector, observe, condition);
     }
 }

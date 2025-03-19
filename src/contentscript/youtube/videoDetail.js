@@ -1,6 +1,8 @@
 import { ObserverManager } from "../observer.js";
 import { createQuestionInputForm } from "./simpleQuestion.js";
 
+const observerManager = new ObserverManager();
+
 export function injectDetailRelatedElements() {
     const containerId = "ytq-detail-related-above";
     const relatedSelector = "#page-manager > ytd-watch-flexy #related.ytd-watch-flexy";
@@ -25,13 +27,5 @@ export function injectDetailRelatedElements() {
         targetSectionElement.insertAdjacentElement("afterbegin", containerElement);
     }
 
-    const relatedSectionElement = document.querySelector(relatedSelector);
-    if (relatedSectionElement) {
-        insertContainer(relatedSectionElement);
-    } else {
-        new ObserverManager().observeParent(
-            "#page-manager > ytd-watch-flexy #related.ytd-watch-flexy",
-            insertContainer
-        );
-    }
+    observerManager.observeParent(relatedSelector, insertContainer);
 }
