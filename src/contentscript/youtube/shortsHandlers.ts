@@ -147,7 +147,7 @@ export const setupShortsClickHandlers = async (): Promise<void> => {
         };
 
         // for video detail page
-        observerManager.observeParent(
+        observerManager.findOrObserveElement(
             "#page-manager > ytd-watch-flexy #related #contents.ytd-item-section-renderer", // section list in related
             observeReelShelfRenderers,
             () =>
@@ -157,7 +157,7 @@ export const setupShortsClickHandlers = async (): Promise<void> => {
         );
 
         // for video detail page in list mode
-        observerManager.observeParent(
+        observerManager.findOrObserveElement(
             "#page-manager > ytd-watch-flexy #related > ytd-watch-next-secondary-results-renderer > #items.ytd-watch-next-secondary-results-renderer",
             observeReelShelfRenderers,
             () =>
@@ -167,28 +167,28 @@ export const setupShortsClickHandlers = async (): Promise<void> => {
         );
 
         // for /feed/history page
-        observerManager.observeParent(
+        observerManager.findOrObserveElement(
             "#page-manager > ytd-browse[page-subtype='history'] > ytd-two-column-browse-results-renderer > #primary > ytd-section-list-renderer > #contents",
             observeShortsInItemSections,
             () => window.location.pathname === "/feed/history"
         );
 
         // for channel page
-        observerManager.observeParent(
+        observerManager.findOrObserveElement(
             "#page-manager > ytd-browse[page-subtype='channels'] > ytd-two-column-browse-results-renderer > #primary > ytd-section-list-renderer > #contents",
             observeShortsInItemSections,
             () => window.location.pathname.startsWith("/@")
         );
 
         // for home page
-        observerManager.observeParent(
+        observerManager.findOrObserveElement(
             "#page-manager > ytd-browse[page-subtype='home'] #contents.ytd-rich-grid-renderer",
             observeHomePageContent,
             () => window.location.pathname === "/"
         );
 
         // for channel shorts page
-        observerManager.observeParent(
+        observerManager.findOrObserveElement(
             "#page-manager > ytd-browse[page-subtype='channels'] #contents.ytd-rich-grid-renderer",
             observeChannelShortsContent,
             () =>

@@ -46,7 +46,7 @@ describe("ObserverManager", () => {
     });
 });
 
-describe("observeParent", () => {
+describe("findOrObserveElement", () => {
     let observerManager: ObserverManager;
     let mockCallback: jest.Mock;
 
@@ -65,7 +65,7 @@ describe("observeParent", () => {
         const parent = document.createElement("div");
         document.body.appendChild(parent);
         
-        observerManager.observeParent("div > span", mockCallback);
+        observerManager.findOrObserveElement("div > span", mockCallback);
         
         // Add child after observer is set up
         setTimeout(() => {
@@ -84,7 +84,7 @@ describe("observeParent", () => {
         const parent = document.createElement("div");
         document.body.appendChild(parent);
         
-        observerManager.observeParent("div span", mockCallback);
+        observerManager.findOrObserveElement("div span", mockCallback);
         
         // Add child after observer is set up
         setTimeout(() => {
@@ -100,12 +100,12 @@ describe("observeParent", () => {
     });
 
     test("should handle non-existent parent selector", () => {
-        observerManager.observeParent("non-existent > span", mockCallback);
+        observerManager.findOrObserveElement("non-existent > span", mockCallback);
         expect(mockCallback).not.toHaveBeenCalled();
     });
 
     test("should handle body as parent selector", (done) => {
-        observerManager.observeParent("span", mockCallback);
+        observerManager.findOrObserveElement("span", mockCallback);
         
         // Add child after observer is set up
         setTimeout(() => {
@@ -124,7 +124,7 @@ describe("observeParent", () => {
         const parent = document.createElement("div");
         document.body.appendChild(parent);
 
-        observerManager.observeParent("div > span", mockCallback);
+        observerManager.findOrObserveElement("div > span", mockCallback);
 
         // Add child element after a delay
         setTimeout(() => {

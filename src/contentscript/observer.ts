@@ -100,19 +100,24 @@ export class ObserverManager {
     }
 
     /**
-     * Observes a parent element for a target element matching the given selector
-     * and stops observing when the target element is found
-     * if the target element is found, the callback is called and the observer is cleaned up
-     * else the observer continues to observe the parent element for changes to its child elements
-     * @param fullSelector The full CSS selector to match
-     * @param callback Function to call when the target element is found
-     * @param condition Function to determine if observing should continue to be performed
+     * Finds an element immediately if it exists, or sets up observation to find it when it appears.
+     * If the element exists immediately, calls the callback right away.
+     * Otherwise, sets up a MutationObserver to watch for the element to appear.
+     * 
+     * The method recursively observes parent elements until it finds the target.
+     * For example, with selector "parent > child", it first observes "parent"
+     * and then looks for "child" within it.
+     * 
+     * @param fullSelector - CSS selector to find the target element
+     * @param callback - Function to call when the target element is found
+     * @param condition - Optional function to determine if observation should continue
      */
-    observeParent(
+    findOrObserveElement(
         fullSelector: string,
         callback: (element: HTMLElement) => void,
         condition: () => boolean = () => true
     ): void {
+        // Check if element exists immediately
         const target = document.querySelector<HTMLElement>(fullSelector);
         if (target) {
             callback(target);
@@ -129,11 +134,11 @@ export class ObserverManager {
             targetSelector = `:scope > ${targetSelector}`;
         }
 
-        const observe = (element: HTMLElement) => {
+        const setupObserver = (element: HTMLElement) => {
             if (condition()) {
                 const target = element.querySelector<HTMLElement>(targetSelector);
                 if (target) {
-                    console.debug("found target", target, parentSelector, targetSelector);
+                    console.debug("Found target element:", target, "using selectors:", { parentSelector, targetSelector });
                     callback(target);
                     return;
                 }
@@ -156,6 +161,7 @@ export class ObserverManager {
             );
         };
 
-        this.observeParent(parentSelector, observe, condition);
+        // Recursively observe parent elements until we find the target
+        this.findOrObserveElement(parentSelector, setupObserver, condition);
     }
 }

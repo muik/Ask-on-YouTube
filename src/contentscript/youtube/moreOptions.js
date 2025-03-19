@@ -31,12 +31,12 @@ export function findQuestionMenuShown() {
  */
 export function injectExtraOptions() {
     // for video item
-    observerManager.observeParent(`body > ytd-app > ytd-popup-container`, container => {
+    observerManager.findOrObserveElement(`body > ytd-app > ytd-popup-container`, container => {
         observeDropdown(container, handleVideoItemFooter);
     });
 
     // for shorts item
-    observerManager.observeParent(`body > ytd-app > ytd-popup-container`, container => {
+    observerManager.findOrObserveElement(`body > ytd-app > ytd-popup-container`, container => {
         observeDropdown(container, handleShortsItemFooter);
     });
 }
@@ -315,7 +315,7 @@ export function detectVideoOptionClick(event) {
     focused.videoInfo = videoInfo;
 
     // TODO set timeout
-    observerManager.observeParent(`${dropdownFullSelector}:not([aria-hidden='true'])`, dropdown => {
+    observerManager.findOrObserveElement(`${dropdownFullSelector}:not([aria-hidden='true'])`, dropdown => {
         showExtraOptions(dropdown);
     });
 }

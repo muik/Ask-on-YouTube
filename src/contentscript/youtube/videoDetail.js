@@ -27,5 +27,5 @@ export function injectDetailRelatedElements() {
         targetSectionElement.insertAdjacentElement("afterbegin", containerElement);
     }
 
-    observerManager.observeParent(relatedSelector, insertContainer);
+    observerManager.findOrObserveElement(relatedSelector, insertContainer);
 }
