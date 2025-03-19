@@ -1,0 +1,12 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Chrome extension
+- Manifest v3
+- Jest for unit testing, Puppeteer for UI testing
+
+# Config
+- @.prettierrc
