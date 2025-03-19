@@ -32,75 +32,85 @@ export function findQuestionMenuShown() {
 export function injectExtraOptions() {
     // for video item
     observerManager.observeParent(`body > ytd-app > ytd-popup-container`, container => {
-        observerManager.createObserver(
-            container,
-            (mutations, observer) => {
-                for (const mutation of mutations) {
-                    for (const node of mutation.addedNodes) {
-                        if (
-                            node.nodeType !== Node.ELEMENT_NODE ||
-                            !node.matches(dropdownSelector)
-                        ) {
-                            continue;
-                        }
-
-                        const footer = node.querySelector(`ytd-menu-popup-renderer #footer`);
-                        if (!footer) {
-                            continue;
-                        }
-
-                        insertExtraOptionsToFooter(footer);
-                        observerManager.cleanupObserver(observer);
-                        return;
-                    }
-                }
-            },
-            { childList: true }
-        );
+        observeDropdown(container, handleVideoItemFooter);
     });
 
     // for shorts item
     observerManager.observeParent(`body > ytd-app > ytd-popup-container`, container => {
-        observerManager.createObserver(
-            container,
-            (mutations, observer) => {
-                for (const mutation of mutations) {
-                    for (const node of mutation.addedNodes) {
-                        if (
-                            node.nodeType !== Node.ELEMENT_NODE ||
-                            !node.matches(dropdownSelector)
-                        ) {
-                            continue;
-                        }
-
-                        const sheetViewModel = node.querySelector("yt-sheet-view-model");
-                        if (!sheetViewModel) {
-                            continue;
-                        }
-
-                        observerManager.cleanupObserver(observer);
-                        observerManager.createObserver(
-                            sheetViewModel,
-                            (mutations, observer) => {
-                                const footer = sheetViewModel.querySelector(
-                                    ".yt-contextual-sheet-layout-wiz__footer-container"
-                                );
-                                if (!footer) {
-                                    return;
-                                }
-
-                                insertExtraOptionsToFooter(footer);
-                                observerManager.cleanupObserver(observer);
-                            },
-                            { childList: true, subtree: true }
-                        );
-                        return;
-                    }
-                }
-            },
-            { childList: true }
-        );
+        observeDropdown(container, handleShortsItemFooter);
     });
+}
+
+/**
+ * Observe the dropdown element and handle it when it is added to the DOM
+ * @param {Element} container - The container element to observe
+ * @param {Function} handler - Function to handle the dropdown node
+ */
+function observeDropdown(container, handler) {
+    observerManager.createObserver(
+        container,
+        (mutations, observer) => {
+            for (const mutation of mutations) {
+                for (const node of mutation.addedNodes) {
+                    if (node.nodeType !== Node.ELEMENT_NODE || !node.matches(dropdownSelector)) {
+                        continue;
+                    }
+
+                    if (!handler(node)) {
+                        continue;
+                    }
+
+                    observerManager.cleanupObserver(observer);
+                    return;
+                }
+            }
+        },
+        { childList: true }
+    );
+}
+
+/**
+ * Handle finding and inserting extra options into the footer of a video item dropdown
+ * @param {Element} node - The dropdown node element
+ * @returns {boolean} - Returns true if footer was found and handled, false otherwise
+ */
+function handleVideoItemFooter(node) {
+    const footer = node.querySelector(`ytd-menu-popup-renderer #footer`);
+    if (!footer) {
+        return false;
+    }
+
+    insertExtraOptionsToFooter(footer);
+    return true;
+}
+
+/**
+ * Handle finding and inserting extra options into the footer of a shorts item dropdown
+ * @param {Element} node - The dropdown node element
+ * @returns {boolean} - Returns true if footer was found and handled, false otherwise
+ */
+function handleShortsItemFooter(node) {
+    const sheetViewModel = node.querySelector("yt-sheet-view-model");
+    if (!sheetViewModel) {
+        return false;
+    }
+
+    observerManager.createObserver(
+        sheetViewModel,
+        (mutations, observer) => {
+            const footer = sheetViewModel.querySelector(
+                ".yt-contextual-sheet-layout-wiz__footer-container"
+            );
+            if (!footer) {
+                return;
+            }
+
+            insertExtraOptionsToFooter(footer);
+            observerManager.cleanupObserver(observer);
+        },
+        { childList: true, subtree: true }
+    );
+    return true;
 }
 
 function insertExtraOptionsToFooter(footerElement) {
