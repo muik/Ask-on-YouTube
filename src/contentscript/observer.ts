@@ -61,6 +61,40 @@ export class ObserverManager {
         this.activeObservers.delete(observer);
     }
 
+    /**
+     * Creates an observer that watches for specific node types and applies a callback
+     * @param element - The element to observe
+     * @param nodeName - The name of the nodes to look for
+     * @param callback - Function to call with matched nodes
+     */
+    observeChildNode(
+        element: HTMLElement,
+        nodeName: string,
+        callback: (node: HTMLElement) => void
+    ): void {
+        this.createObserver(
+            element,
+            (mutations, _observer) => {
+                for (const mutation of mutations) {
+                    if (mutation.type !== "childList" || mutation.addedNodes.length === 0) {
+                        continue;
+                    }
+
+                    for (const node of mutation.addedNodes) {
+                        if (
+                            node.nodeType !== Node.ELEMENT_NODE ||
+                            node.nodeName !== nodeName
+                        )
+                            continue;
+
+                        callback(node as HTMLElement);
+                    }
+                }
+            },
+            { childList: true }
+        );
+    }
+
     cleanupAll(): void {
         this.activeObservers.forEach(this.cleanupObserver.bind(this));
     }
