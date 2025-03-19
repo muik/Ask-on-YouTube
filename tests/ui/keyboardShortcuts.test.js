@@ -9,7 +9,7 @@ const mockHoneybadger = {
     configure: jest.fn(),
 };
 
-jest.unstable_mockModule("@honeybadger-io/js", () => ({
+jest.unstable_mockModule("../../src/vendor/honeybadger.ext.no-remote.min.js", () => ({
     default: mockHoneybadger,
 }));
 

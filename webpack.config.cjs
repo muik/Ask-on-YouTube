@@ -24,6 +24,7 @@ const plugins = [
         assetsUrl: "chrome-extension://gdcabhbeojofokajoomgoclohimfnfjb",
         revision: process.env.npm_package_version,
         deploy: true,
+        userFeedbackEndpoint: null,
     }),
     new CopyWebpackPlugin({
         patterns: [
@@ -39,7 +40,7 @@ const plugins = [
                 to: "images",
             },
             {
-                from: "src/vendor/honeybadger.ext.min.js",
+                from: "src/vendor/honeybadger.ext.no-remote.min.js",
                 to: "vendor/honeybadger.ext.min.js",
             },
         ],
@@ -92,6 +93,10 @@ const moduleRules = [
         },
         exclude: /node_modules/,
     },
+    {
+        test: /honeybadger\.ext\.no-remote\.min\.js$/,
+        type: "javascript/auto",
+    },
 ];
 
 const config = {
@@ -108,7 +113,7 @@ const config = {
         "contentscript/chatgpt": path.join(__dirname, "src", "contentscript", "chatgpt.js"),
         "contentscript/welcome": path.join(__dirname, "src", "contentscript", "welcome.js"),
         background: [
-            path.join(__dirname, "src", "vendor", "honeybadger.ext.min.js"),
+            path.join(__dirname, "src", "vendor", "honeybadger.ext.no-remote.min.js"),
             path.join(__dirname, "src", "background.js"),
         ],
         settings: [
@@ -134,6 +139,9 @@ const config = {
         extensionAlias: {
             ".js": [".ts", ".js"],
             ".jsx": [".tsx", ".jsx"],
+        },
+        alias: {
+            vendor: path.resolve(__dirname, "src/vendor"),
         },
     },
 };

@@ -1,6 +1,6 @@
 "use strict";
 
-import Honeybadger from "@honeybadger-io/js";
+import Honeybadger from "vendor/honeybadger.ext.no-remote.min.js";
 import Config, { honeybadgerConfig } from "../config.js";
 import { BackgroundActions, Targets } from "../constants.js";
 import { waitForElm } from "./utils.js";

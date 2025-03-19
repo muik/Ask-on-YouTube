@@ -1,4 +1,4 @@
-import Honeybadger from "@honeybadger-io/js";
+import Honeybadger from "vendor/honeybadger.ext.no-remote.min.js";
 import Config from "../config.js";
 import { StorageKeys } from "../constants.js";
 import { getDefaultFavoriteQuestions } from "./defaultQuestions.js";

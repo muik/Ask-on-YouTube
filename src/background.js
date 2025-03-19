@@ -1,6 +1,6 @@
 "use strict";
 
-import Honeybadger from "@honeybadger-io/js";
+import Honeybadger from "vendor/honeybadger.ext.no-remote.min.js";
 import { getCaption } from "./background/caption.js";
 import { getQuestionComplete } from "./background/questionComplete.js";
 import { getQuestionCompleteAvailable } from "./background/questionCompleteAvailable.js";

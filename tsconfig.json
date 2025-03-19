@@ -27,7 +27,7 @@
         /* Additional Checks */
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
-        "types": ["jest", "node", "chrome"]
+        "types": ["jest", "node", "chrome"],
     },
     "include": ["src/**/*", "tests/**/*"],
     "exclude": ["node_modules", "dist", "build", "coverage"]

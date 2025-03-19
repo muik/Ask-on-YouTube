@@ -1,4 +1,4 @@
-import Honeybadger from "@honeybadger-io/js";
+import Honeybadger from "vendor/honeybadger.ext.no-remote.min.js";
 import { honeybadgerConfig } from "../config.js";
 import { BackgroundActions } from "../constants.js";
 
