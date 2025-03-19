@@ -1,17 +1,14 @@
 import { BackgroundActions } from "../../constants.js";
 import { Errors } from "../../errors.js";
 import { ObserverManager } from "../observer.ts";
-import { waitForElm } from "../utils.js";
 import { showQuestionDialog } from "./questionView.js";
 import { getQuestionMarkSvg } from "./simpleQuestion.js";
 import { showToastMessage } from "./toast.js";
-import {
-    ClickElementType,
-    getVideoInfo
-} from "./videoInfo.js";
+import { ClickElementType, getVideoInfo } from "./videoInfo.js";
 
 const extraOptionsClassName = "ytq-extra-options";
 const dropdownSelector = "tp-yt-iron-dropdown.ytd-popup-container";
+const dropdownFullSelector = `body > ytd-app > ytd-popup-container > ${dropdownSelector}`;
 const focused = {};
 
 const useMarkElements = [];
@@ -25,7 +22,7 @@ const observerManager = new ObserverManager();
  */
 export function findQuestionMenuShown() {
     return document.querySelector(
-        `${dropdownSelector}:not([aria-hidden='true']) .${extraOptionsClassName} .option-item[target-value=question]`
+        `${dropdownFullSelector}:not([aria-hidden='true']) .${extraOptionsClassName} .option-item[target-value=question]`
     );
 }
 
@@ -40,7 +37,10 @@ export function injectExtraOptions() {
             (mutations, observer) => {
                 for (const mutation of mutations) {
                     for (const node of mutation.addedNodes) {
-                        if (node.nodeType !== Node.ELEMENT_NODE || !node.matches(dropdownSelector)) {
+                        if (
+                            node.nodeType !== Node.ELEMENT_NODE ||
+                            !node.matches(dropdownSelector)
+                        ) {
                             continue;
                         }
 
@@ -66,7 +66,10 @@ export function injectExtraOptions() {
             (mutations, observer) => {
                 for (const mutation of mutations) {
                     for (const node of mutation.addedNodes) {
-                        if (node.nodeType !== Node.ELEMENT_NODE || !node.matches(dropdownSelector)) {
+                        if (
+                            node.nodeType !== Node.ELEMENT_NODE ||
+                            !node.matches(dropdownSelector)
+                        ) {
                             continue;
                         }
 
@@ -105,9 +108,9 @@ function insertExtraOptionsToFooter(footerElement) {
     footerElement.insertAdjacentElement("beforeend", container);
 
     const observer = new MutationObserver((mutations, observer) => {
-        mutations.forEach((mutation) => {
+        mutations.forEach(mutation => {
             if (mutation.removedNodes.length > 0) {
-                mutation.removedNodes.forEach((node) => {
+                mutation.removedNodes.forEach(node => {
                     if (node.classList.contains(extraOptionsClassName)) {
                         observer.disconnect();
                         insertExtraOptionsToFooter(footerElement);
@@ -136,7 +139,7 @@ function createExtraOptionsContainer() {
             </div>`.trim();
 
     // Click event listener for the "View in Gemini" button
-    container.querySelectorAll(`.${optionItemClassName}`).forEach((elm) => {
+    container.querySelectorAll(`.${optionItemClassName}`).forEach(elm => {
         elm.addEventListener("click", onExtraOptionClick);
     });
 
@@ -158,9 +161,7 @@ async function insertQuestionMenuUseMark(container) {
     const element = document.createElement("div");
     element.classList.add("use-mark");
 
-    container
-        .querySelector(".vertical-menu")
-        .insertAdjacentElement("beforeend", element);
+    container.querySelector(".vertical-menu").insertAdjacentElement("beforeend", element);
 
     useMarkElements.push(element);
 }
@@ -170,7 +171,7 @@ async function removeQuestionMenuUseMark() {
         return;
     }
 
-    useMarkElements.forEach((element) => {
+    useMarkElements.forEach(element => {
         element.remove();
     });
     useMarkElements.length = 0;
@@ -193,9 +194,7 @@ async function removeQuestionMenuUseMark() {
  * @param {Element} dropDownElement - The YouTube video options menu.
  */
 function showExtraOptions(dropDownElement) {
-    const containerElement = dropDownElement.querySelector(
-        `.${extraOptionsClassName}`
-    );
+    const containerElement = dropDownElement.querySelector(`.${extraOptionsClassName}`);
     if (!containerElement) {
         console.error("No extra options container found", dropDownElement);
         return;
@@ -289,7 +288,7 @@ export function detectVideoOptionClick(event) {
     if (!videoInfo) {
         if (type === ClickElementType.NO_EXTRA_OPTIONS) {
             const containerElement = document.querySelector(
-                `${dropdownSelector} ytd-menu-popup-renderer .${extraOptionsClassName}`
+                `${dropdownFullSelector} ytd-menu-popup-renderer .${extraOptionsClassName}`
             );
             if (containerElement) {
                 containerElement.setAttribute("aria-hidden", true);
@@ -306,9 +305,7 @@ export function detectVideoOptionClick(event) {
     focused.videoInfo = videoInfo;
 
     // TODO set timeout
-    waitForElm(`${dropdownSelector}:not([aria-hidden='true'])`).then(
-        (dropdown) => {
-            showExtraOptions(dropdown);
-        }
-    );
+    observerManager.observeParent(`${dropdownFullSelector}:not([aria-hidden='true'])`, dropdown => {
+        showExtraOptions(dropdown);
+    });
 }
