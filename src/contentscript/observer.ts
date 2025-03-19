@@ -100,35 +100,6 @@ export class ObserverManager {
     }
 
     /**
-     * Observes an element matching the given selector, applies a callback,
-     * and continues monitoring the element for changes to its child elements only
-     * @param fullSelector The CSS selector to match
-     * @param callback Function to call when the target element is found
-     */
-    observeWithSelector(fullSelector: string, callback: (element: HTMLElement) => void): void {
-        const element = document.querySelector<HTMLElement>(fullSelector);
-        const observe = (element: HTMLElement) => {
-            callback(element);
-            this.createObserver(
-                element,
-                (_mutations, _observer) => {
-                    callback(element);
-                },
-                {
-                    childList: true,
-                }
-            );
-        };
-
-        if (!element) {
-            this.observeParent(fullSelector, observe);
-            return;
-        }
-
-        observe(element);
-    }
-
-    /**
      * Observes a parent element for a target element matching the given selector
      * and stops observing when the target element is found
      * if the target element is found, the callback is called and the observer is cleaned up
