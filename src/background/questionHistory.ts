@@ -1,4 +1,3 @@
-import Honeybadger from "vendor/honeybadger.ext.no-remote.min.js";
 import Config from "../config.js";
 import { StorageKeys } from "../constants.js";
 import { getDefaultFavoriteQuestions } from "./defaultQuestions.js";
@@ -70,9 +69,6 @@ export async function saveQuestionHistory(videoInfo: VideoInfo, question: string
         );
     } catch (error) {
         console.error("Failed to save question history:", error);
-        if (error instanceof Error) {
-            Honeybadger.notify(error);
-        }
     }
 }
 

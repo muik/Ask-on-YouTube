@@ -25,7 +25,6 @@
         {
             "matches": ["https://www.youtube.com/*"],
             "js": [
-                "vendor/honeybadger.ext.min.js",
                 "contentscript/youtube.min.js"
             ],
             "css": ["contentscript/youtube.min.css"],
@@ -34,7 +33,6 @@
         {
             "matches": ["https://chatgpt.com/*"],
             "js": [
-                "vendor/honeybadger.ext.min.js",
                 "contentscript/chatgpt.min.js"
             ]
         },
@@ -43,7 +41,6 @@
                 "https://muik.github.io/Ask-on-YouTube/pages/welcome.html"
             ],
             "js": [
-                "vendor/honeybadger.ext.min.js",
                 "contentscript/welcome.min.js"
             ]
         }

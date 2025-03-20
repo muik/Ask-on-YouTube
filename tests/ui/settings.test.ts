@@ -36,7 +36,7 @@ describe("Settings page Test", () => {
         });
 
         if (language.startsWith("ko")) {
-            expect(title).toContain("설정 - Ask on YouTube");
+            expect(title).toContain("설정 - YouTube 질문하기");
         } else {
             expect(title).toContain("Settings - Ask on YouTube");
         }

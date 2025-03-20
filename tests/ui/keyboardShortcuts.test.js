@@ -5,14 +5,6 @@
 import { jest } from "@jest/globals";
 
 // Mock all dependencies
-const mockHoneybadger = {
-    configure: jest.fn(),
-};
-
-jest.unstable_mockModule("../../src/vendor/honeybadger.ext.no-remote.min.js", () => ({
-    default: mockHoneybadger,
-}));
-
 jest.unstable_mockModule("../../src/config.js", () => ({
     default: {
         MAX_QUESTIONS_COUNT: 5,
@@ -20,7 +12,6 @@ jest.unstable_mockModule("../../src/config.js", () => ({
         MAX_HISTORY_SIZE_IN_PROMPT: 10,
         REF_CODE: "ytq",
     },
-    honeybadgerConfig: {},
 }));
 
 jest.unstable_mockModule("../../src/constants.js", () => ({

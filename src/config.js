@@ -15,20 +15,4 @@ const Config = {
     REF_CODE: "ytq",
 };
 
-// Honeybadger configuration
-export const honeybadgerConfig = {
-    apiKey: "hbp_3jSfbmWLloU7jlmLHm6IiD9JebrjGz4wnmUY",
-    environment: process.env.NODE_ENV || "production",
-    revision: chrome.runtime.getManifest().version,
-    debug: process.env.NODE_ENV === "development",
-    reportData: true, // Send request data to Honeybadger
-    enableUncaught: true, // Report uncaught exceptions
-    enableUnhandledRejection: true, // Report unhandled promise rejections
-    breadcrumbsEnabled: true, // Enable breadcrumbs for better debugging
-    assetsUrl: 'chrome-extension://' + chrome.runtime.id + '/', // Match webpack source map URL
-    // Disable feedback form by setting endpoint to null
-    // This prevents the feedback form script from being loaded
-    userFeedbackEndpoint: null,
-};
-
 export default Config;

@@ -5,8 +5,7 @@ const webpack = require("webpack"),
     WriteFilePlugin = require("write-file-webpack-plugin"),
     MiniCssExtractPlugin = require("mini-css-extract-plugin"),
     CssMinimizerPlugin = require("css-minimizer-webpack-plugin"),
-    TerserPlugin = require("terser-webpack-plugin"),
-    HoneybadgerSourceMapPlugin = require("@honeybadger-io/webpack");
+    TerserPlugin = require("terser-webpack-plugin");
 
 if (process.env.NODE_ENV == null) {
     process.env.NODE_ENV = "development";
@@ -18,13 +17,6 @@ const plugins = [
         "process.env": {
             ENV: JSON.stringify(ENV),
         },
-    }),
-    new HoneybadgerSourceMapPlugin({
-        apiKey: "hbp_3jSfbmWLloU7jlmLHm6IiD9JebrjGz4wnmUY",
-        assetsUrl: "chrome-extension://gdcabhbeojofokajoomgoclohimfnfjb",
-        revision: process.env.npm_package_version,
-        deploy: true,
-        userFeedbackEndpoint: null,
     }),
     new CopyWebpackPlugin({
         patterns: [
@@ -38,10 +30,6 @@ const plugins = [
             {
                 from: "src/images",
                 to: "images",
-            },
-            {
-                from: "src/vendor/honeybadger.ext.no-remote.min.js",
-                to: "vendor/honeybadger.ext.min.js",
             },
         ],
     }),
@@ -93,10 +81,6 @@ const moduleRules = [
         },
         exclude: /node_modules/,
     },
-    {
-        test: /honeybadger\.ext\.no-remote\.min\.js$/,
-        type: "javascript/auto",
-    },
 ];
 
 const config = {
@@ -112,10 +96,7 @@ const config = {
         ],
         "contentscript/chatgpt": path.join(__dirname, "src", "contentscript", "chatgpt.js"),
         "contentscript/welcome": path.join(__dirname, "src", "contentscript", "welcome.js"),
-        background: [
-            path.join(__dirname, "src", "vendor", "honeybadger.ext.no-remote.min.js"),
-            path.join(__dirname, "src", "background.js"),
-        ],
+        background: path.join(__dirname, "src", "background.js"),
         settings: [
             path.join(__dirname, "src", "options", "index.tsx"),
             path.join(__dirname, "src", "css", "settings.css"),

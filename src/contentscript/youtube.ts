@@ -1,5 +1,3 @@
-import Honeybadger from "vendor/honeybadger.ext.no-remote.min.js";
-import { honeybadgerConfig } from "../config.js";
 import { BackgroundActions } from "../constants.js";
 import { handleQuestionShortcut } from "./youtube/keyboardShortcuts.js";
 import { detectVideoOptionClick, injectExtraOptions } from "./youtube/moreOptions.js";
@@ -9,8 +7,6 @@ import {
     setupShortsClickHandlers,
 } from "./youtube/shortsHandlers.js";
 import { injectDetailRelatedElements } from "./youtube/videoDetail.js";
-
-Honeybadger.configure(honeybadgerConfig);
 
 /**
  * Handle clicks on the settings link

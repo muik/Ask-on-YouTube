@@ -1,8 +1,4 @@
-import Honeybadger from "vendor/honeybadger.ext.no-remote.min.js";
-import { honeybadgerConfig } from "../config.js";
 import { BackgroundActions } from "../constants.js";
-
-Honeybadger.configure(honeybadgerConfig);
 
 window.onload = () => {
     const settingsBtn = document.getElementById("settings-btn");
@@ -30,7 +26,7 @@ window.onload = () => {
                 alert(message);
                 return;
             }
-            Honeybadger.notify(error);
+            console.error(error);
         }
     });
 };

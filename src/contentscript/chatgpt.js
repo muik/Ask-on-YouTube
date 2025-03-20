@@ -1,7 +1,6 @@
 "use strict";
 
-import Honeybadger from "vendor/honeybadger.ext.no-remote.min.js";
-import Config, { honeybadgerConfig } from "../config.js";
+import Config from "../config.js";
 import { BackgroundActions, Targets } from "../constants.js";
 import { waitForElm } from "./utils.js";
 
@@ -32,21 +31,17 @@ window.onload = async () => {
         return;
     }
 
-    Honeybadger.configure(honeybadgerConfig);
-
     try {
         // get prompt from background.js
         chrome.runtime.sendMessage(
             { action: BackgroundActions.GET_PROMPT, target: Targets.CHATGPT },
             onGetPrompt
         );
-
         if (chrome.runtime.lastError) {
-            Honeybadger.notify(chrome.runtime.lastError);
+            console.error("Error getting prompt - lastError:", chrome.runtime.lastError);
         }
     } catch (error) {
         console.error("Error getting prompt", error);
-        Honeybadger.notify(error);
     }
 };
 
