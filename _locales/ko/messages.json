@@ -1,9 +1,9 @@
 {
     "extensionName": {
-        "message": "Ask on YouTube using ChatGPT"
+        "message": "YouTube 질문하기 - ChatGPT"
     },
     "shortExtensionName": {
-        "message": "Ask on YouTube"
+        "message": "YouTube 질문하기"
     },
     "extensionDescription": {
         "message": "YouTube의 정보를 효과적으로 얻기 위한 필수 도구"
