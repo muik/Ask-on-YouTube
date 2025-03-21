@@ -148,52 +148,41 @@ export const setupShortsClickHandlers = async (): Promise<void> => {
 
         // for video detail page
         observerManager.findOrObserveElement(
-            "#page-manager > ytd-watch-flexy #related #contents.ytd-item-section-renderer", // section list in related
-            observeReelShelfRenderers,
-            () =>
-                window.location.pathname === "/watch" &&
-                window.location.search.includes("v=") &&
-                !window.location.search.includes("list=")
+            // section list in related
+            "#page-manager > ytd-watch-flexy #related > ytd-watch-next-secondary-results-renderer > #items.ytd-watch-next-secondary-results-renderer > ytd-item-section-renderer > #contents.ytd-item-section-renderer",
+            observeReelShelfRenderers
+            // no condition needed because ytd-watch-flexy is only on watch page
         );
 
-        // for video detail page in list mode
+        // for video detail page
         observerManager.findOrObserveElement(
             "#page-manager > ytd-watch-flexy #related > ytd-watch-next-secondary-results-renderer > #items.ytd-watch-next-secondary-results-renderer",
-            observeReelShelfRenderers,
-            () =>
-                window.location.pathname === "/watch" &&
-                window.location.search.includes("v=") &&
-                window.location.search.includes("list=")
+            observeReelShelfRenderers
+            // no condition needed because ytd-watch-flexy is only on watch page
         );
 
         // for /feed/history page
         observerManager.findOrObserveElement(
             "#page-manager > ytd-browse[page-subtype='history'] > ytd-two-column-browse-results-renderer > #primary > ytd-section-list-renderer > #contents",
-            observeShortsInItemSections,
-            () => window.location.pathname === "/feed/history"
+            observeShortsInItemSections
         );
 
         // for channel page
         observerManager.findOrObserveElement(
             "#page-manager > ytd-browse[page-subtype='channels'] > ytd-two-column-browse-results-renderer > #primary > ytd-section-list-renderer > #contents",
-            observeShortsInItemSections,
-            () => window.location.pathname.startsWith("/@")
+            observeShortsInItemSections
         );
 
         // for home page
         observerManager.findOrObserveElement(
             "#page-manager > ytd-browse[page-subtype='home'] #contents.ytd-rich-grid-renderer",
-            observeHomePageContent,
-            () => window.location.pathname === "/"
+            observeHomePageContent
         );
 
         // for channel shorts page
         observerManager.findOrObserveElement(
             "#page-manager > ytd-browse[page-subtype='channels'] #contents.ytd-rich-grid-renderer",
-            observeChannelShortsContent,
-            () =>
-                window.location.pathname.startsWith("/@") &&
-                window.location.pathname.endsWith("/shorts")
+            observeChannelShortsContent
         );
     } catch (error) {
         // Keep top-level error handling to prevent the extension from breaking
@@ -209,7 +198,7 @@ export const setupShortsClickHandlers = async (): Promise<void> => {
 function observeChannelShortsContent(element: HTMLElement): void {
     applyClickHandlers(element);
 
-    observerManager.observeChildNode(element, "YTD-RICH-ITEM-RENDERER", (node) => {
+    observerManager.observeChildNode(element, "YTD-RICH-ITEM-RENDERER", node => {
         applyClickHandlers(node);
     });
 }
@@ -222,7 +211,7 @@ function observeShortsInItemSections(element: HTMLElement): void {
     const contents = element.querySelectorAll<HTMLElement>("#contents.ytd-item-section-renderer");
     contents.forEach(content => observeReelShelfRenderers(content));
 
-    observerManager.observeChildNode(element, "YTD-ITEM-SECTION-RENDERER", (node) => {
+    observerManager.observeChildNode(element, "YTD-ITEM-SECTION-RENDERER", node => {
         const contents = node.querySelectorAll<HTMLElement>("#contents.ytd-item-section-renderer");
         contents.forEach(content => observeReelShelfRenderers(content));
     });

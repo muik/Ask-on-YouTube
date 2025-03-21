@@ -135,10 +135,9 @@ export class ObserverManager {
         }
 
         const setupObserver = (element: HTMLElement) => {
-            if (condition()) {
+            if (!config.subtree || condition()) {
                 const target = element.querySelector<HTMLElement>(targetSelector);
                 if (target) {
-                    console.debug("Found target element:", target, "using selectors:", { parentSelector, targetSelector });
                     callback(target);
                     return;
                 }
@@ -147,7 +146,7 @@ export class ObserverManager {
             this.createObserver(
                 element,
                 (_mutations: MutationRecord[], observer: MutationObserver) => {
-                    if (!condition()) {
+                    if (config.subtree && !condition()) {
                         return;
                     }
 
