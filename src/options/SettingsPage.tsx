@@ -149,14 +149,18 @@ const SettingsPage: React.FC = () => {
                         {chrome.i18n.getMessage("exampleScreenshot")}
                     </span>
                 </div>
-                <img
-                    src="../images/settings/dialog-suggestions-zoom.png"
-                    style={{
-                        maxWidth: "400px",
-                        display: isScreenshotOpen ? "block" : "none",
-                    }}
-                    alt="Example screenshot"
-                />
+                <div 
+                    className="screenshots-wrapper"
+                >
+                    <img
+                        src="../images/settings/question-dialog-zoom.png"
+                        alt="Example question dialog screenshot"
+                    />
+                    <img
+                        src="../images/settings/dialog-suggestions-zoom.png"
+                        alt="Example suggestions screenshot"
+                    />
+                </div>
             </div>
             <div className="footer">
                 <a href="https://muik.github.io/Ask-on-YouTube/pages/privacy.html">{chrome.i18n.getMessage("privacy")}</a>

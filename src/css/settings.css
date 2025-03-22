@@ -265,3 +265,20 @@ body.dark-mode .footer a {
 body.dark-mode .footer a:hover {
     color: #eee;
 }
+
+.screenshots-wrapper {
+    display: none;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.screenshot-container[data-opened="true"] .screenshots-wrapper {
+    display: flex;
+}
+
+.screenshots-wrapper img {
+    max-width: min(276px, 100%);
+    height: auto;
+}
