@@ -11,6 +11,12 @@
     "settings": {
         "message": "설정"
     },
+    "history": {
+        "message": "질문 내역"
+    },
+    "noHistory": {
+        "message": "아직 질문 내역이 없습니다."
+    },
     "saved": {
         "message": "저장됨!"
     },

@@ -91,10 +91,6 @@ const SettingsPage: React.FC = () => {
 
     return (
         <div className="container">
-            <h1>
-                <img src="../images/icon48.png" alt="Logo" />
-                <span>{chrome.i18n.getMessage("shortExtensionName")}</span>
-            </h1>
             <h2>{chrome.i18n.getMessage("settings")}</h2>
 
             <h3>Gemini API</h3>
@@ -161,29 +157,6 @@ const SettingsPage: React.FC = () => {
                         alt="Example suggestions screenshot"
                     />
                 </div>
-            </div>
-            <div className="footer">
-                <a href="https://muik.github.io/Ask-on-YouTube/pages/privacy.html">{chrome.i18n.getMessage("privacy")}</a>
-                <a
-                    href={`mailto:muikor+ytq@gmail.com?subject=[Ask%20on%20YouTube]%20${encodeURIComponent(chrome.i18n.getMessage("feedback"))}`}
-                    target="_blank"
-                    rel="noreferrer"
-                >
-                    {chrome.i18n.getMessage("feedback")}
-                </a>
-                <a 
-                    href="https://github.com/muik/Ask-on-YouTube" 
-                    target="_blank"
-                    rel="noreferrer"
-                >
-                    GitHub
-                </a>
-                <span 
-                    className="version" 
-                    title={`${chrome.i18n.getMessage("shortExtensionName")} v${chrome.runtime.getManifest().version}`}
-                >
-                    v{chrome.runtime.getManifest().version}
-                </span>
             </div>
         </div>
     );

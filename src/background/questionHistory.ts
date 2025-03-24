@@ -1,22 +1,11 @@
 import Config from "../config.js";
 import { StorageKeys } from "../constants.js";
+import { HistoryItem, VideoInfo } from "../types.js";
 import { getDefaultFavoriteQuestions } from "./defaultQuestions.js";
 
 const { MAX_HISTORY_SIZE, MAX_HISTORY_SIZE_IN_PROMPT } = Config;
 
 const STORAGE_KEY = StorageKeys.QUESTION_HISTORY;
-
-interface VideoInfo {
-    id: string;
-    title: string;
-    caption: string;
-}
-
-interface HistoryItem {
-    videoInfo: VideoInfo;
-    question: string;
-    timestamp: string;
-}
 
 interface QuestionCounter {
     videoIds: Set<string>;

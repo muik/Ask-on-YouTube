@@ -11,6 +11,12 @@
     "settings": {
         "message": "Settings"
     },
+    "history": {
+        "message": "Question History"
+    },
+    "noHistory": {
+        "message": "No questions in history yet"
+    },
     "saved": {
         "message": "Saved!"
     },
