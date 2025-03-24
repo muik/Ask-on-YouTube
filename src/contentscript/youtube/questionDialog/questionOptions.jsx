@@ -6,7 +6,6 @@ import {
     getContainerElement,
     getDialogData,
     getYouTubeLanguageCode,
-    textToInputClickListener,
 } from "../questionView.js";
 import {
     addCaptionLoadChangedListener,
@@ -14,6 +13,7 @@ import {
     removeCaptionLoadChangedListener,
     setCaption,
 } from "./caption.js";
+import { textToInputClickListener } from "./dialogUI.js";
 import QuestionItem from "./questionItem";
 
 /**

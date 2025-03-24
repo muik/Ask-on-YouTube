@@ -10,3 +10,6 @@ alwaysApply: true
 
 # Config
 - @.prettierrc
+
+# Refactoring
+- When moving code to a new file, update all imports where it's used.

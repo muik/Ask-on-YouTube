@@ -1,7 +1,8 @@
 import { BackgroundActions } from "../../constants.js";
 import { Errors } from "../../errors.js";
 import { isGeminiServiceAvailable } from "./geminiService.js";
-import { getDialogData, setInputError } from "./questionView.js";
+import { setInputError } from "./questionDialog/errorHandler.js";
+import { getDialogData } from "./questionView.js";
 
 /**
  * Debounce function to limit the rate at which a function can fire

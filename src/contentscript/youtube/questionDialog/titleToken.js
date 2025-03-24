@@ -1,4 +1,4 @@
-import { textToInputClickListener } from "../questionView.js";
+import { textToInputClickListener } from "./dialogUI.js";
 
 const TokenTypes = {
     INPUTABLE: "inputable",
