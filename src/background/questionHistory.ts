@@ -10,8 +10,8 @@ const STORAGE_KEY = StorageKeys.QUESTION_HISTORY;
 
 interface QuestionCounter {
     videoIds: Set<string>;
-    timestamp: string | number;
-    count?: number;
+    timestamp: number;
+    count: number;
 }
 
 interface QuestionsResponse {
@@ -20,6 +20,56 @@ interface QuestionsResponse {
 
 interface StorageResult {
     [key: string]: HistoryItem[];
+}
+
+type SendResponse = (response: unknown) => void;
+
+// Storage operations abstraction
+class QuestionHistoryStorage {
+    private static async getHistory(): Promise<HistoryItem[]> {
+        const result = (await chrome.storage.local.get([STORAGE_KEY])) as StorageResult;
+        return result[STORAGE_KEY] || [];
+    }
+
+    private static async setHistory(history: HistoryItem[]): Promise<void> {
+        await chrome.storage.local.set({ [STORAGE_KEY]: history });
+    }
+
+    static async saveItem(item: HistoryItem): Promise<void> {
+        const history = await this.getHistory();
+        history.push(item);
+        if (history.length > MAX_HISTORY_SIZE) {
+            history.splice(0, history.length - MAX_HISTORY_SIZE);
+        }
+        await this.setHistory(history);
+    }
+
+    static async getItems(count: number = MAX_HISTORY_SIZE_IN_PROMPT): Promise<HistoryItem[]> {
+        if (count <= 0) {
+            throw new Error("Count must be greater than 0");
+        }
+        const history = await this.getHistory();
+        return history.slice(-count);
+    }
+
+    static async updateLastItem(predicate: (item: HistoryItem) => boolean, update: Partial<HistoryItem>): Promise<void> {
+        const history = await this.getHistory();
+        if (history.length === 0) {
+            throw new Error("History is empty");
+        }
+
+        const lastItem = history[history.length - 1];
+        if (!predicate(lastItem)) {
+            throw new Error("Last item does not match the predicate");
+        }
+
+        Object.assign(lastItem, update);
+        await this.setHistory(history);
+    }
+
+    static async clearHistory(): Promise<void> {
+        await this.setHistory([]);
+    }
 }
 
 /**
@@ -42,31 +92,22 @@ export async function saveQuestionHistory(videoInfo: VideoInfo, question: string
 
     try {
         const startTime = performance.now();
-        const result = (await chrome.storage.local.get([STORAGE_KEY])) as StorageResult;
-        const history: HistoryItem[] = result[STORAGE_KEY] || [];
-        history.push(item);
-        if (history.length > MAX_HISTORY_SIZE) {
-            history.splice(0, history.length - MAX_HISTORY_SIZE);
-        }
-
-        await chrome.storage.local.set({ [STORAGE_KEY]: history });
+        await QuestionHistoryStorage.saveItem(item);
         console.debug(
-            "Question history saved:",
-            history.length,
-            "in",
+            "Question history saved in",
             (performance.now() - startTime).toFixed(1),
             "ms"
         );
     } catch (error) {
         console.error("Failed to save question history:", error);
+        throw error;
     }
 }
 
 export async function getQuestionHistory(
     count: number = MAX_HISTORY_SIZE_IN_PROMPT
 ): Promise<HistoryItem[]> {
-    const result = (await chrome.storage.local.get([STORAGE_KEY])) as StorageResult;
-    return (result[STORAGE_KEY] || []).slice(-count);
+    return QuestionHistoryStorage.getItems(count);
 }
 
 /**
@@ -74,8 +115,8 @@ export async function getQuestionHistory(
  * @returns {QuestionsResponse} - The recent questions.
  */
 export async function getRecentQuestions(): Promise<QuestionsResponse> {
-    const result = (await chrome.storage.local.get([STORAGE_KEY])) as StorageResult;
-    const recentItems = (result[STORAGE_KEY] || [])
+    const history = await QuestionHistoryStorage.getItems();
+    const recentItems = history
         .reverse()
         .map((item: HistoryItem) => item.question)
         .filter((item: string, index: number, self: string[]) => self.indexOf(item) === index);
@@ -91,35 +132,32 @@ export async function getRecentQuestions(): Promise<QuestionsResponse> {
  * @returns {QuestionsResponse} - The favorite questions.
  */
 export async function getFavoriteQuestions(lang: string = "en"): Promise<QuestionsResponse> {
-    const result = (await chrome.storage.local.get([STORAGE_KEY])) as StorageResult;
+    const history = await QuestionHistoryStorage.getItems();
     const counter: Record<string, QuestionCounter> = {};
 
     // group the questions by question and video id
-    (result[STORAGE_KEY] || []).forEach((item: HistoryItem) => {
+    history.forEach((item: HistoryItem) => {
         const videoId = item.videoInfo.id;
         const question = item.question.trim();
+        const timestamp = Date.parse(item.timestamp);
+
         if (counter[question]) {
             counter[question].videoIds.add(videoId);
-            counter[question].timestamp = Math.max(
-                counter[question].timestamp as number,
-                Date.parse(item.timestamp)
-            );
+            counter[question].timestamp = Math.max(counter[question].timestamp, timestamp);
+            counter[question].count = counter[question].videoIds.size;
         } else {
             counter[question] = {
                 videoIds: new Set([videoId]),
-                timestamp: Date.parse(item.timestamp),
+                timestamp,
+                count: 1
             };
         }
-    });
-
-    Object.values(counter).forEach((item: QuestionCounter) => {
-        item.count = item.videoIds.size;
     });
 
     const defaultQuestions = await getDefaultFavoriteQuestions(lang);
     defaultQuestions.forEach(question => {
         if (counter[question]) {
-            counter[question].count = Math.max(counter[question].count || 0, 2);
+            counter[question].count = Math.max(counter[question].count, 2);
         } else {
             counter[question] = { videoIds: new Set(), count: 2, timestamp: 0 };
         }
@@ -127,10 +165,8 @@ export async function getFavoriteQuestions(lang: string = "en"): Promise<Questio
 
     // sort by count and timestamp, descending
     const favoriteItems = Object.keys(counter).sort((a, b) => {
-        return (
-            (counter[b].count || 0) - (counter[a].count || 0) ||
-            (counter[b].timestamp as number) - (counter[a].timestamp as number)
-        );
+        const countDiff = counter[b].count - counter[a].count;
+        return countDiff !== 0 ? countDiff : counter[b].timestamp - counter[a].timestamp;
     });
 
     return { questions: favoriteItems.slice(0, Config.MAX_QUESTIONS_COUNT) };
@@ -142,13 +178,13 @@ export async function getFavoriteQuestions(lang: string = "en"): Promise<Questio
  * @param {string} request.videoId - The video id.
  * @param {string} request.question - The question to validate.
  * @param {string} request.answerUrl - The URL of the answer to set.
+ * @param {SendResponse} sendResponse - The callback function to send the response.
  */
 export async function setAnswer(
     request: { videoId: string; question: string; answerUrl: string },
-    sendResponse: (response: any) => void
+    sendResponse: SendResponse
 ) {
     processSetAnswer(request).then(sendResponse).catch(handleError(sendResponse));
-
     return true;
 }
 
@@ -172,21 +208,10 @@ async function processSetAnswer({
 
     try {
         const startTime = performance.now();
-        const result = (await chrome.storage.local.get([STORAGE_KEY])) as StorageResult;
-        const history: HistoryItem[] = result[STORAGE_KEY] || [];
-
-        if (history.length === 0) {
-            throw new Error("History is empty");
-        }
-
-        // Get the last item and validate
-        const lastItem = history[history.length - 1];
-        if (lastItem.videoInfo.id !== videoId || lastItem.question !== question) {
-            throw new Error("Last question does not match the provided video and question");
-        }
-
-        lastItem.answerUrl = answerUrl;
-        await chrome.storage.local.set({ [STORAGE_KEY]: history });
+        await QuestionHistoryStorage.updateLastItem(
+            (item) => item.videoInfo.id === videoId && item.question === question,
+            { answerUrl }
+        );
         console.debug(
             "Answer updated for last question in",
             (performance.now() - startTime).toFixed(1),
@@ -194,6 +219,7 @@ async function processSetAnswer({
         );
     } catch (error) {
         console.error("Failed to set answer:", error);
+        throw error;
     }
 }
 
