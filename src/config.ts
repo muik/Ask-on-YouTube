@@ -19,7 +19,7 @@ interface Config {
 
 const Config: Config = {
     MAX_QUESTIONS_COUNT: 5,
-    MAX_HISTORY_SIZE: 50,
+    MAX_HISTORY_SIZE: 500,
     MAX_HISTORY_SIZE_IN_PROMPT: 10,
     REF_CODE: "ytq",
 };

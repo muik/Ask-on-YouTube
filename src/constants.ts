@@ -18,7 +18,6 @@ export enum BackgroundActions {
 export enum StorageKeys {
     GEMINI_API_KEY = "geminiAPIKey",
     LAST_QUESTION_OPTION = "lastQuestionOption",
-    QUESTION_HISTORY = "questionHistory",
     QUESTION_MENU_USED_BEFORE = "questionMenuUsedBefore",
 }
 

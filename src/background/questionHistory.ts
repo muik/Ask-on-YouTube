@@ -1,12 +1,10 @@
 import Config from "../config";
-import { StorageKeys } from "../constants";
 import { HistoryItem, VideoInfo } from "../types";
+import HistoryStorage from "./db/questionHistory/storage";
 import { getDefaultFavoriteQuestions } from "./defaultQuestions";
 import { handleError } from "./handlers";
 
-const { MAX_HISTORY_SIZE, MAX_HISTORY_SIZE_IN_PROMPT } = Config;
-
-const STORAGE_KEY = StorageKeys.QUESTION_HISTORY;
+const { MAX_HISTORY_SIZE_IN_PROMPT } = Config;
 
 interface QuestionCounter {
     videoIds: Set<string>;
@@ -18,57 +16,27 @@ interface QuestionsResponse {
     questions: string[];
 }
 
-interface StorageResult {
-    [key: string]: HistoryItem[];
-}
-
 type SendResponse = (response: unknown) => void;
 
 // Storage operations abstraction
 class QuestionHistoryStorage {
-    private static async getHistory(): Promise<HistoryItem[]> {
-        const result = (await chrome.storage.local.get([STORAGE_KEY])) as StorageResult;
-        return result[STORAGE_KEY] || [];
-    }
-
-    private static async setHistory(history: HistoryItem[]): Promise<void> {
-        await chrome.storage.local.set({ [STORAGE_KEY]: history });
-    }
-
     static async saveItem(item: HistoryItem): Promise<void> {
-        const history = await this.getHistory();
-        history.push(item);
-        if (history.length > MAX_HISTORY_SIZE) {
-            history.splice(0, history.length - MAX_HISTORY_SIZE);
-        }
-        await this.setHistory(history);
+        await HistoryStorage.saveItem(item);
     }
 
     static async getItems(count: number = MAX_HISTORY_SIZE_IN_PROMPT): Promise<HistoryItem[]> {
         if (count <= 0) {
             throw new Error("Count must be greater than 0");
         }
-        const history = await this.getHistory();
-        return history.slice(-count);
+        return HistoryStorage.getItems(count);
     }
 
     static async updateLastItem(predicate: (item: HistoryItem) => boolean, update: Partial<HistoryItem>): Promise<void> {
-        const history = await this.getHistory();
-        if (history.length === 0) {
-            throw new Error("History is empty");
-        }
-
-        const lastItem = history[history.length - 1];
-        if (!predicate(lastItem)) {
-            throw new Error("Last item does not match the predicate");
-        }
-
-        Object.assign(lastItem, update);
-        await this.setHistory(history);
+        await HistoryStorage.updateLastItem(predicate, update);
     }
 
     static async clearHistory(): Promise<void> {
-        await this.setHistory([]);
+        await HistoryStorage.clearHistory();
     }
 }
 

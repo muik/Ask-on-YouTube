@@ -3,22 +3,29 @@ import "../__mocks__/setup";
 
 import { jest } from "@jest/globals";
 import Config from "../../config";
-import { StorageKeys } from "../../constants";
 import { VideoInfo } from "../../types";
-import { mockOnInstalledCallback, mockStorage } from "../__mocks__/setup";
+import MockIndexedDB from "../__mocks__/historyStorage";
+import { mockOnInstalledCallback } from "../__mocks__/setup";
 import {
     getDefaultQuestion,
     getFavoriteQuestions,
     getQuestionHistory,
     getRecentQuestions,
     saveQuestionHistory,
+    setAnswer,
 } from "../questionHistory";
+
+jest.mock("../db/questionHistory/storage", () => {
+    return {
+        __esModule: true,
+        default: MockIndexedDB,
+    };
+});
 
 describe("Question History", () => {
     beforeEach(() => {
-        // Clear mock storage and reset mock functions before each test
-        Object.keys(mockStorage).forEach(key => delete mockStorage[key]);
         jest.clearAllMocks();
+        MockIndexedDB.reset();
     });
 
     const mockVideoInfo: VideoInfo = {
@@ -33,14 +40,13 @@ describe("Question History", () => {
 
             await saveQuestionHistory(mockVideoInfo, question);
 
-            expect(chrome.storage.local.set).toHaveBeenCalled();
-            const savedData = mockStorage[StorageKeys.QUESTION_HISTORY];
-            expect(savedData).toHaveLength(1);
-            expect(savedData[0]).toMatchObject({
+            const items = await MockIndexedDB.getItems(1);
+            expect(items).toHaveLength(1);
+            expect(items[0]).toMatchObject({
                 videoInfo: mockVideoInfo,
                 question: question,
             });
-            expect(savedData[0].timestamp).toBeDefined();
+            expect(items[0].timestamp).toBeDefined();
         });
 
         it("should maintain max history size", async () => {
@@ -53,9 +59,26 @@ describe("Question History", () => {
                 await saveQuestionHistory(mockVideoInfo, question);
             }
 
-            const history = mockStorage[StorageKeys.QUESTION_HISTORY];
-            expect(history).toHaveLength(Config.MAX_HISTORY_SIZE);
-            expect(history[history.length - 1].question).toBe(questions[questions.length - 1]);
+            const items = await MockIndexedDB.getItems(Config.MAX_HISTORY_SIZE);
+            expect(items).toHaveLength(Config.MAX_HISTORY_SIZE);
+            expect(items[items.length - 1].question).toBe(questions[questions.length - 1]);
+        });
+
+        it("should clean up old items when exceeding MAX_ITEMS", async () => {
+            const maxItems = Config.MAX_HISTORY_SIZE * 2;
+            const extraItems = 5;
+            const questions = Array.from(
+                { length: maxItems + extraItems },
+                (_, i) => `Question ${i}`
+            );
+
+            for (const question of questions) {
+                await saveQuestionHistory(mockVideoInfo, question);
+            }
+
+            const items = await MockIndexedDB.getItems(maxItems);
+            expect(items).toHaveLength(maxItems);
+            expect(items[items.length - 1].question).toBe(questions[questions.length - 1]);
         });
     });
 
@@ -154,6 +177,28 @@ describe("Question History", () => {
             const jaQuestion = await getDefaultQuestion("ja");
             expect(enQuestion).toBeDefined();
             expect(jaQuestion).toBeDefined();
+        });
+    });
+
+    describe("setAnswer", () => {
+        it("should update the answer for the last matching question", async () => {
+            const question = "Test question?";
+            const answerUrl = "https://example.com/answer";
+
+            await saveQuestionHistory(mockVideoInfo, question);
+
+            const sendResponse = jest.fn();
+            await setAnswer(
+                {
+                    videoId: mockVideoInfo.id,
+                    question: question,
+                    answerUrl: answerUrl,
+                },
+                sendResponse
+            );
+
+            const items = await MockIndexedDB.getItems(1);
+            expect(items[0].answerUrl).toBe(answerUrl);
         });
     });
 });

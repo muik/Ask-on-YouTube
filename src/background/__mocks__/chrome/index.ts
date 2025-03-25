@@ -1,11 +1,14 @@
-import { mockChromeStorage } from "../storage";
-
 // Mock onInstalled callback
 export const mockOnInstalledCallback = jest.fn();
 
 // Mock chrome APIs
 export const mockChrome = {
-    storage: mockChromeStorage,
+    storage: {
+        sync: {
+            get: jest.fn(),
+            set: jest.fn(),
+        },
+    },
     i18n: {
         getMessage: jest.fn().mockImplementation((...args: unknown[]) => {
             // Return the first argument as the message for testing
