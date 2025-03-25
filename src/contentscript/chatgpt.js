@@ -45,6 +45,72 @@ window.onload = async () => {
     }
 };
 
+/**
+ * Sends a message to the background script with the answer URL.
+ * Handles any errors that occur during message sending.
+ * 
+ * @param {Object} promptData - The prompt data containing video and question information
+ * @param {Object} promptData.videoInfo - Video information object
+ * @param {string} promptData.videoInfo.id - YouTube video ID
+ * @param {string} promptData.question - The question that was asked
+ * @param {string} answerUrl - The URL of the ChatGPT answer
+ */
+async function sendAnswerMessage(promptData, answerUrl) {
+    try {
+        await chrome.runtime.sendMessage({
+            action: BackgroundActions.SET_ANSWER,
+            target: Targets.CHATGPT,
+            videoId: promptData.videoInfo.id,
+            question: promptData.question,
+            answerUrl: answerUrl,
+        });
+        
+        if (chrome.runtime.lastError) {
+            console.error("Chrome runtime error:", chrome.runtime.lastError);
+        }
+    } catch (error) {
+        console.error("Error sending message to background script:", error);
+    }
+}
+
+/**
+ * Checks if the current URL is a permanent chat URL and handles it by sending the answer message.
+ * 
+ * @param {Object} promptData - The prompt data containing video and question information
+ * @returns {boolean} - True if the URL was handled, false otherwise
+ */
+function handlePermanentUrl(promptData) {
+    if (window.location.href.includes('/c/')) {
+        sendAnswerMessage(promptData, window.location.href);
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Updates the answer URL when ChatGPT generates a response.
+ * 
+ * @param {Object} promptData - The prompt data containing video and question information
+ * @param {Object} promptData.videoInfo - Video information object
+ * @param {string} promptData.videoInfo.id - YouTube video ID
+ * @param {string} promptData.question - The question that was asked
+ */
+function updateAnswerUrl(promptData) {
+    // If current URL is already a chat URL, send the answer and exit
+    if (handlePermanentUrl(promptData)) {
+        return;
+    }
+
+    // Otherwise, observe for URL changes
+    const observer = new MutationObserver(() => {
+        if (handlePermanentUrl(promptData)) {
+            observer.disconnect();
+        }
+    });
+    
+    observer.observe(document, { subtree: true, childList: true });
+}
+
 function onGetPrompt(response) {
     console.debug("onGetPrompt", response);
     const promptData = response.promptData;
@@ -63,6 +129,7 @@ function onGetPrompt(response) {
             if (!sendButton.hasAttribute("disabled")) {
                 console.debug("sendButton clicked");
                 sendButton.click();
+                updateAnswerUrl(promptData);
                 return;
             }
             console.debug("sendButton disabled", sendButton);
@@ -127,6 +194,7 @@ function setPromptWithTranscript(promptTextarea, promptData) {
             waitForElm(`${sendButtonSelector}:not([disabled])`).then(
                 (sendButton) => {
                     sendButton.click();
+                    updateAnswerUrl(promptData);
                 }
             );
         }, 100);
@@ -192,6 +260,7 @@ ${videoInfoPrompt}
                 return;
             }
             sendButton.click();
+            updateAnswerUrl(promptData);
 
             if (pageIndex < pagesCount) {
                 setPromptPaging(

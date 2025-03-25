@@ -115,5 +115,8 @@
     },
     "hideAPIKey": {
         "message": "API 키 숨기기"
+    },
+    "viewAnswer": {
+        "message": "답변 보기"
     }
 }

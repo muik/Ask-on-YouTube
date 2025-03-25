@@ -4,7 +4,7 @@ import { Errors } from "../errors.js";
 /**
  * Handle error
  * @param {Function} sendResponse - The send response function
- * @returns {Function} - The function
+ * @returns {(error: ErrorWithCode) => void} - The error handler function
  */
 export function handleError(sendResponse) {
     return (error) => {

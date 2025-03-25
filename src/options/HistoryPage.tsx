@@ -3,9 +3,12 @@ import { enUS, ko } from "date-fns/locale";
 import { Clock } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { getQuestionHistory } from "../background/questionHistory.js";
+import Config from "../config.js";
 import "../css/settings.css";
 import { getVideoThumbnailUrl } from "../data.js";
 import { HistoryItem } from "../types.js";
+
+const { MAX_HISTORY_SIZE } = Config;
 
 const HistoryPage: React.FC = () => {
     const [history, setHistory] = useState<HistoryItem[]>([]);
@@ -18,7 +21,7 @@ const HistoryPage: React.FC = () => {
 
     const loadHistory = async () => {
         try {
-            const historyItems = await getQuestionHistory();
+            const historyItems = await getQuestionHistory(MAX_HISTORY_SIZE);
             setHistory(historyItems.reverse());
         } catch (error) {
             console.error("Failed to load history:", error);
@@ -81,12 +84,22 @@ const HistoryPage: React.FC = () => {
                         <div className="history-question">
                             {item.question}
                         </div>
-                        <div className="history-timestamp">
-                            <Clock className="icon" size={16} strokeWidth={1.5} />
-                            {formatDistanceToNow(new Date(item.timestamp), {
-                                addSuffix: true,
-                                locale: getLocale(),
-                            })}
+                        <div className="history-footer">
+                            <div className="history-timestamp">
+                                <Clock className="icon" size={16} strokeWidth={1.5} />
+                                {formatDistanceToNow(new Date(item.timestamp), {
+                                    addSuffix: true,
+                                    locale: getLocale(),
+                                })}
+                            </div>
+                            {item.answerUrl && (
+                                <button
+                                    onClick={() => window.open(item.answerUrl, "_blank")}
+                                    className="answer-button"
+                                >
+                                    {chrome.i18n.getMessage("viewAnswer")}
+                                </button>
+                            )}
                         </div>
                     </div>
                 ))}

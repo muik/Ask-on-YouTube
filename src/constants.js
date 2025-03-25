@@ -10,6 +10,7 @@ export const BackgroundActions = {
     GET_QUESTION_COMPLETE: "getQuestionComplete",
     GET_CAPTION: "getCaption",
     GET_QUESTION_COMPLETE_AVAILABLE: "getQuestionCompleteAvailable",
+    SET_ANSWER: "setAnswer",
 };
 
 export const StorageKeys = {

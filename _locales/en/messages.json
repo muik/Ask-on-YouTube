@@ -118,5 +118,8 @@
     },
     "hideAPIKey": {
         "message": "Hide API Key"
+    },
+    "viewAnswer": {
+        "message": "View Answer"
     }
 }

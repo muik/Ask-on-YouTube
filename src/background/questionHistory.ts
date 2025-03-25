@@ -2,6 +2,7 @@ import Config from "../config.js";
 import { StorageKeys } from "../constants.js";
 import { HistoryItem, VideoInfo } from "../types.js";
 import { getDefaultFavoriteQuestions } from "./defaultQuestions.js";
+import { handleError } from "./handlers.js";
 
 const { MAX_HISTORY_SIZE, MAX_HISTORY_SIZE_IN_PROMPT } = Config;
 
@@ -41,7 +42,7 @@ export async function saveQuestionHistory(videoInfo: VideoInfo, question: string
 
     try {
         const startTime = performance.now();
-        const result = await chrome.storage.local.get([STORAGE_KEY]) as StorageResult;
+        const result = (await chrome.storage.local.get([STORAGE_KEY])) as StorageResult;
         const history: HistoryItem[] = result[STORAGE_KEY] || [];
         history.push(item);
         if (history.length > MAX_HISTORY_SIZE) {
@@ -61,8 +62,10 @@ export async function saveQuestionHistory(videoInfo: VideoInfo, question: string
     }
 }
 
-export async function getQuestionHistory(count: number = MAX_HISTORY_SIZE_IN_PROMPT): Promise<HistoryItem[]> {
-    const result = await chrome.storage.local.get([STORAGE_KEY]) as StorageResult;
+export async function getQuestionHistory(
+    count: number = MAX_HISTORY_SIZE_IN_PROMPT
+): Promise<HistoryItem[]> {
+    const result = (await chrome.storage.local.get([STORAGE_KEY])) as StorageResult;
     return (result[STORAGE_KEY] || []).slice(-count);
 }
 
@@ -71,7 +74,7 @@ export async function getQuestionHistory(count: number = MAX_HISTORY_SIZE_IN_PRO
  * @returns {QuestionsResponse} - The recent questions.
  */
 export async function getRecentQuestions(): Promise<QuestionsResponse> {
-    const result = await chrome.storage.local.get([STORAGE_KEY]) as StorageResult;
+    const result = (await chrome.storage.local.get([STORAGE_KEY])) as StorageResult;
     const recentItems = (result[STORAGE_KEY] || [])
         .reverse()
         .map((item: HistoryItem) => item.question)
@@ -87,8 +90,8 @@ export async function getRecentQuestions(): Promise<QuestionsResponse> {
  * @param {string} lang - The language code
  * @returns {QuestionsResponse} - The favorite questions.
  */
-export async function getFavoriteQuestions(lang: string = 'en'): Promise<QuestionsResponse> {
-    const result = await chrome.storage.local.get([STORAGE_KEY]) as StorageResult;
+export async function getFavoriteQuestions(lang: string = "en"): Promise<QuestionsResponse> {
+    const result = (await chrome.storage.local.get([STORAGE_KEY])) as StorageResult;
     const counter: Record<string, QuestionCounter> = {};
 
     // group the questions by question and video id
@@ -114,7 +117,7 @@ export async function getFavoriteQuestions(lang: string = 'en'): Promise<Questio
     });
 
     const defaultQuestions = await getDefaultFavoriteQuestions(lang);
-    defaultQuestions.forEach((question) => {
+    defaultQuestions.forEach(question => {
         if (counter[question]) {
             counter[question].count = Math.max(counter[question].count || 0, 2);
         } else {
@@ -133,7 +136,68 @@ export async function getFavoriteQuestions(lang: string = 'en'): Promise<Questio
     return { questions: favoriteItems.slice(0, Config.MAX_QUESTIONS_COUNT) };
 }
 
-export async function getDefaultQuestion(lang: string = 'en'): Promise<string> {
+/**
+ * Set the answer for the last question in history if it matches.
+ * @param {Object} request - The request object.
+ * @param {string} request.videoId - The video id.
+ * @param {string} request.question - The question to validate.
+ * @param {string} request.answerUrl - The URL of the answer to set.
+ */
+export async function setAnswer(
+    request: { videoId: string; question: string; answerUrl: string },
+    sendResponse: (response: any) => void
+) {
+    processSetAnswer(request).then(sendResponse).catch(handleError(sendResponse));
+
+    return true;
+}
+
+/**
+ * Update the answer for the last question in history if it matches.
+ * @param {Object} request - The request object.
+ * @param {string} request.videoId - The video id.
+ * @param {string} request.question - The question to validate.
+ * @param {string} request.answerUrl - The URL of the answer to set.
+ */
+async function processSetAnswer({
+    videoId,
+    question,
+    answerUrl,
+}: {
+    videoId: string;
+    question: string;
+    answerUrl: string;
+}): Promise<void> {
+    console.debug("Setting answer for last question:", videoId, question, answerUrl);
+
+    try {
+        const startTime = performance.now();
+        const result = (await chrome.storage.local.get([STORAGE_KEY])) as StorageResult;
+        const history: HistoryItem[] = result[STORAGE_KEY] || [];
+
+        if (history.length === 0) {
+            throw new Error("History is empty");
+        }
+
+        // Get the last item and validate
+        const lastItem = history[history.length - 1];
+        if (lastItem.videoInfo.id !== videoId || lastItem.question !== question) {
+            throw new Error("Last question does not match the provided video and question");
+        }
+
+        lastItem.answerUrl = answerUrl;
+        await chrome.storage.local.set({ [STORAGE_KEY]: history });
+        console.debug(
+            "Answer updated for last question in",
+            (performance.now() - startTime).toFixed(1),
+            "ms"
+        );
+    } catch (error) {
+        console.error("Failed to set answer:", error);
+    }
+}
+
+export async function getDefaultQuestion(lang: string = "en"): Promise<string> {
     const questions = await getFavoriteQuestions(lang);
     return questions.questions[0];
-} 
+}

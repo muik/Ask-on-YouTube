@@ -8,4 +8,5 @@ export interface HistoryItem {
     videoInfo: VideoInfo;
     question: string;
     timestamp: string;
+    answerUrl?: string;
 } 
