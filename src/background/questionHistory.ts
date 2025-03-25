@@ -1,8 +1,8 @@
-import Config from "../config.js";
-import { StorageKeys } from "../constants.js";
-import { HistoryItem, VideoInfo } from "../types.js";
-import { getDefaultFavoriteQuestions } from "./defaultQuestions.js";
-import { handleError } from "./handlers.js";
+import Config from "../config";
+import { StorageKeys } from "../constants";
+import { HistoryItem, VideoInfo } from "../types";
+import { getDefaultFavoriteQuestions } from "./defaultQuestions";
+import { handleError } from "./handlers";
 
 const { MAX_HISTORY_SIZE, MAX_HISTORY_SIZE_IN_PROMPT } = Config;
 

@@ -1,5 +1,5 @@
-import { BackgroundActions } from "../../../constants.js";
-import { Errors } from "../../../errors.js";
+import { BackgroundActions } from "../../../constants.ts";
+import { Errors } from "../../../errors.ts";
 import { isGeminiServiceNotLoaded, isGeminiServiceUnavailable } from "../geminiService.js";
 import { getContainerElement, getDialogData, isQuestionDialogClosed } from "../questionView.js";
 

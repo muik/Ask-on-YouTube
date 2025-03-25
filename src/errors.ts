@@ -1,4 +1,9 @@
-export const Errors = {
+interface ErrorDefinition {
+    message: string;
+    code: string;
+}
+
+export const Errors: Record<string, ErrorDefinition> = {
     UNKNOWN_ERROR: {
         message: chrome.i18n.getMessage("unknownError"),
         code: "UNKNOWN_ERROR",
@@ -37,9 +42,9 @@ export const Errors = {
     },
 };
 
-export const Info = {
+export const Info: Record<string, ErrorDefinition> = {
     NO_RECENT_QUESTIONS: {
         message: chrome.i18n.getMessage("noRecentQuestionsError"),
         code: "NO_RECENT_QUESTIONS",
     },
-};
+}; 

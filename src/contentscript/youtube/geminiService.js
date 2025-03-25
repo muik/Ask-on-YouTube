@@ -1,4 +1,4 @@
-import { BackgroundActions } from "../../constants.js";
+import { BackgroundActions } from "../../constants.ts";
 import { loadCaptionIfPending, setCaptionUnavailable } from "./questionDialog/caption.js";
 
 // Flag to enable/disable auto-completion functionality

@@ -1,13 +1,19 @@
 "use strict";
-import { Errors } from "../errors.js";
+import { Errors } from "../errors";
+
+interface ErrorWithCode extends Error {
+    code?: string;
+}
+
+type SendResponse = (response: { error: typeof Errors[keyof typeof Errors] | ErrorWithCode }) => void;
 
 /**
  * Handle error
- * @param {Function} sendResponse - The send response function
+ * @param {SendResponse} sendResponse - The send response function
  * @returns {(error: ErrorWithCode) => void} - The error handler function
  */
-export function handleError(sendResponse) {
-    return (error) => {
+export function handleError(sendResponse: SendResponse): (error: ErrorWithCode) => void {
+    return (error: ErrorWithCode) => {
         // If there is no error code, it is not a defined error to send to users.
         if (!error.code) {
             console.error("Unknown error:", error);
@@ -21,4 +27,4 @@ export function handleError(sendResponse) {
             error: error,
         });
     };
-}
+} 

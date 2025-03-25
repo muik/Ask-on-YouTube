@@ -5,7 +5,7 @@
 import { jest } from "@jest/globals";
 
 // Mock all dependencies
-jest.unstable_mockModule("../../src/config.js", () => ({
+jest.unstable_mockModule("../../src/config", () => ({
     default: {
         MAX_QUESTIONS_COUNT: 5,
         MAX_HISTORY_SIZE: 50,
@@ -14,7 +14,7 @@ jest.unstable_mockModule("../../src/config.js", () => ({
     },
 }));
 
-jest.unstable_mockModule("../../src/constants.js", () => ({
+jest.unstable_mockModule("../../src/constants", () => ({
     BackgroundActions: {},
     QuestionOptionKeys: {
         FAVORITES: "favorites",

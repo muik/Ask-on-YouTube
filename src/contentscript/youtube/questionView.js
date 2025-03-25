@@ -1,6 +1,6 @@
-import { BackgroundActions } from "../../constants.js";
+import { BackgroundActions } from "../../constants.ts";
 import { getVideoThumbnailUrl } from "../../data.js";
-import { Errors } from "../../errors.js";
+import { Errors } from "../../errors.ts";
 import { cleanupSuggestion } from "./autoComplete.js";
 import { loadGeminiServiceAvailable } from "./geminiService.js";
 import { clearCaptionPending } from "./questionDialog/caption.js";

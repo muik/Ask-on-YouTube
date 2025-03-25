@@ -1,7 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { BackgroundActions, QuestionOptionKeys } from "../../../constants.js";
-import { Errors, Info } from "../../../errors.js";
+import { BackgroundActions, QuestionOptionKeys } from "../../../constants.ts";
+import { Errors, Info } from "../../../errors.ts";
 import {
     getContainerElement,
     getDialogData,

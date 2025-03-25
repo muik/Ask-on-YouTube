@@ -16,7 +16,7 @@ jest.unstable_mockModule("../../src/background/geminiApi.js", () => ({
     generateJsonContent: mockGenerateJsonContent
 }));
 
-jest.unstable_mockModule("../../src/background/handlers.js", () => ({
+jest.unstable_mockModule("../../src/background/handlers", () => ({
     handleError: () => mockHandleError
 }));
 
@@ -28,7 +28,7 @@ jest.unstable_mockModule("../../src/background/questionHistory.ts", () => ({
     getQuestionHistory: mockGetQuestionHistory
 }));
 
-jest.unstable_mockModule("../../src/errors.js", () => ({
+jest.unstable_mockModule("../../src/errors", () => ({
     Errors: {
         INVALID_REQUEST: "INVALID_REQUEST"
     }

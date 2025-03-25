@@ -1,4 +1,4 @@
-import Config from "../../../config.js";
+import Config from "../../../config.ts";
 import { containerId } from "../questionView.js";
 
 export function getQuestionHtml() {
