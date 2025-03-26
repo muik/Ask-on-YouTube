@@ -11,6 +11,7 @@ describe("getTranscriptParagraphised", () => {
 
     it("should return an empty string for an empty transcript", async () => {
         fetch.mockResolvedValueOnce({
+            ok: true,
             text: async () => `
                 <?xml version="1.0" encoding="utf-8" ?>
                 <transcript>
@@ -24,6 +25,7 @@ describe("getTranscriptParagraphised", () => {
 
     it("should paragraphise a simple transcript", async () => {
         fetch.mockResolvedValueOnce({
+            ok: true,
             text: async () => `
                 <?xml version="1.0" encoding="utf-8" ?>
                 <transcript>
@@ -39,6 +41,7 @@ describe("getTranscriptParagraphised", () => {
 
     it("should create new paragraphs based on intervalTimeSec", async () => {
         fetch.mockResolvedValueOnce({
+            ok: true,
             text: async () => `
                 <?xml version="1.0" encoding="utf-8" ?>
                 <transcript>
@@ -56,6 +59,7 @@ describe("getTranscriptParagraphised", () => {
 
     it("should handle special characters and extra spaces", async () => {
         fetch.mockResolvedValueOnce({
+            ok: true,
             text: async () => `
                 <?xml version="1.0" encoding="utf-8" ?>
                 <transcript>
@@ -67,5 +71,23 @@ describe("getTranscriptParagraphised", () => {
 
         const result = await getTranscriptParagraphised("test-link");
         expect(result).toBe("Hello's world");
+    });
+
+    it("should throw error for failed fetch", async () => {
+        fetch.mockResolvedValueOnce({
+            ok: false,
+            status: 404
+        });
+
+        await expect(getTranscriptParagraphised("test-link")).rejects.toThrow("Failed to fetch transcript: 404");
+    });
+
+    it("should throw error for invalid transcript format", async () => {
+        fetch.mockResolvedValueOnce({
+            ok: true,
+            text: async () => "Invalid XML without transcript tag"
+        });
+
+        await expect(getTranscriptParagraphised("test-link")).rejects.toThrow("Invalid transcript format");
     });
 });

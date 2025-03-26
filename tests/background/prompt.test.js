@@ -1,48 +1,10 @@
 import { jest } from '@jest/globals';
 
-// Mock linkedom
-const mockTextNodes = [
-    {
-        getAttribute: (attr) => {
-            switch (attr) {
-                case 'start': return '0';
-                case 'dur': return '1';
-                default: return '';
-            }
-        },
-        textContent: 'Test text'
-    }
-];
-
 // Mock the transcript module
 const mockGetTranscriptParagraphised = jest.fn();
 jest.unstable_mockModule('../../src/background/transcript.js', () => ({
     getTranscriptParagraphised: mockGetTranscriptParagraphised
 }));
-
-// Mock linkedom
-jest.unstable_mockModule('linkedom', () => ({
-    DOMParser: class {
-        parseFromString() {
-            return {
-                getElementsByTagName: () => ({
-                    length: mockTextNodes.length,
-                    item: (i) => mockTextNodes[i],
-                    [Symbol.iterator]: function* () { yield* mockTextNodes; }
-                })
-            };
-        }
-    }
-}));
-
-// Mock Array.from for the mock text nodes
-const originalArrayFrom = Array.from;
-Array.from = function(arrayLike) {
-    if (arrayLike && arrayLike[Symbol.iterator]) {
-        return [...arrayLike];
-    }
-    return originalArrayFrom(arrayLike);
-};
 
 // Mock the fetch function globally for all tests in this file
 global.fetch = jest.fn();
@@ -83,6 +45,7 @@ describe('loadTranscript', () => {
 
         // Mock fetch and transcript responses
         fetch.mockResolvedValueOnce({
+            ok: true,
             text: () => Promise.resolve(mockVideoPageHtml)
         });
         mockGetTranscriptParagraphised.mockResolvedValueOnce('Test text');
@@ -117,6 +80,7 @@ describe('loadTranscript', () => {
 
         // Mock fetch and transcript responses
         fetch.mockResolvedValueOnce({
+            ok: true,
             text: () => Promise.resolve(mockVideoPageHtml)
         });
         mockGetTranscriptParagraphised.mockResolvedValueOnce('Texto de prueba');
@@ -133,6 +97,7 @@ describe('loadTranscript', () => {
 
         // Mock fetch response for video page
         fetch.mockResolvedValueOnce({
+            ok: true,
             text: () => Promise.resolve(mockVideoPageHtml)
         });
 
@@ -160,6 +125,7 @@ describe('loadTranscript', () => {
 
         // Mock fetch and transcript responses
         fetch.mockResolvedValueOnce({
+            ok: true,
             text: () => Promise.resolve(mockVideoPageHtml)
         });
         mockGetTranscriptParagraphised.mockResolvedValueOnce('Test text');
@@ -168,5 +134,17 @@ describe('loadTranscript', () => {
         expect(result).toBe('Test text');
         expect(fetch).toHaveBeenCalledTimes(1);
         expect(mockGetTranscriptParagraphised).toHaveBeenCalledWith('https://example.com/transcript/en');
+    });
+
+    it('should handle fetch errors gracefully', async () => {
+        // Mock fetch error with proper Response object
+        fetch.mockResolvedValueOnce({
+            ok: false,
+            status: 404,
+            text: () => Promise.reject(new Error('Failed to fetch transcript: 404'))
+        });
+
+        await expect(loadTranscript('test-video-id')).rejects.toThrow('Failed to fetch transcript: 404');
+        expect(mockGetTranscriptParagraphised).not.toHaveBeenCalled();
     });
 }); 

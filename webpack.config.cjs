@@ -18,11 +18,6 @@ const plugins = [
             ENV: JSON.stringify(ENV),
         },
     }),
-    // Provide process polyfill for browser environment
-    // This is needed because linkedom expects process to be available
-    new webpack.ProvidePlugin({
-        process: "process/browser",
-    }),
     new CopyWebpackPlugin({
         patterns: [
             {
@@ -128,14 +123,6 @@ const config = {
         },
         alias: {
             vendor: path.resolve(__dirname, "src/vendor"),
-        },
-        // Add fallbacks for optional dependencies used by linkedom
-        // Setting them to false tells webpack to ignore these modules
-        // since we don't use their functionality in our extension
-        fallback: {
-            "canvas": false,      // Ignore canvas module as it's not needed
-            "perf_hooks": false,  // Ignore perf_hooks module as it's not needed
-            "process": require.resolve("process/browser"),  // Use browser-compatible process polyfill
         },
     },
 };

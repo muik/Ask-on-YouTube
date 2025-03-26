@@ -1,5 +1,3 @@
-import { DOMParser } from "linkedom";
-
 /**
  * Get transcript paragraphised
  * @param {string} link transcript link
@@ -37,22 +35,28 @@ export async function getTranscriptParagraphised(link, intervalTimeSec = 1.5) {
  */
 async function getRawTranscript(link) {
     // Get Transcript
-    const transcriptPageResponse = await fetch(link); // Fetch the transcript data
+    const transcriptPageResponse = await fetch(link);
+    if (!transcriptPageResponse.ok) {
+        throw new Error(`Failed to fetch transcript: ${transcriptPageResponse.status}`);
+    }
+    
     const transcriptPageXml = await transcriptPageResponse.text();
+    if (!transcriptPageXml.includes('<transcript>')) {
+        throw new Error('Invalid transcript format');
+    }
 
-    // Parse Transcript using linkedom's DOMParser
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(transcriptPageXml, "text/xml");
+    // Parse transcript using regex
+    const textRegex = /<text start="([^"]+)" dur="([^"]+)">([^<]+)<\/text>/g;
+    const items = [];
+    let match;
 
-    // Extract text nodes (assuming <text> elements in the XML)
-    const textNodes = xmlDoc.getElementsByTagName("text");
+    while ((match = textRegex.exec(transcriptPageXml)) !== null) {
+        items.push({
+            start: match[1],
+            duration: match[2],
+            text: match[3]
+        });
+    }
 
-    // Map the nodes into an array of objects
-    return Array.from(textNodes).map(node => {
-        return {
-            start: node.getAttribute("start"),
-            duration: node.getAttribute("dur"),
-            text: node.textContent,
-        };
-    });
+    return items;
 }
