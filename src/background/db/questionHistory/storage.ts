@@ -1,4 +1,5 @@
 import Config from "../../../config";
+import { BackgroundActions } from "../../../constants";
 import { HistoryItem } from "../../../types";
 import { DBConnection } from "./connection";
 import { DBCursor } from "./cursor";
@@ -33,6 +34,9 @@ class HistoryStorage {
                     }
                 });
             }
+
+            // Notify that history has changed
+            chrome.runtime.sendMessage({ action: BackgroundActions.HISTORY_CHANGED });
         });
     }
 
@@ -105,6 +109,8 @@ class HistoryStorage {
     ): Promise<void> {
         return DBConnection.withTransaction("readwrite", async store => {
             await DBCursor.findAndUpdate(store, predicate, update);
+            // Notify that history has changed
+            chrome.runtime.sendMessage({ action: BackgroundActions.HISTORY_CHANGED });
         });
     }
 
@@ -115,6 +121,8 @@ class HistoryStorage {
                 request.onsuccess = () => resolve();
                 request.onerror = () => reject(request.error);
             });
+            // Notify that history has changed
+            chrome.runtime.sendMessage({ action: BackgroundActions.HISTORY_CHANGED });
         });
     }
 }

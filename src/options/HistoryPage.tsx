@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { getQuestionHistoryWithPagination } from "../background/questionHistory.js";
+import { BackgroundActions } from "../constants.js";
 import "../css/settings.css";
 import { HistoryItem as HistoryItemType } from "../types.js";
 import { HistoryItem } from "./components/HistoryItem";
@@ -62,6 +63,19 @@ const HistoryPage: React.FC = () => {
         document.title = `${chrome.i18n.getMessage("history")} - ${chrome.i18n.getMessage(
             "shortExtensionName"
         )}`;
+
+        // Listen for messages from background script
+        const messageListener = (message: any) => {
+            if (message.action === BackgroundActions.HISTORY_CHANGED) {
+                loadHistory();
+            }
+        };
+
+        chrome.runtime.onMessage.addListener(messageListener);
+
+        return () => {
+            chrome.runtime.onMessage.removeListener(messageListener);
+        };
     }, [loadHistory]);
 
     useEffect(() => {

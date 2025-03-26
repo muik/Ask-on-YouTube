@@ -12,6 +12,7 @@ export enum BackgroundActions {
     GET_CAPTION = "getCaption",
     GET_QUESTION_COMPLETE_AVAILABLE = "getQuestionCompleteAvailable",
     SET_ANSWER = "setAnswer",
+    HISTORY_CHANGED = "historyChanged",
 }
 
 /** Keys used for Chrome storage */

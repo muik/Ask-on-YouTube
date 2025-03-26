@@ -26,6 +26,11 @@ export const mockChrome = {
             // Return a mock URL for testing
             return `chrome-extension://mock-extension-id/${path}`;
         }),
+        sendMessage: jest.fn(),
+        onMessage: {
+            addListener: jest.fn(),
+            removeListener: jest.fn(),
+        },
     },
 } as any;
 
