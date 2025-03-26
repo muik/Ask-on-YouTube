@@ -19,11 +19,13 @@ export function getPrompt(sendResponse) {
 export function setPrompt(request, sendResponse) {
     processSetPrompt(request)
         .then(handleSetPromptResult(sendResponse))
+        .then(() => {
+            if (request.question && request.type !== "placeholder") {
+                saveQuestionHistory(request.videoInfo, request.question);
+            }
+        })
         .catch(handleError(sendResponse));
 
-    if (request.question && request.type !== "placeholder") {
-        saveQuestionHistory(request.videoInfo, request.question);
-    }
     return true;
 }
 
@@ -83,17 +85,13 @@ async function getTranscriptCached(videoId, langCode) {
     const cacheKey = `${videoId}-${langCode}`;
     if (transcriptCache.has(cacheKey)) {
         const transcript = transcriptCache.get(cacheKey);
-        console.debug(
-            `Using cached transcript for video ID: ${videoId} and langCode: ${langCode}`
-        );
+        console.debug(`Using cached transcript for video ID: ${videoId} and langCode: ${langCode}`);
         return transcript;
     }
 
     const transcript = await loadTranscript(videoId, langCode);
     transcriptCache.put(cacheKey, transcript);
-    console.debug(
-        `Cached transcript for video ID: ${videoId} and langCode: ${langCode}`
-    );
+    console.debug(`Cached transcript for video ID: ${videoId} and langCode: ${langCode}`);
     return transcript;
 }
 
@@ -110,7 +108,7 @@ function getTargetUrl(target) {
 }
 
 function handleSetPromptResult(sendResponse) {
-    return (result) => {
+    return result => {
         if (result.error) {
             throw result.error;
         }
