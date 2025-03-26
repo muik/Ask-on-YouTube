@@ -1,5 +1,5 @@
+import { render } from "preact";
 import React from "react";
-import { createRoot } from "react-dom/client";
 import { HashRouter, Navigate, Route, Routes } from "react-router-dom";
 import HistoryPage from "./HistoryPage";
 import Layout from "./Layout";
@@ -9,8 +9,7 @@ const container = document.getElementById("root");
 if (!container) {
     throw new Error("Root element not found");
 }
-const root = createRoot(container);
-root.render(
+render(
     <React.StrictMode>
         <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <Layout>
@@ -21,5 +20,6 @@ root.render(
                 </Routes>
             </Layout>
         </HashRouter>
-    </React.StrictMode>
+    </React.StrictMode>,
+    container
 );

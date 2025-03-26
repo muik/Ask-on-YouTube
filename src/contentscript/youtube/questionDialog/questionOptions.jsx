@@ -1,5 +1,4 @@
-import React from "react";
-import { createRoot } from "react-dom/client";
+import { render } from "preact";
 import { BackgroundActions, QuestionOptionKeys } from "../../../constants.ts";
 import { Errors, Info } from "../../../errors.ts";
 import {
@@ -49,7 +48,7 @@ export function resetQuestions(containerElement = null) {
 
     // cleanup React root by rendering empty content
     if (suggestionsRoot) {
-        suggestionsRoot.render(null);
+        render(null, suggestionsRoot);
     }
 
     // remove message
@@ -66,7 +65,7 @@ export function resetQuestions(containerElement = null) {
  */
 export function cleanupQuestionOptions() {
     if (suggestionsRoot) {
-        suggestionsRoot.unmount();
+        render(null, suggestionsRoot);
         suggestionsRoot = null;
     }
 }
@@ -263,10 +262,10 @@ function setQuestions(questions, containerElement = null) {
         containerElement = containerElement || getContainerElement();
         const suggestionsElement = containerElement.querySelector("ul.suggestions");
         suggestionsElement.innerHTML = ""; // Clear any existing HTML content
-        suggestionsRoot = createRoot(suggestionsElement);
+        suggestionsRoot = suggestionsElement;
     }
 
-    suggestionsRoot.render(
+    render(
         questions.map((question, index) => (
             <QuestionItem
                 key={index}
@@ -274,7 +273,8 @@ function setQuestions(questions, containerElement = null) {
                 onQuestionClick={handleQuestionItemClick}
                 onOptionClick={handleQuestionOptionClick}
             />
-        ))
+        )),
+        suggestionsRoot
     );
 }
 

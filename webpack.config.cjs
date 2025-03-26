@@ -55,7 +55,7 @@ const moduleRules = [
             options: {
                 presets: [
                     "@babel/preset-env",
-                    ["@babel/preset-react", { runtime: "automatic" }],
+                    ["@babel/preset-react", { runtime: "automatic", importSource: "preact" }],
                     "@babel/preset-typescript",
                 ],
             },
@@ -123,6 +123,10 @@ const config = {
         },
         alias: {
             vendor: path.resolve(__dirname, "src/vendor"),
+            "react": "preact/compat",
+            "react-dom/test-utils": "preact/test-utils",
+            "react-dom": "preact/compat",
+            "react/jsx-runtime": "preact/jsx-runtime"
         },
     },
 };
