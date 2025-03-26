@@ -12,7 +12,7 @@ export default {
             },
         ],
     },
-    testTimeout: 30000, // Extend the timeout for Puppeteer tests
+    testTimeout: 15000, // Extend the timeout for Puppeteer tests
     testEnvironment: "node",
     moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
     extensionsToTreatAsEsm: [".jsx"],
