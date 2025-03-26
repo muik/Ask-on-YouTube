@@ -1,4 +1,4 @@
-import { DOMParser } from "xmldom";
+import { DOMParser } from "linkedom";
 
 /**
  * Get transcript paragraphised
@@ -12,7 +12,7 @@ export async function getTranscriptParagraphised(link, intervalTimeSec = 1.5) {
     let endTime = -intervalTimeSec;
     let paragraphIndex = -1;
 
-    items.forEach((item) => {
+    items.forEach(item => {
         const startTime = parseFloat(item.start);
         const text = item.text
             .replace(/[\s\u00A0]+/g, " ")
@@ -40,7 +40,7 @@ async function getRawTranscript(link) {
     const transcriptPageResponse = await fetch(link); // Fetch the transcript data
     const transcriptPageXml = await transcriptPageResponse.text();
 
-    // Parse Transcript using DOMParser
+    // Parse Transcript using linkedom's DOMParser
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(transcriptPageXml, "text/xml");
 
@@ -48,7 +48,7 @@ async function getRawTranscript(link) {
     const textNodes = xmlDoc.getElementsByTagName("text");
 
     // Map the nodes into an array of objects
-    return Array.from(textNodes).map((node) => {
+    return Array.from(textNodes).map(node => {
         return {
             start: node.getAttribute("start"),
             duration: node.getAttribute("dur"),

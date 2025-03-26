@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 
-// Mock xmldom
+// Mock linkedom
 const mockTextNodes = [
     {
         getAttribute: (attr) => {
@@ -20,8 +20,8 @@ jest.unstable_mockModule('../../src/background/transcript.js', () => ({
     getTranscriptParagraphised: mockGetTranscriptParagraphised
 }));
 
-// Mock xmldom
-jest.unstable_mockModule('xmldom', () => ({
+// Mock linkedom
+jest.unstable_mockModule('linkedom', () => ({
     DOMParser: class {
         parseFromString() {
             return {
