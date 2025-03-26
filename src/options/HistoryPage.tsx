@@ -1,60 +1,98 @@
-import { formatDistanceToNow } from "date-fns";
-import { enUS, ko } from "date-fns/locale";
-import { Clock } from "lucide-react";
-import React, { useEffect, useState } from "react";
-import { getQuestionHistory } from "../background/questionHistory.js";
-import Config from "../config.js";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { getQuestionHistoryWithPagination } from "../background/questionHistory.js";
 import "../css/settings.css";
-import { getVideoThumbnailUrl } from "../data.js";
-import { HistoryItem } from "../types.js";
+import { HistoryItem as HistoryItemType } from "../types.js";
+import { HistoryItem } from "./components/HistoryItem";
 
-const { MAX_HISTORY_SIZE } = Config;
+const PAGE_SIZE = 15;
+
+const LoadingState: React.FC = () => (
+    <div className="loading">{chrome.i18n.getMessage("loading")}</div>
+);
+
+const EmptyState: React.FC = () => (
+    <div className="no-history">{chrome.i18n.getMessage("noHistory")}</div>
+);
+
+const LoadingMoreIndicator: React.FC = () => (
+    <div className="loading-more">{chrome.i18n.getMessage("loading")}</div>
+);
 
 const HistoryPage: React.FC = () => {
-    const [history, setHistory] = useState<HistoryItem[]>([]);
+    const [history, setHistory] = useState<HistoryItemType[]>([]);
     const [loading, setLoading] = useState(true);
+    const [hasMore, setHasMore] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const observer = useRef<IntersectionObserver | null>(null);
+    const lastItemRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        loadHistory();
-        setMessages();
-    }, []);
-
-    const loadHistory = async () => {
+    const loadHistory = useCallback(async () => {
         try {
-            const historyItems = await getQuestionHistory(MAX_HISTORY_SIZE);
-            setHistory(historyItems.reverse());
+            const { items, hasMore: more } = await getQuestionHistoryWithPagination(PAGE_SIZE);
+            setHistory(items);
+            setHasMore(more);
         } catch (error) {
             console.error("Failed to load history:", error);
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
-    const setMessages = () => {
-        document.title = `${chrome.i18n.getMessage(
-            "history"
-        )} - ${chrome.i18n.getMessage("shortExtensionName")}`;
-    };
+    const loadMore = useCallback(async () => {
+        if (!hasMore || loadingMore) return;
 
-    const getLocale = () => {
-        const language = chrome.i18n.getUILanguage();
-        return language.startsWith("ko") ? ko : enUS;
-    };
+        try {
+            setLoadingMore(true);
+            const lastItem = history[history.length - 1];
+            const { items, hasMore: more } = await getQuestionHistoryWithPagination(
+                PAGE_SIZE,
+                Date.parse(lastItem.timestamp)
+            );
+            setHistory(prev => [...prev, ...items]);
+            setHasMore(more);
+        } catch (error) {
+            console.error("Failed to load more history:", error);
+        } finally {
+            setLoadingMore(false);
+        }
+    }, [history, hasMore, loadingMore]);
+
+    useEffect(() => {
+        loadHistory();
+        document.title = `${chrome.i18n.getMessage("history")} - ${chrome.i18n.getMessage(
+            "shortExtensionName"
+        )}`;
+    }, [loadHistory]);
+
+    useEffect(() => {
+        if (loading || loadingMore) return;
+
+        observer.current = new IntersectionObserver(
+            entries => {
+                if (entries[0].isIntersecting && hasMore && !loadingMore) {
+                    loadMore();
+                }
+            },
+            { threshold: 0.5 }
+        );
+
+        if (lastItemRef.current) {
+            observer.current.observe(lastItemRef.current);
+        }
+
+        return () => {
+            if (observer.current) {
+                observer.current.disconnect();
+            }
+        };
+    }, [history, hasMore, loadingMore, loadMore]);
 
     if (loading) {
-        return (
-            <div className="loading">
-                {chrome.i18n.getMessage("loading")}
-            </div>
-        );
+        return <LoadingState />;
     }
 
     if (history.length === 0) {
-        return (
-            <div className="no-history">
-                {chrome.i18n.getMessage("noHistory")}
-            </div>
-        );
+        return <EmptyState />;
     }
 
     return (
@@ -62,50 +100,17 @@ const HistoryPage: React.FC = () => {
             <h2>{chrome.i18n.getMessage("history")}</h2>
             <div className="history-list">
                 {history.map((item, index) => (
-                    <div key={index} className="history-item">
-                        <div className="history-video">
-                            <a
-                                href={`https://www.youtube.com/watch?v=${item.videoInfo.id}`}
-                                target="_blank"
-                                rel="noreferrer"
-                            >
-                                <div className="video-info">
-                                    <img 
-                                        src={getVideoThumbnailUrl(item.videoInfo)} 
-                                        alt={item.videoInfo.title}
-                                        className="history-thumbnail"
-                                    />
-                                    <div className="text-container">
-                                        <div className="title">{item.videoInfo.title}</div>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                        <div className="history-question">
-                            {item.question}
-                        </div>
-                        <div className="history-footer">
-                            <div className="history-timestamp">
-                                <Clock className="icon" size={16} strokeWidth={1.5} />
-                                {formatDistanceToNow(new Date(item.timestamp), {
-                                    addSuffix: true,
-                                    locale: getLocale(),
-                                })}
-                            </div>
-                            {item.answerUrl && (
-                                <button
-                                    onClick={() => window.open(item.answerUrl, "_blank")}
-                                    className="answer-button"
-                                >
-                                    {chrome.i18n.getMessage("viewAnswer")}
-                                </button>
-                            )}
-                        </div>
-                    </div>
+                    <HistoryItem
+                        key={index}
+                        item={item}
+                        isLastItem={index === history.length - 1}
+                        lastItemRef={lastItemRef}
+                    />
                 ))}
+                {loadingMore && <LoadingMoreIndicator />}
             </div>
         </div>
     );
 };
 
-export default HistoryPage; 
+export default HistoryPage;

@@ -18,28 +18,6 @@ interface QuestionsResponse {
 
 type SendResponse = (response: unknown) => void;
 
-// Storage operations abstraction
-class QuestionHistoryStorage {
-    static async saveItem(item: HistoryItem): Promise<void> {
-        await HistoryStorage.saveItem(item);
-    }
-
-    static async getItems(count: number = MAX_HISTORY_SIZE_IN_PROMPT): Promise<HistoryItem[]> {
-        if (count <= 0) {
-            throw new Error("Count must be greater than 0");
-        }
-        return HistoryStorage.getItems(count);
-    }
-
-    static async updateLastItem(predicate: (item: HistoryItem) => boolean, update: Partial<HistoryItem>): Promise<void> {
-        await HistoryStorage.updateLastItem(predicate, update);
-    }
-
-    static async clearHistory(): Promise<void> {
-        await HistoryStorage.clearHistory();
-    }
-}
-
 /**
  * Save the question history to the storage.
  * @param {VideoInfo} videoInfo - The video info object.
@@ -60,7 +38,7 @@ export async function saveQuestionHistory(videoInfo: VideoInfo, question: string
 
     try {
         const startTime = performance.now();
-        await QuestionHistoryStorage.saveItem(item);
+        await HistoryStorage.saveItem(item);
         console.debug(
             "Question history saved in",
             (performance.now() - startTime).toFixed(1),
@@ -75,7 +53,26 @@ export async function saveQuestionHistory(videoInfo: VideoInfo, question: string
 export async function getQuestionHistory(
     count: number = MAX_HISTORY_SIZE_IN_PROMPT
 ): Promise<HistoryItem[]> {
-    return QuestionHistoryStorage.getItems(count);
+    if (count <= 0) {
+        throw new Error("Count must be greater than 0");
+    }
+    return HistoryStorage.getItems(count);
+}
+
+/**
+ * Get paginated question history for infinite scrolling.
+ * @param pageSize - Number of items to fetch per page
+ * @param lastTimestamp - Optional timestamp to fetch items before
+ * @returns Promise resolving to paginated history items and hasMore flag
+ */
+export async function getQuestionHistoryWithPagination(
+    pageSize: number,
+    lastTimestamp?: number
+): Promise<{ items: HistoryItem[]; hasMore: boolean }> {
+    if (pageSize <= 0) {
+        throw new Error("Page size must be greater than 0");
+    }
+    return HistoryStorage.getItemsWithPagination(pageSize, lastTimestamp);
 }
 
 /**
@@ -83,7 +80,7 @@ export async function getQuestionHistory(
  * @returns {QuestionsResponse} - The recent questions.
  */
 export async function getRecentQuestions(): Promise<QuestionsResponse> {
-    const history = await QuestionHistoryStorage.getItems();
+    const history = await HistoryStorage.getItems(MAX_HISTORY_SIZE_IN_PROMPT);
     const recentItems = history
         .reverse()
         .map((item: HistoryItem) => item.question)
@@ -100,7 +97,7 @@ export async function getRecentQuestions(): Promise<QuestionsResponse> {
  * @returns {QuestionsResponse} - The favorite questions.
  */
 export async function getFavoriteQuestions(lang: string = "en"): Promise<QuestionsResponse> {
-    const history = await QuestionHistoryStorage.getItems();
+    const history = await HistoryStorage.getItems(MAX_HISTORY_SIZE_IN_PROMPT);
     const counter: Record<string, QuestionCounter> = {};
 
     // group the questions by question and video id
@@ -117,7 +114,7 @@ export async function getFavoriteQuestions(lang: string = "en"): Promise<Questio
             counter[question] = {
                 videoIds: new Set([videoId]),
                 timestamp,
-                count: 1
+                count: 1,
             };
         }
     });
@@ -176,8 +173,8 @@ async function processSetAnswer({
 
     try {
         const startTime = performance.now();
-        await QuestionHistoryStorage.updateLastItem(
-            (item) => item.videoInfo.id === videoId && item.question === question,
+        await HistoryStorage.updateLastItem(
+            item => item.videoInfo.id === videoId && item.question === question,
             { answerUrl }
         );
         console.debug(

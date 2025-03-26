@@ -52,6 +52,53 @@ class HistoryStorage {
         });
     }
 
+    /**
+     * Retrieves history items with pagination support for infinite scrolling.
+     * Items are returned in reverse chronological order (newest first).
+     *
+     * @param pageSize - Number of items to fetch per page
+     * @param lastTimestamp - Optional timestamp in milliseconds to fetch items before.
+     *                         If not provided, fetches the most recent items.
+     *                         If provided, fetches items older than this timestamp.
+     *
+     * @returns Promise resolving to an object containing:
+     *          - items: Array of history items for the current page
+     *          - hasMore: Boolean indicating if there are more items to load
+     *
+     * @example
+     * // First page
+     * const firstPage = await getItemsWithPagination(20);
+     *
+     * // Next page (if hasMore is true)
+     * const lastItem = firstPage.items[firstPage.items.length - 1];
+     * const nextPage = await getItemsWithPagination(20, Date.parse(lastItem.timestamp));
+     */
+    static async getItemsWithPagination(
+        pageSize: number,
+        lastTimestamp?: number
+    ): Promise<{ items: HistoryItem[]; hasMore: boolean }> {
+        return DBConnection.withTransaction("readonly", async store => {
+            const items: HistoryItem[] = [];
+            let hasMore = true;
+
+            await DBCursor.iterateBackwards(
+                store,
+                value => {
+                    if (items.length < pageSize) {
+                        if (!lastTimestamp || Date.parse(value.timestamp) < lastTimestamp) {
+                            items.push(value);
+                        }
+                    } else {
+                        hasMore = false;
+                    }
+                },
+                () => items.length < pageSize
+            );
+
+            return { items, hasMore };
+        });
+    }
+
     static async updateLastItem(
         predicate: (item: HistoryItem) => boolean,
         update: Partial<HistoryItem>
@@ -72,4 +119,4 @@ class HistoryStorage {
     }
 }
 
-export default HistoryStorage; 
+export default HistoryStorage;
