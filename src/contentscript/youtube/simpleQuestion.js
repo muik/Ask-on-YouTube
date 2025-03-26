@@ -15,7 +15,7 @@ function getContainerElement() {
  */
 export function findSimpleQuestionInputShown() {
     const container = getContainerElement();
-    if (!container || container.style.display === 'none') {
+    if (!container || container.style.display === "none") {
         return null;
     }
     return container.querySelector(".question-input-container input[type='text']");
@@ -30,18 +30,28 @@ export function createQuestionInputForm() {
     const inputElement = containerElement.querySelector(
         ".question-input-container input[type='text']"
     );
-    inputElement.addEventListener("focus", (event) => {
+    inputElement.addEventListener("focus", event => {
         event.preventDefault();
 
         const videoInfo = getVideoInfoFromVideoDetail();
-        showQuestionDialog(videoInfo);
+        try {
+            showQuestionDialog(videoInfo);
+        } catch (error) {
+            if (error.code in Errors) {
+                setInputError(error);
+            } else {
+                console.error("showQuestionDialog error:", error);
+                setInputError(Errors.UNKNOWN_ERROR);
+            }
+        }
+
+        // unfocus the input element
+        inputElement.blur();
     });
 
     loadDefaultQuestion(inputElement);
 
-    const requestButton = containerElement.querySelector(
-        ".question-input-container button"
-    );
+    const requestButton = containerElement.querySelector(".question-input-container button");
     requestButton.addEventListener("click", onRequestButtonClick);
 
     return containerElement;
@@ -112,7 +122,7 @@ function onRequestButtonClick(event) {
                 langCode,
                 type: "placeholder",
             },
-            (response) => {
+            response => {
                 onPromptSet(response);
                 resetRequesting();
             }
@@ -128,27 +138,17 @@ function onRequestButtonClick(event) {
     }
 }
 
-function setInputError(
-    { message = "", type = "error" },
-    containerElement = null
-) {
+function setInputError({ message = "", type = "error" }, containerElement = null) {
     containerElement = containerElement || getContainerElement();
-    const inputErrorElement = containerElement.querySelector(
-        "#question-input-error"
-    );
+    const inputErrorElement = containerElement.querySelector("#question-input-error");
     inputErrorElement.textContent = message;
     inputErrorElement.setAttribute("type", type);
 }
 
 function handleError(error) {
     if (chrome.runtime.lastError) {
-        console.error(
-            "onPromptSet chrome.runtime.lastError:",
-            chrome.runtime.lastError
-        );
-        const message = `Error - ${
-            chrome.runtime.lastError.message || chrome.runtime.lastError
-        }`;
+        console.error("onPromptSet chrome.runtime.lastError:", chrome.runtime.lastError);
+        const message = `Error - ${chrome.runtime.lastError.message || chrome.runtime.lastError}`;
         setInputError({ message });
         return true;
     }
@@ -174,10 +174,7 @@ function onPromptSet(response) {
     }
 
     if (!response.targetUrl) {
-        console.error(
-            "onPromptSet Invalid Response - targetUrl is not set. response:",
-            response
-        );
+        console.error("onPromptSet Invalid Response - targetUrl is not set. response:", response);
         setInputError({ message: "Invalid response, please try again later." });
         return;
     }

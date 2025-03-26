@@ -1,6 +1,8 @@
+import { Errors } from "../../errors.js";
 import { findQuestionMenuShown } from "./moreOptions.js";
 import { showQuestionDialog } from "./questionView.js";
 import { findSimpleQuestionInputShown } from "./simpleQuestion.js";
+import { showToastMessage } from "./toast.js";
 import { getVideoInfoFromShortsDetail } from "./videoInfo.js";
 
 /**
@@ -44,11 +46,22 @@ export const handleQuestionShortcut = event => {
         }
     } else if (window.location.pathname.startsWith("/shorts/")) {
         // on shorts page without question menu
-        const videoContainer = document.querySelector("ytd-reel-video-renderer[is-active] ytd-reel-player-overlay-renderer");
+        const videoContainer = document.querySelector(
+            "ytd-reel-video-renderer[is-active] ytd-reel-player-overlay-renderer"
+        );
         if (videoContainer) {
             const { videoInfo } = getVideoInfoFromShortsDetail(videoContainer);
             if (videoInfo) {
-                showQuestionDialog(videoInfo);
+                try {
+                    showQuestionDialog(videoInfo);
+                } catch (error) {
+                    if (error.code in Errors) {
+                        showToastMessage(error.message);
+                    } else {
+                        console.error("handleQuestionShortcut error:", error);
+                        showToastMessage(Errors.UNKNOWN_ERROR.message);
+                    }
+                }
             }
         }
     }

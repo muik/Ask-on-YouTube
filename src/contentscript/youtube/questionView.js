@@ -5,13 +5,17 @@ import { cleanupSuggestion } from "./autoComplete.js";
 import { loadGeminiServiceAvailable } from "./geminiService.js";
 import { clearCaptionPending } from "./questionDialog/caption.js";
 import { createBackgroundElement, insertQuestionDialog } from "./questionDialog/dialogUI.js";
-import { handleChromeError, handleResponseError, setInputError } from "./questionDialog/errorHandler.js";
+import {
+    handleChromeError,
+    handleResponseError,
+    setInputError,
+} from "./questionDialog/errorHandler.js";
 import { repositionDialog } from "./questionDialog/positionManager.js";
 import {
     cleanupQuestionOptions,
     clearRequestQuestionsPendingListener,
     loadQuestionOptions,
-    resetQuestions
+    resetQuestions,
 } from "./questionDialog/questionOptions.jsx";
 import { getTitleTokens, setTitleToken } from "./questionDialog/titleToken.js";
 
@@ -32,24 +36,33 @@ export function getYouTubeLanguageCode() {
 }
 
 export function showQuestionDialog(videoInfo) {
-    dialogData.videoInfo = videoInfo;
-    const containerElement = getContainerElement() || insertQuestionDialog({
-        onRequestButtonClick,
-        onCloseButtonClick: hideQuestionDialog,
-        onResize: repositionDialog
-    });
-    containerElement.style.display = "block";
-    containerElement.style.zIndex = 9999;
+    try {
+        dialogData.videoInfo = videoInfo;
+        const containerElement =
+            getContainerElement() ||
+            insertQuestionDialog({
+                onRequestButtonClick,
+                onCloseButtonClick: hideQuestionDialog,
+                onResize: repositionDialog,
+            });
+        containerElement.style.display = "block";
+        containerElement.style.zIndex = 9999;
 
-    const backgroundElement = createBackgroundElement({ onClick: hideQuestionDialog });
-    document.body.insertAdjacentElement("beforeend", backgroundElement);
+        const backgroundElement = createBackgroundElement({ onClick: hideQuestionDialog });
+        document.body.insertAdjacentElement("beforeend", backgroundElement);
 
-    setQuestionDialogContent(videoInfo);
+        setQuestionDialogContent(videoInfo);
 
-    loadQuestionOptions(containerElement);
-    loadGeminiServiceAvailable();
-    loadDefaultQuestion(containerElement);
-    repositionDialog();
+        loadQuestionOptions(containerElement);
+        loadGeminiServiceAvailable();
+        loadDefaultQuestion(containerElement);
+        repositionDialog();
+    } catch (error) {
+        if (error.message === "Extension context invalidated.") {
+            throw Errors.EXTENSION_CONTEXT_INVALIDATED;
+        }
+        throw error;
+    }
 }
 
 async function loadDefaultQuestion(containerElement) {

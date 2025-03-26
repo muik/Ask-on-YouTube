@@ -134,10 +134,11 @@ function insertExtraOptionsToFooter(footerElement) {
     insertQuestionMenuUseMark(container);
 }
 
+const questionText = chrome.i18n.getMessage("questionButtonText");
+const shortcutTooltip = chrome.i18n.getMessage("questionShortcutTooltip");
+
 function createExtraOptionsContainer() {
     const optionItemClassName = "option-item";
-    const questionText = chrome.i18n.getMessage("questionButtonText");
-    const shortcutTooltip = chrome.i18n.getMessage("questionShortcutTooltip");
     const container = document.createElement("div");
     container.classList.add("ytq");
     container.classList.add(extraOptionsClassName);
@@ -158,10 +159,18 @@ function createExtraOptionsContainer() {
 
 async function insertQuestionMenuUseMark(container) {
     if (questionMenuUsedBefore === undefined) {
-        const response = await chrome.runtime.sendMessage({
-            action: BackgroundActions.GET_QUESTION_MENU_USED_BEFORE,
-        });
-        questionMenuUsedBefore = response.usedBefore;
+        try {
+            const response = await chrome.runtime.sendMessage({
+                action: BackgroundActions.GET_QUESTION_MENU_USED_BEFORE,
+            });
+            questionMenuUsedBefore = response.usedBefore;
+        } catch (error) {
+            if (error.message === "Extension context invalidated.") {
+                // ignore the error
+                return;
+            }
+            throw error;
+        }
     }
 
     if (questionMenuUsedBefore) {
@@ -255,8 +264,17 @@ function onQuestionClick(videoInfo) {
     // Close the dropdown menu
     pressEscKey();
 
-    showQuestionDialog(videoInfo);
-    removeQuestionMenuUseMark();
+    try {
+        showQuestionDialog(videoInfo);
+        removeQuestionMenuUseMark();
+    } catch (error) {
+        if (error.code in Errors) {
+            showToastMessage(error.message);
+            return;
+        }
+        console.error("onQuestionClick error:", error);
+        showToastMessage(Errors.UNKNOWN_ERROR.message);
+    }
 }
 
 /**
@@ -315,7 +333,10 @@ export function detectVideoOptionClick(event) {
     focused.videoInfo = videoInfo;
 
     // TODO set timeout
-    observerManager.findOrObserveElement(`${dropdownFullSelector}:not([aria-hidden='true'])`, dropdown => {
-        showExtraOptions(dropdown);
-    });
+    observerManager.findOrObserveElement(
+        `${dropdownFullSelector}:not([aria-hidden='true'])`,
+        dropdown => {
+            showExtraOptions(dropdown);
+        }
+    );
 }
