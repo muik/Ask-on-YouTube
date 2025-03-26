@@ -12,7 +12,7 @@ if (!container) {
 const root = createRoot(container);
 root.render(
     <React.StrictMode>
-        <HashRouter>
+        <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <Layout>
                 <Routes>
                     <Route path="/settings" element={<SettingsPage />} />
