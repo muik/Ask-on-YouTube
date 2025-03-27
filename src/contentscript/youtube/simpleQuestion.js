@@ -1,6 +1,6 @@
 import { BackgroundActions } from "../../constants.js";
 import { Errors } from "../../errors.js";
-import { getYouTubeLanguageCode, showQuestionDialog } from "./questionView.js";
+import { getYouTubeLanguageCode, pauseVideoPlayer, showQuestionDialog } from "./questionView.js";
 import { getVideoInfoFromVideoDetail } from "./videoInfo.js";
 
 const containerId = "ytq-simple-question";
@@ -125,6 +125,7 @@ function onRequestButtonClick(event) {
             response => {
                 onPromptSet(response);
                 resetRequesting();
+                pauseVideoPlayer();
             }
         );
     } catch (error) {

@@ -153,6 +153,7 @@ function onRequestButtonClick(event) {
             response => {
                 onPromptSet(response);
                 resetRequesting();
+                pauseVideoPlayer();
             }
         );
     } catch (error) {
@@ -185,6 +186,13 @@ function onPromptSet(response) {
 export function isQuestionDialogClosed() {
     const containerElement = getContainerElement();
     return containerElement && containerElement.style.display === "none";
+}
+
+export function pauseVideoPlayer() {
+    const videoPlayer = document.querySelector("video.html5-main-video");
+    if (videoPlayer) {
+        videoPlayer.pause();
+    }
 }
 
 function hideQuestionDialog() {
