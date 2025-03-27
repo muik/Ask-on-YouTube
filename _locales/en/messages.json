@@ -121,5 +121,11 @@
     },
     "viewAnswer": {
         "message": "View Answer"
+    },
+    "geminiApiUnavailableError": {
+        "message": "Gemini API service is currently unavailable. Please try again later."
+    },
+    "geminiApiTimeoutError": {
+        "message": "Request to Gemini API timed out. Please try again."
     }
 }

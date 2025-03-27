@@ -100,6 +100,15 @@ export async function generateJsonContent(
         console.debug("generate content request time sec:", (Date.now() - startTime) / 1000);
     } catch (error) {
         if (error instanceof GoogleGenerativeAIFetchError) {
+            if (error.status === 503) {
+                if (error.message.endsWith("The service is currently unavailable.")) {
+                    throw Errors.GEMINI_API_UNAVAILABLE;
+                } else if (
+                    error.message.endsWith("Deadline expired before operation could complete.")
+                ) {
+                    throw Errors.GEMINI_API_TIMEOUT;
+                }
+            }
             if (error.status === 400 && error.errorDetails[0].reason === "API_KEY_INVALID") {
                 console.debug("Invalid api key:", apiKey);
                 throw Errors.GEMINI_API_KEY_NOT_VALID;

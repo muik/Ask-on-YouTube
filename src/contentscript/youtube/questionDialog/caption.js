@@ -77,7 +77,11 @@ export async function loadCaption(event) {
             return;
         }
 
-        console.error("loadCaption Error:", error);
+        if (error.code) {
+            console.info("loadCaption failed, due to:", error);
+        } else {
+            console.error("loadCaption Error:", error);
+        }
     }
 }
 

@@ -40,6 +40,14 @@ export const Errors: Record<string, ErrorDefinition> = {
         message: chrome.i18n.getMessage("geminiApiKeyNotSetError"),
         code: "GEMINI_API_KEY_NOT_SET",
     },
+    GEMINI_API_UNAVAILABLE: {
+        message: chrome.i18n.getMessage("geminiApiUnavailableError"),
+        code: "GEMINI_API_UNAVAILABLE",
+    },
+    GEMINI_API_TIMEOUT: {
+        message: chrome.i18n.getMessage("geminiApiTimeoutError"),
+        code: "GEMINI_API_TIMEOUT",
+    },
 };
 
 export const Info: Record<string, ErrorDefinition> = {

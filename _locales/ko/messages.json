@@ -118,5 +118,11 @@
     },
     "viewAnswer": {
         "message": "답변 보기"
+    },
+    "geminiApiUnavailableError": {
+        "message": "Gemini API 서비스가 현재 사용할 수 없습니다. 나중에 다시 시도해주세요."
+    },
+    "geminiApiTimeoutError": {
+        "message": "Gemini API 요청 시간이 초과되었습니다. 다시 시도해주세요."
     }
 }
