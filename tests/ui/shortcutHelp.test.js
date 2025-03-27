@@ -78,12 +78,6 @@ describe("Shortcut Help", () => {
         document.querySelector = jest.fn().mockReturnValue(mockContainer);
     });
 
-    test("should not inject if container is not found", () => {
-        document.querySelector.mockReturnValue(null);
-        injectShortcutHelp();
-        expect(mockObserver.observe).not.toHaveBeenCalled();
-    });
-
     test("should observe container for dialog changes", () => {
         injectShortcutHelp();
         expect(mockObserver.observe).toHaveBeenCalledWith(mockContainer, {

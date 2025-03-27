@@ -1,30 +1,31 @@
+import { ObserverManager } from "../observer.ts";
+
 /**
  * Injects the 'q' shortcut help message into YouTube's keyboard shortcut dialog.
  * This function observes the popup container for the shortcut dialog and adds
  * our custom shortcut information when the dialog appears.
  */
 export function injectShortcutHelp() {
-    const container = document.querySelector("body > ytd-app > ytd-popup-container.ytd-app");
-    if (!container) {
-        console.error("YouTube popup container not found");
-        return;
-    }
+    new ObserverManager().findOrObserveElement(
+        "body > ytd-app > ytd-popup-container.ytd-app",
+        container => {
+            const observer = new MutationObserver((mutations, observer) => {
+                const dialog = mutations.find(
+                    mutation =>
+                        mutation.addedNodes.length > 0 &&
+                        mutation.addedNodes[0].tagName === "TP-YT-PAPER-DIALOG" &&
+                        mutation.addedNodes[0].querySelector("ytd-hotkey-dialog-renderer")
+                )?.addedNodes[0];
 
-    const observer = new MutationObserver((mutations, observer) => {
-        const dialog = mutations.find(
-            mutation =>
-                mutation.addedNodes.length > 0 &&
-                mutation.addedNodes[0].tagName === "TP-YT-PAPER-DIALOG" &&
-                mutation.addedNodes[0].querySelector("ytd-hotkey-dialog-renderer")
-        )?.addedNodes[0];
+                if (dialog) {
+                    onShortcutHelpDialogChanged(dialog);
+                    observer.disconnect();
+                }
+            });
 
-        if (dialog) {
-            onShortcutHelpDialogChanged(dialog);
-            observer.disconnect();
+            observer.observe(container, { childList: true });
         }
-    });
-
-    observer.observe(container, { childList: true });
+    );
 }
 
 /**
