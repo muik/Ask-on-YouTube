@@ -21,7 +21,7 @@ chrome.runtime.onInstalled.addListener(function (details) {
 
 // On Chrome Icon Click
 chrome.action.onClicked.addListener(() => {
-    chrome.runtime.openOptionsPage();
+    chrome.tabs.create({ url: chrome.runtime.getURL("index.html#/settings") });
 });
 
 // load settings from storage on startup
@@ -62,7 +62,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.action === BackgroundActions.GET_PROMPT) {
         return getPrompt(sendResponse);
     } else if (request.action === BackgroundActions.OPEN_SETTINGS_PAGE) {
-        chrome.runtime.openOptionsPage();
+        chrome.tabs.create({ url: chrome.runtime.getURL("index.html#/settings") });
     } else {
         console.error("Invalid action:", request);
         sendResponse({

@@ -14,9 +14,9 @@ render(
         <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <Layout>
                 <Routes>
-                    <Route path="/settings" element={<SettingsPage />} />
                     <Route path="/history" element={<HistoryPage />} />
-                    <Route path="/" element={<Navigate to="/settings" replace />} />
+                    <Route path="/settings" element={<SettingsPage />} />
+                    <Route path="/" element={<Navigate to="/history" replace />} />
                 </Routes>
             </Layout>
         </HashRouter>

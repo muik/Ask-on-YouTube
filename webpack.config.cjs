@@ -34,9 +34,9 @@ const plugins = [
         ],
     }),
     new HtmlWebpackPlugin({
-        filename: "settings.html", // Output filename
-        template: path.join(__dirname, "src", "options", "settings.html"), // Input template
-        chunks: ["settings"], // Include only the 'settings' entry
+        filename: "index.html", // Output filename
+        template: path.join(__dirname, "src", "options", "index.html"), // Input template
+        chunks: ["options"], // Include only the 'options' entry
         inject: "body",
     }),
     new WriteFilePlugin(),
@@ -97,9 +97,9 @@ const config = {
         "contentscript/chatgpt": path.join(__dirname, "src", "contentscript", "chatgpt.js"),
         "contentscript/welcome": path.join(__dirname, "src", "contentscript", "welcome.js"),
         background: path.join(__dirname, "src", "background.js"),
-        settings: [
+        options: [
             path.join(__dirname, "src", "options", "index.tsx"),
-            path.join(__dirname, "src", "css", "settings.css"),
+            path.join(__dirname, "src", "css", "options.css"),
         ],
     },
     output: {

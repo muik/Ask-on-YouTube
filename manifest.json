@@ -19,7 +19,7 @@
     },
     "options_ui": {
         "open_in_tab": true,
-        "page": "settings.html"
+        "page": "index.html"
     },
     "content_scripts": [
         {

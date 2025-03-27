@@ -28,7 +28,7 @@ describe("Settings page Test", () => {
             throw new Error("Browser is not initialized");
         }
         const page: Page = await browser.newPage();
-        await page.goto(`chrome-extension://${EXTENSION_ID}/settings.html`);
+        await page.goto(`chrome-extension://${EXTENSION_ID}/index.html#/settings`);
         const title: string = await page.title();
 
         const language: string = await page.evaluate(() => {

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { getQuestionHistoryWithPagination } from "../background/questionHistory.js";
 import { BackgroundActions } from "../constants.js";
-import "../css/settings.css";
+import "../css/options.css";
 import { HistoryItem as HistoryItemType } from "../types.js";
 import { HistoryItem } from "./components/HistoryItem";
 

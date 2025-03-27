@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { StorageKeys } from "../constants.js";
-import "../css/settings.css";
+import "../css/options.css";
 
 const GeminiDescription: React.FC = () => {
     return (
@@ -27,32 +27,12 @@ const SettingsPage: React.FC = () => {
     useEffect(() => {
         setMessages();
         loadSavedSettings();
-        updateTheme();
-
-        // Listen for changes in system theme
-        const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-        const handleThemeChange = (e: MediaQueryListEvent) => {
-            document.body.classList.toggle("dark-mode", e.matches);
-        };
-
-        mediaQuery.addEventListener("change", handleThemeChange);
-        document.body.classList.toggle("dark-mode", mediaQuery.matches);
-
-        return () =>
-            mediaQuery.removeEventListener("change", handleThemeChange);
     }, []);
 
     const loadSavedSettings = () => {
         chrome.storage.sync.get([StorageKeys.GEMINI_API_KEY], (result) => {
             setGeminiAPIKey(result.geminiAPIKey || "");
         });
-    };
-
-    const updateTheme = () => {
-        const isDark = window.matchMedia(
-            "(prefers-color-scheme: dark)"
-        ).matches;
-        document.body.classList.toggle("dark-mode", isDark);
     };
 
     const setMessages = () => {
