@@ -1,5 +1,4 @@
 import Config from "../config";
-import { BackgroundActions } from "../constants";
 import { HistoryItem, VideoInfo } from "../types";
 import HistoryStorage from "./db/questionHistory/storage";
 import { getDefaultFavoriteQuestions } from "./defaultQuestions";
@@ -45,9 +44,6 @@ export async function saveQuestionHistory(videoInfo: VideoInfo, question: string
             (performance.now() - startTime).toFixed(1),
             "ms"
         );
-
-        // Notify that history has changed
-        chrome.runtime.sendMessage({ action: BackgroundActions.HISTORY_CHANGED });
     } catch (error) {
         console.error("Failed to save question history:", error);
         throw error;

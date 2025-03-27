@@ -7,6 +7,30 @@ import { DBCursor } from "./cursor";
 const MAX_ITEMS = Config.MAX_HISTORY_SIZE;
 
 class HistoryStorage {
+    private static async notifyHistoryChanged(): Promise<void> {
+        return new Promise((resolve) => {
+            chrome.runtime.sendMessage({ action: BackgroundActions.HISTORY_CHANGED }, () => {
+                if (chrome.runtime.lastError) {
+                    // when options page is not open, the receiver does not exist
+                    if (
+                        chrome.runtime.lastError.message ===
+                        "Could not establish connection. Receiving end does not exist."
+                    ) {
+                        resolve();
+                        return;
+                    }
+
+                    // This is the correct place to catch "receiving end does not exist"
+                    console.error(
+                        "Error sending history changed message:",
+                        chrome.runtime.lastError.message
+                    );
+                }
+                resolve();
+            });
+        });
+    }
+
     static async saveItem(item: HistoryItem): Promise<void> {
         return DBConnection.withTransaction("readwrite", async store => {
             await new Promise<void>((resolve, reject) => {
@@ -35,8 +59,7 @@ class HistoryStorage {
                 });
             }
 
-            // Notify that history has changed
-            chrome.runtime.sendMessage({ action: BackgroundActions.HISTORY_CHANGED });
+            await this.notifyHistoryChanged();
         });
     }
 
@@ -109,8 +132,7 @@ class HistoryStorage {
     ): Promise<void> {
         return DBConnection.withTransaction("readwrite", async store => {
             await DBCursor.findAndUpdate(store, predicate, update);
-            // Notify that history has changed
-            chrome.runtime.sendMessage({ action: BackgroundActions.HISTORY_CHANGED });
+            await this.notifyHistoryChanged();
         });
     }
 
@@ -121,8 +143,7 @@ class HistoryStorage {
                 request.onsuccess = () => resolve();
                 request.onerror = () => reject(request.error);
             });
-            // Notify that history has changed
-            chrome.runtime.sendMessage({ action: BackgroundActions.HISTORY_CHANGED });
+            await this.notifyHistoryChanged();
         });
     }
 }
