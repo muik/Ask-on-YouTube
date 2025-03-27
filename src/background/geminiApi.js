@@ -1,25 +1,14 @@
-import {
-    GoogleGenerativeAI,
-    GoogleGenerativeAIFetchError,
-} from "@google/generative-ai";
+import { GoogleGenerativeAI, GoogleGenerativeAIFetchError } from "@google/generative-ai";
 import { Buffer } from "buffer";
 import { Errors } from "../errors.js";
 
 const MODEL = "gemini-2.0-flash-lite";
 
 // Gemini support PNG - image/png
-const supportedImageTypes = [
-    "image/png",
-    "image/jpeg",
-    "image/webp",
-    "image/heic",
-    "image/heif",
-];
+const supportedImageTypes = ["image/png", "image/jpeg", "image/webp", "image/heic", "image/heif"];
 
 async function fetchImageData(imageUrl) {
-    const imageResp = await fetch(imageUrl).then((response) =>
-        response.arrayBuffer()
-    );
+    const imageResp = await fetch(imageUrl).then(response => response.arrayBuffer());
     return {
         inlineData: {
             data: Buffer.from(imageResp).toString("base64"),
@@ -40,10 +29,7 @@ async function getImageData(imageUrl) {
 
     // if the image type is not image/jpeg, convert it to image/jpeg
     if (!supportedImageTypes.includes(imageData.inlineData.mimeType)) {
-        console.error(
-            "Not supported image type:",
-            imageData.inlineData.mimeType
-        );
+        console.error("Not supported image type:", imageData.inlineData.mimeType);
         throw Errors.INVALID_REQUEST;
     }
 
@@ -109,46 +95,28 @@ export async function generateJsonContent(
     try {
         const startTime = Date.now();
         const result = await model.generateContent(request);
-        console.debug(
-            "token count:",
-            result.response.usageMetadata.totalTokenCount
-        );
+        console.debug("token count:", result.response.usageMetadata.totalTokenCount);
         responseText = result.response.text();
-        console.debug(
-            "generate content request time sec:",
-            (Date.now() - startTime) / 1000
-        );
+        console.debug("generate content request time sec:", (Date.now() - startTime) / 1000);
     } catch (error) {
         if (error instanceof GoogleGenerativeAIFetchError) {
-            if (
-                error.status === 400 &&
-                error.errorDetails[0].reason === "API_KEY_INVALID"
-            ) {
+            if (error.status === 400 && error.errorDetails[0].reason === "API_KEY_INVALID") {
                 console.debug("Invalid api key:", apiKey);
                 throw Errors.GEMINI_API_KEY_NOT_VALID;
             }
-            if (
-                error.status === 400 &&
-                error.message.includes("Provided image is not valid.")
-            ) {
+            if (error.status === 400 && error.message.includes("Provided image is not valid.")) {
                 console.info("the invalid image is:", imageData || imageUrl);
             } else {
                 console.error(
-                    `Failed to generate content - status: ${
-                        error.status
-                    }, statusText: ${error.statusText}, errorDetails: ${
-                        error.errorDetails
-                            ? JSON.stringify(error.errorDetails)
-                            : ""
-                    }, message: ${error.message}`
+                    `Failed to generate content - status: ${error.status}, statusText: ${
+                        error.statusText
+                    }, errorDetails: ${
+                        error.errorDetails ? JSON.stringify(error.errorDetails) : ""
+                    }, message: ${error.message}, `
                 );
             }
         } else {
-            console.error(
-                "Failed to generate content:",
-                error.constructor.name,
-                error
-            );
+            console.error("Failed to generate content:", error.constructor.name, error);
         }
         throw error;
     }
