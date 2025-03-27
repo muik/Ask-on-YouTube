@@ -292,8 +292,15 @@ function handleQuestionItemClick(e) {
 }
 
 function handleQuestionOptionClick(e) {
-    e.target = e.target.closest("li").querySelector("span.question");
-    textToInputClickListener(e);
+    const questionElement = e.target.closest("li").querySelector("span.question");
+    const newEvent = new Event('click', {
+        bubbles: true,
+        cancelable: true
+    });
+    Object.defineProperty(newEvent, 'target', {
+        value: questionElement
+    });
+    textToInputClickListener(newEvent);
 }
 
 function showProgressSpinner(containerElement = null) {
