@@ -58,7 +58,6 @@ class ShortsButtonHandler {
         // This is by design as elements could be garbage collected during iteration
         // Only cleanup buttons within our container to avoid interfering with other potential handlers
         if (!this.container) {
-            console.warn("No container set for ShortsButtonHandler cleanup");
             return;
         }
         const elements = this.container.querySelectorAll<HTMLElement>(SELECTORS.SHORTS_BUTTON);
@@ -222,5 +221,5 @@ function observeShortsInItemSections(element: HTMLElement): void {
  */
 export const cleanup = (): void => {
     observerManager.cleanupAll();
-    ShortsButtonHandler.getInstance().cleanup();
+    shortsHandler.cleanup();
 };
