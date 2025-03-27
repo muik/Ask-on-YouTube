@@ -46,7 +46,10 @@
     cursor: pointer;
 }
 .ytq-dialog .thumbnail {
-    height: 120px;
+    width: 168px;
+    height: 94px;
+    object-fit: cover;
+    border-radius: 8px;
 }
 .ytq-dialog #contents {
     min-width: 470px;
