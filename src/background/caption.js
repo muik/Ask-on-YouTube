@@ -17,7 +17,7 @@ export function getCaption(request, sendResponse) {
 
     if (captionCache.has(imageUrl)) {
         sendResponse(captionCache.get(imageUrl));
-        return true;
+        return;
     }
 
     getApiKeyRequired()
