@@ -1,51 +1,63 @@
 import { GoogleGenerativeAI, GoogleGenerativeAIFetchError } from "@google/generative-ai";
-import { Buffer } from "buffer";
 import { Errors } from "../errors.js";
+import { MODEL, generationConfig, validateGenerationConfig } from "./geminiConfig.js";
+import { getImageData } from "./imageHandler.js";
 
-const MODEL = "gemini-2.0-flash-lite";
-
-// Gemini support PNG - image/png
-const supportedImageTypes = ["image/png", "image/jpeg", "image/webp", "image/heic", "image/heif"];
-
-async function fetchImageData(imageUrl) {
-    const imageResp = await fetch(imageUrl).then(response => response.arrayBuffer());
-    return {
-        inlineData: {
-            data: Buffer.from(imageResp).toString("base64"),
-            mimeType: "image/jpeg",
-        },
-    };
-}
-
-async function getImageData(imageUrl) {
-    const startTime = Date.now();
-    const imageData = await fetchImageData(imageUrl);
-    console.debug(
-        "fetch image time sec:",
-        (Date.now() - startTime) / 1000,
-        "size:",
-        imageData.inlineData.data.length
-    );
-
-    // if the image type is not image/jpeg, convert it to image/jpeg
-    if (!supportedImageTypes.includes(imageData.inlineData.mimeType)) {
-        console.error("Not supported image type:", imageData.inlineData.mimeType);
-        throw Errors.INVALID_REQUEST;
+/**
+ * Handles Gemini API errors and maps them to application errors
+ * @param {Error} error - The error to handle
+ * @param {Object} context - Additional context for error handling
+ * @param {Object} context.imageData - The image data that caused the error
+ * @param {string} context.imageUrl - The image URL that caused the error
+ * @throws {Error} The mapped application error
+ */
+function handleGeminiError(error, context = {}) {
+    if (error instanceof GoogleGenerativeAIFetchError) {
+        switch (error.status) {
+            case 503:
+                if (error.message.endsWith("The service is currently unavailable.")) {
+                    throw Errors.GEMINI_API_UNAVAILABLE;
+                } else if (error.message.endsWith("Deadline expired before operation could complete.")) {
+                    throw Errors.GEMINI_API_TIMEOUT;
+                }
+                break;
+            case 429:
+                throw Errors.GEMINI_API_RATE_LIMIT;
+            case 400:
+                if (error.errorDetails?.[0]?.reason === "API_KEY_INVALID") {
+                    console.debug("Invalid API key");
+                    throw Errors.GEMINI_API_KEY_NOT_VALID;
+                }
+                if (error.message.includes("Provided image is not valid.")) {
+                    console.info("Invalid image:", context.imageData || context.imageUrl);
+                }
+                break;
+            default:
+                console.error(
+                    `Failed to generate content - status: ${error.status}, statusText: ${
+                        error.statusText
+                    }, errorDetails: ${
+                        error.errorDetails ? JSON.stringify(error.errorDetails) : ""
+                    }, message: ${error.message}`
+                );
+        }
+    } else {
+        console.error("Failed to generate content:", error.constructor.name, error);
     }
-
-    return imageData;
+    throw error;
 }
 
 /**
- * Generate JSON content
- * @param {string} prompt - The prompt
+ * Generate JSON content using the Gemini API
+ * @param {string} prompt - The prompt to send to the API
  * @param {Object} options - The options object
- * @param {string} options.imageUrl - The image url
- * @param {string} options.imageData - The image data
- * @param {string} options.systemInstruction - The system instruction
- * @param {Object} options.responseSchema - The response schema
- * @param {string} options.apiKey - The gemini api key
- * @returns {Promise<Object>} - The response object
+ * @param {string} [options.imageUrl] - The URL of an image to include
+ * @param {Object} [options.imageData] - Pre-fetched image data
+ * @param {string} [options.systemInstruction] - System instruction for the model
+ * @param {Object} [options.responseSchema] - Schema for the expected response
+ * @param {string} options.apiKey - The Gemini API key
+ * @returns {Promise<Object>} The parsed JSON response
+ * @throws {Error} Various application errors
  */
 export async function generateJsonContent(
     prompt,
@@ -57,36 +69,33 @@ export async function generateJsonContent(
         apiKey = undefined,
     }
 ) {
+    if (!apiKey) {
+        throw new Error("API key is required");
+    }
+
     const data = [];
 
     if (imageData) {
         data.push(imageData);
         console.debug("imageData size:", imageData.inlineData.data.length);
     } else if (imageUrl) {
-        const imageData = await getImageData(imageUrl);
-        data.push(imageData);
-        console.debug("imageData size:", imageData.inlineData.data.length);
+        const fetchedImageData = await getImageData(imageUrl);
+        data.push(fetchedImageData);
+        console.debug("imageData size:", fetchedImageData.inlineData.data.length);
     }
 
     const request = [prompt.trim(), ...data];
 
-    const generationConfig = {
-        temperature: 1,
-        topP: 0.95,
-        topK: 64,
-        maxOutputTokens: 8192,
-        responseMimeType: "application/json",
+    const config = {
+        ...generationConfig,
         responseSchema,
     };
-
-    if (!apiKey) {
-        throw new Error("API key is required");
-    }
+    validateGenerationConfig(config);
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
         model: MODEL,
-        generationConfig,
+        generationConfig: config,
         systemInstruction: systemInstruction ? systemInstruction.trim() : null,
     });
 
@@ -99,35 +108,7 @@ export async function generateJsonContent(
         responseText = result.response.text();
         console.debug("generate content request time sec:", (Date.now() - startTime) / 1000);
     } catch (error) {
-        if (error instanceof GoogleGenerativeAIFetchError) {
-            if (error.status === 503) {
-                if (error.message.endsWith("The service is currently unavailable.")) {
-                    throw Errors.GEMINI_API_UNAVAILABLE;
-                } else if (
-                    error.message.endsWith("Deadline expired before operation could complete.")
-                ) {
-                    throw Errors.GEMINI_API_TIMEOUT;
-                }
-            }
-            if (error.status === 400 && error.errorDetails[0].reason === "API_KEY_INVALID") {
-                console.debug("Invalid api key:", apiKey);
-                throw Errors.GEMINI_API_KEY_NOT_VALID;
-            }
-            if (error.status === 400 && error.message.includes("Provided image is not valid.")) {
-                console.info("the invalid image is:", imageData || imageUrl);
-            } else {
-                console.error(
-                    `Failed to generate content - status: ${error.status}, statusText: ${
-                        error.statusText
-                    }, errorDetails: ${
-                        error.errorDetails ? JSON.stringify(error.errorDetails) : ""
-                    }, message: ${error.message}, `
-                );
-            }
-        } else {
-            console.error("Failed to generate content:", error.constructor.name, error);
-        }
-        throw error;
+        handleGeminiError(error, { imageData, imageUrl });
     }
 
     try {
@@ -138,6 +119,12 @@ export async function generateJsonContent(
     }
 }
 
+/**
+ * Check if the Gemini API is available
+ * @param {string} apiKey - The Gemini API key to check
+ * @returns {Promise<boolean>} Whether the API is available
+ * @throws {Error} If the API key is not provided
+ */
 export async function isGeminiAvailable(apiKey) {
     if (!apiKey) {
         throw new Error("API key is required");
