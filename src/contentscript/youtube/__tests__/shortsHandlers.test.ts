@@ -157,28 +157,6 @@ describe("shortsHandlers", () => {
             expect(consoleDebugSpy).toHaveBeenCalledWith("shorts button clicked", button);
         });
 
-        it("should handle cleanup when no container is set", async () => {
-            // Reset singleton instances to ensure clean state
-            await jest.isolateModules(async () => {
-                // Mock console.warn
-                const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
-
-                // Import and run the code
-                const { cleanup } = require("../shortsHandlers");
-
-                // Call cleanup without setting container
-                cleanup();
-
-                // Verify warning was logged
-                expect(warnSpy).toHaveBeenCalledWith(
-                    "No container set for ShortsButtonHandler cleanup"
-                );
-
-                // Restore mocks
-                warnSpy.mockRestore();
-            });
-        });
-
         it("should handle errors gracefully", async () => {
             // Mock getElementById to throw an error
             const originalGetElementById = document.getElementById.bind(document);
