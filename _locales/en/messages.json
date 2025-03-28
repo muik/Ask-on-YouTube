@@ -59,6 +59,9 @@
     "defaultFavoriteQuestion3": {
         "message": "What's the title talking about? Just a quick explanation."
     },
+    "defaultFavoriteQuestion4": {
+        "message": "Explain this in a simple way that's easy to understand."
+    },
     "extensionContextInvalidatedError": {
         "message": "The Chrome extension has been updated. Please refresh the page and try again."
     },

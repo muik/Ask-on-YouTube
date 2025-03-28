@@ -59,6 +59,9 @@
     "defaultFavoriteQuestion3": {
         "message": "제목에서 말하는 것에 대한 답을 간단히 알려주세요."
     },
+    "defaultFavoriteQuestion4": {
+        "message": "이해하기 쉽게 간단히 설명해주세요."
+    },
     "extensionContextInvalidatedError": {
         "message": "Chrome 확장 프로그램이 업데이트되었습니다. 이 페이지를 새로고침 후 다시 시도해주세요."
     },

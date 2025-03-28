@@ -4,6 +4,7 @@ const DEFAULT_QUESTION_KEYS = [
     "defaultFavoriteQuestion1",
     "defaultFavoriteQuestion2",
     "defaultFavoriteQuestion3",
+    "defaultFavoriteQuestion4",
 ];
 
 // Cache for default favorite questions
