@@ -48,7 +48,7 @@ window.onload = async () => {
 /**
  * Sends a message to the background script with the answer URL.
  * Handles any errors that occur during message sending.
- * 
+ *
  * @param {Object} promptData - The prompt data containing video and question information
  * @param {Object} promptData.videoInfo - Video information object
  * @param {string} promptData.videoInfo.id - YouTube video ID
@@ -64,7 +64,7 @@ async function sendAnswerMessage(promptData, answerUrl) {
             question: promptData.question,
             answerUrl: answerUrl,
         });
-        
+
         if (chrome.runtime.lastError) {
             console.error("Chrome runtime error:", chrome.runtime.lastError);
         }
@@ -75,12 +75,12 @@ async function sendAnswerMessage(promptData, answerUrl) {
 
 /**
  * Checks if the current URL is a permanent chat URL and handles it by sending the answer message.
- * 
+ *
  * @param {Object} promptData - The prompt data containing video and question information
  * @returns {boolean} - True if the URL was handled, false otherwise
  */
 function handlePermanentUrl(promptData) {
-    if (window.location.href.includes('/c/')) {
+    if (window.location.href.includes("/c/")) {
         sendAnswerMessage(promptData, window.location.href);
         return true;
     }
@@ -89,7 +89,7 @@ function handlePermanentUrl(promptData) {
 
 /**
  * Updates the answer URL when ChatGPT generates a response.
- * 
+ *
  * @param {Object} promptData - The prompt data containing video and question information
  * @param {Object} promptData.videoInfo - Video information object
  * @param {string} promptData.videoInfo.id - YouTube video ID
@@ -107,7 +107,7 @@ function updateAnswerUrl(promptData) {
             observer.disconnect();
         }
     });
-    
+
     observer.observe(document, { subtree: true, childList: true });
 }
 
@@ -119,7 +119,7 @@ function onGetPrompt(response) {
         return;
     }
 
-    waitForElm("#prompt-textarea").then((promptTextarea) => {
+    waitForElm("#prompt-textarea").then(promptTextarea => {
         const prompt = getPromptText(promptData);
         setPromptText(promptTextarea, prompt);
 
@@ -148,9 +148,7 @@ function onGetPrompt(response) {
 }
 
 function setPromptAnotherOptions(promptTextarea, promptData) {
-    const attachButton = document.querySelector(
-        "#composer-background div.h-8 > button"
-    );
+    const attachButton = document.querySelector("#composer-background div.h-8 > button");
     if (attachButton?.hasAttribute("disabled")) {
         console.debug("attachButton disabled");
 
@@ -163,7 +161,7 @@ function setPromptAnotherOptions(promptTextarea, promptData) {
 
     console.debug("waiting for attachButton");
     const attachButtonSelector = "#composer-background span.flex > button";
-    waitForElm(attachButtonSelector).then((attachButton) => {
+    waitForElm(attachButtonSelector).then(attachButton => {
         if (attachButton.hasAttribute("disabled")) {
             console.debug("attachButton disabled", attachButton);
             setPromptPaging(promptTextarea, promptData);
@@ -191,29 +189,19 @@ function setPromptWithTranscript(promptTextarea, promptData) {
         attachTextAsFile(promptTextarea, transcript, attachFilename);
         setTimeout(() => {
             // wait for upload to finish
-            waitForElm(`${sendButtonSelector}:not([disabled])`).then(
-                (sendButton) => {
-                    sendButton.click();
-                    updateAnswerUrl(promptData);
-                }
-            );
+            waitForElm(`${sendButtonSelector}:not([disabled])`).then(sendButton => {
+                sendButton.click();
+                updateAnswerUrl(promptData);
+            });
         }, 100);
     }, 500);
 }
 
-function setPromptPaging(
-    promptTextarea,
-    promptData,
-    pagesCount = 2,
-    pageIndex = 1
-) {
+function setPromptPaging(promptTextarea, promptData, pagesCount = 2, pageIndex = 1) {
     const transcript = promptData.transcript;
     const totalLength = transcript.length;
     const pageSize = Math.floor(totalLength / pagesCount);
-    const transcriptPage = transcript.slice(
-        (pageIndex - 1) * pageSize,
-        pageIndex * pageSize
-    );
+    const transcriptPage = transcript.slice((pageIndex - 1) * pageSize, pageIndex * pageSize);
     const message = messages[promptData.langCode] || messages.en;
     const pagingText = message.transcriptPagingFormat
         .replace("{pageIndex}", pageIndex)
@@ -232,10 +220,7 @@ ${promptDivider}
 ${transcriptPrompt}
 `;
     } else {
-        const videoInfoPrompt = getVideoInfoPrompt(
-            promptData.videoInfo,
-            promptData.langCode
-        );
+        const videoInfoPrompt = getVideoInfoPrompt(promptData.videoInfo, promptData.langCode);
         const question = promptData.question;
         promptText = `${question}
 ${promptDivider}
@@ -247,15 +232,10 @@ ${videoInfoPrompt}
     setPromptText(promptTextarea, promptText);
 
     setTimeout(() => {
-        waitForElm(sendButtonSelector).then((sendButton) => {
+        waitForElm(sendButtonSelector).then(sendButton => {
             if (sendButton.hasAttribute("disabled")) {
                 if (pageIndex === 1 && pagesCount < 4) {
-                    setPromptPaging(
-                        promptTextarea,
-                        promptData,
-                        pagesCount + 1,
-                        1
-                    );
+                    setPromptPaging(promptTextarea, promptData, pagesCount + 1, 1);
                 }
                 return;
             }
@@ -263,12 +243,7 @@ ${videoInfoPrompt}
             updateAnswerUrl(promptData);
 
             if (pageIndex < pagesCount) {
-                setPromptPaging(
-                    promptTextarea,
-                    promptData,
-                    pagesCount,
-                    pageIndex + 1
-                );
+                setPromptPaging(promptTextarea, promptData, pagesCount, pageIndex + 1);
             }
         });
     }, 1);
@@ -306,12 +281,7 @@ ${transcriptRevised}
 \`\`\``;
 }
 
-function getPromptTextWithTranscript({
-    videoInfo,
-    transcript,
-    question,
-    langCode,
-}) {
+function getPromptTextWithTranscript({ videoInfo, transcript, question, langCode }) {
     const message = messages[langCode] || messages.en;
     const videoInfoPrompt = getVideoInfoPrompt(videoInfo, langCode);
     const transcriptRevised = transcript.trim();
