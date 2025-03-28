@@ -8,23 +8,24 @@ const MAX_ITEMS = Config.MAX_HISTORY_SIZE;
 
 class HistoryStorage {
     private static async notifyHistoryChanged(): Promise<void> {
-        return new Promise((resolve) => {
+        return new Promise(resolve => {
             chrome.runtime.sendMessage({ action: BackgroundActions.HISTORY_CHANGED }, () => {
                 if (chrome.runtime.lastError) {
+                    const message = chrome.runtime.lastError.message;
+
                     // when options page is not open, the receiver does not exist
+                    // this is not an error, so we can resolve the promise
                     if (
-                        chrome.runtime.lastError.message ===
-                        "Could not establish connection. Receiving end does not exist."
+                        message ===
+                            "Could not establish connection. Receiving end does not exist." ||
+                        message === "The message port closed before a response was received."
                     ) {
                         resolve();
                         return;
                     }
 
                     // This is the correct place to catch "receiving end does not exist"
-                    console.error(
-                        "Error sending history changed message:",
-                        chrome.runtime.lastError.message
-                    );
+                    console.warn("Error sending history changed message:", message);
                 }
                 resolve();
             });
