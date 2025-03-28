@@ -331,11 +331,11 @@ function getVideoInfoPrompt(videoInfo, langCode) {
     const message = messages[langCode] || messages.en;
     const title = videoInfo.title.trim();
     const captionInline = videoInfo.caption
-        ? `${message.caption}: \`${videoInfo.caption
+        ? `${message.caption}: ${videoInfo.caption
               .replace(/`/g, "\\`")
               .replace(/\n/g, " ")
               .replace("  ", ", ")
-              .trim()}\`\n`
+              .trim()}\n`
         : "";
 
     return `${message.title}: ${title}
