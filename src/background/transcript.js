@@ -12,8 +12,10 @@ export async function getTranscriptParagraphised(link, intervalTimeSec = 1.5) {
 
     items.forEach(item => {
         const startTime = parseFloat(item.start);
+        console.log('Raw text from YouTube:', item.text);
         const text = item.text
             .replace(/[\s\u00A0]+/g, " ")
+            .replace(/&amp;/g, "&")
             .replace(/&#39;/g, "'")
             .trim();
         if (startTime - endTime >= intervalTimeSec) {
