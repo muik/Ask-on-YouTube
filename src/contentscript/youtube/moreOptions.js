@@ -22,7 +22,7 @@ const observerManager = new ObserverManager();
  */
 export function findQuestionMenuShown() {
     return document.querySelector(
-        `${dropdownFullSelector}:not([aria-hidden='true']) .${extraOptionsClassName} .option-item[target-value=question]`
+        `${dropdownFullSelector}:not([aria-hidden='true']) .${extraOptionsClassName}:not([aria-hidden='true']) .option-item[target-value=question]`
     );
 }
 
