@@ -46,7 +46,6 @@ export function showQuestionDialog(videoInfo) {
                 onResize: repositionDialog,
             });
         containerElement.style.display = "block";
-        containerElement.style.zIndex = 9999;
 
         const backgroundElement = createBackgroundElement({ onClick: hideQuestionDialog });
         document.body.insertAdjacentElement("beforeend", backgroundElement);

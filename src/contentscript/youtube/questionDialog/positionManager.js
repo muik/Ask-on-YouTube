@@ -24,14 +24,7 @@ export function repositionDialog() {
     containerElement.style.left = `${dialogX}px`;
     containerElement.style.top = `${dialogY}px`;
 
-    // Set z-index to the highest possible value
-    const zIndexElements = document.querySelectorAll("[style*='z-index']");
-    const highestZIndex = Math.max(
-        ...Array.from(zIndexElements).map(element => parseInt(element.style.zIndex)),
-        2200
-    );
-
     const backdropElement = document.querySelector("tp-yt-iron-overlay-backdrop");
-    backdropElement.style.zIndex = highestZIndex + 1;
-    containerElement.style.zIndex = highestZIndex + 2;
+    backdropElement.style.zIndex = 2201;
+    containerElement.style.zIndex = 2202;
 } 
