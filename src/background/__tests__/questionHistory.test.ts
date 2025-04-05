@@ -130,14 +130,23 @@ describe("Question History", () => {
         it("should rank questions by frequency across different videos", async () => {
             const video1 = { ...mockVideoInfo, id: "video1" };
             const video2 = { ...mockVideoInfo, id: "video2" };
+            const video3 = { ...mockVideoInfo, id: "video3" };
 
+            // Add "Common Q" to two videos
             await saveQuestionHistory(video1, "Common Q");
             await saveQuestionHistory(video2, "Common Q");
-            await saveQuestionHistory(video1, "Rare Q");
+            
+            // Add "Rare Q" to one video multiple times
+            await saveQuestionHistory(video3, "Rare Q");
+            await saveQuestionHistory(video3, "Rare Q");
+            await saveQuestionHistory(video3, "Rare Q");
 
             const { questions } = await getFavoriteQuestions();
+            // "Common Q" should be first because it appears in more videos
             expect(questions[0]).toBe("Common Q");
-            expect(questions).toContain("Rare Q");
+            // "Rare Q" should not be in the top results because it only appears in one video
+            // and default questions have a count of 2
+            expect(questions).not.toContain("Rare Q");
         });
 
         it("should include default questions in results", async () => {
