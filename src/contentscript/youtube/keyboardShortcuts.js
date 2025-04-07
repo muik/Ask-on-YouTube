@@ -1,6 +1,6 @@
 import { Errors } from "../../errors.ts";
 import { findQuestionMenuShown } from "./moreOptions.js";
-import { showQuestionDialog } from "./questionView.js";
+import { isQuestionDialogOpened, showQuestionDialog } from "./questionView.js";
 import { findSimpleQuestionInputShown } from "./simpleQuestion.js";
 import { showToastMessage } from "./toast.js";
 import { getVideoInfoFromShortsDetail } from "./videoInfo.js";
@@ -29,6 +29,16 @@ export const handleQuestionShortcut = event => {
 
     // Skip if the key is pressed in an input field
     if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA") return;
+
+    // Skip if the key is pressed in a comment input
+    if (event.target.className.includes("yt-formatted-string")) {
+        return;
+    }
+
+    // Skip if the question dialog is already opened
+    if (isQuestionDialogOpened()) {
+        return;
+    }
 
     event.preventDefault();
 

@@ -187,6 +187,11 @@ export function isQuestionDialogClosed() {
     return containerElement && containerElement.style.display === "none";
 }
 
+export function isQuestionDialogOpened() {
+    const containerElement = getContainerElement();
+    return containerElement && containerElement.style.display === "block";
+}
+
 export function pauseVideoPlayer() {
     const videoPlayer = document.querySelector("video.html5-main-video");
     if (videoPlayer) {
