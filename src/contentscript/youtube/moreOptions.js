@@ -9,10 +9,10 @@ import { ClickElementType, getVideoInfo } from "./videoInfo.js";
 const extraOptionsClassName = "ytq-extra-options";
 const dropdownSelector = "tp-yt-iron-dropdown.ytd-popup-container";
 const dropdownFullSelector = `body > ytd-app > ytd-popup-container > ${dropdownSelector}`;
-const focused = {};
 
 const useMarkElements = [];
 let questionMenuUsedBefore;
+let optionClickResult = null;
 
 const observerManager = new ObserverManager();
 
@@ -68,19 +68,60 @@ function observeDropdown(container, handler) {
         { childList: true }
     );
 }
-
 /**
  * Handle finding and inserting extra options into the footer of a video item dropdown
  * @param {Element} node - The dropdown node element
  * @returns {boolean} - Returns true if footer was found and handled, false otherwise
  */
-function handleVideoItemFooter(node) {
-    const footer = node.querySelector(`ytd-menu-popup-renderer #footer`);
+function handleVideoItemFooter(dropdown) {
+    const footer = dropdown.querySelector(`ytd-menu-popup-renderer #footer`);
     if (!footer) {
         return false;
     }
+    const extraOptions = createExtraOptionsContainer();
+    footer.insertAdjacentElement("beforeend", extraOptions);
+    insertQuestionMenuUseMark(extraOptions);
 
-    insertExtraOptionsToFooter(footer);
+    observerManager.createObserver(
+        dropdown,
+        mutations => {
+            mutations.forEach(mutation => {
+                const target = mutation.target;
+                const extraOptions = target.querySelector(`.${extraOptionsClassName}`);
+                if (!extraOptions) {
+                    console.debug("extra options not found", target);
+                    return;
+                }
+
+                if (
+                    mutation.attributeName === "aria-hidden" &&
+                    target.getAttribute("aria-hidden") === "true"
+                ) {
+                    // to determine the extra options is hidden or not when the dropdown focused
+                    extraOptions.removeAttribute("aria-hidden");
+                    return;
+                }
+
+                if (mutation.attributeName === "focused" && target.hasAttribute("focused")) {
+                    if (!optionClickResult) {
+                        console.debug("no option click result", target);
+                        extraOptions.setAttribute("aria-hidden", true);
+                        return;
+                    }
+
+                    const { videoInfo, type } = optionClickResult;
+                    optionClickResult = null;
+
+                    if (type === ClickElementType.NO_EXTRA_OPTIONS) {
+                        extraOptions.setAttribute("aria-hidden", true);
+                    }
+
+                    extraOptions.dataset.videoInfoJson = JSON.stringify(videoInfo);
+                }
+            });
+        },
+        { attributeFilter: ["focused", "aria-hidden"] }
+    );
     return true;
 }
 
@@ -89,49 +130,106 @@ function handleVideoItemFooter(node) {
  * @param {Element} node - The dropdown node element
  * @returns {boolean} - Returns true if footer was found and handled, false otherwise
  */
-function handleShortsItemFooter(node) {
-    const sheetViewModel = node.querySelector("yt-sheet-view-model");
+function handleShortsItemFooter(dropdown) {
+    const sheetViewModel = dropdown.querySelector("yt-sheet-view-model");
     if (!sheetViewModel) {
         return false;
     }
 
-    observerManager.createObserver(
-        sheetViewModel,
-        (mutations, observer) => {
-            const footer = sheetViewModel.querySelector(
-                ".yt-contextual-sheet-layout-wiz__footer-container"
-            );
-            if (!footer) {
-                return;
-            }
+    observeShortsSheetViewModel(sheetViewModel);
 
-            insertExtraOptionsToFooter(footer);
-            observerManager.cleanupObserver(observer);
+    observerManager.createObserver(
+        dropdown,
+        mutations => {
+            mutations.forEach(mutation => {
+                const target = mutation.target;
+
+                if (mutation.attributeName === "focused" && target.hasAttribute("focused")) {
+                    const extraOptions = target.querySelector(`.${extraOptionsClassName}`);
+                    if (!extraOptions) {
+                        console.debug("extra options not found", target);
+                        return;
+                    }
+                    if (!optionClickResult) {
+                        console.debug("no option click result", target);
+                        extraOptions.setAttribute("aria-hidden", true);
+                        return;
+                    }
+
+                    const { videoInfo, type } = optionClickResult;
+                    optionClickResult = null;
+
+                    if (type === ClickElementType.NO_EXTRA_OPTIONS) {
+                        extraOptions.setAttribute("aria-hidden", true);
+                    }
+
+                    extraOptions.dataset.videoInfoJson = JSON.stringify(videoInfo);
+                }
+            });
         },
-        { childList: true, subtree: true }
+        { attributeFilter: ["focused"] }
     );
     return true;
 }
 
-function insertExtraOptionsToFooter(footerElement) {
-    const container = createExtraOptionsContainer();
-    footerElement.insertAdjacentElement("beforeend", container);
+/**
+ * Prevents extra options from being removed by recreating them when they are removed
+ * @param {Element} footer - The footer element to observe
+ */
+function preventExtraOptionsRemoval(footer) {
+    observerManager.createObserver(
+        footer,
+        mutations => {
+            mutations.forEach(mutation => {
+                if (mutation.removedNodes.length > 0) {
+                    mutation.removedNodes.forEach(node => {
+                        if (node.classList.contains(extraOptionsClassName)) {
+                            const footer = mutation.target;
+                            const extraOptions = createExtraOptionsContainer();
+                            footer.insertAdjacentElement("beforeend", extraOptions);
+                            insertQuestionMenuUseMark(extraOptions);
+                        }
+                    });
+                }
+            });
+        },
+        { childList: true }
+    );
+}
 
-    const observer = new MutationObserver((mutations, observer) => {
-        mutations.forEach(mutation => {
-            if (mutation.removedNodes.length > 0) {
-                mutation.removedNodes.forEach(node => {
-                    if (node.classList.contains(extraOptionsClassName)) {
-                        observer.disconnect();
-                        insertExtraOptionsToFooter(footerElement);
+/**
+ * Observes the sheet view model for YouTube Shorts dropdowns to insert extra options
+ * @param {Element} sheetViewModel - The sheet view model element to observe
+ */
+function observeShortsSheetViewModel(sheetViewModel) {
+    observerManager.createObserver(
+        sheetViewModel,
+        (mutations, observer) => {
+            for (const mutation of mutations) {
+                mutation.addedNodes.forEach(node => {
+                    if (node.nodeType !== Node.ELEMENT_NODE) {
+                        return;
                     }
+                    const footer = node.querySelector(
+                        ".yt-contextual-sheet-layout-wiz__footer-container"
+                    );
+                    if (!footer) {
+                        return;
+                    }
+
+                    observerManager.cleanupObserver(observer);
+
+                    const extraOptions = createExtraOptionsContainer();
+                    footer.insertAdjacentElement("beforeend", extraOptions);
+                    insertQuestionMenuUseMark(extraOptions);
+
+                    // prevent the extra options from being removed
+                    preventExtraOptionsRemoval(footer);
                 });
             }
-        });
-    });
-    observer.observe(footerElement, { childList: true });
-
-    insertQuestionMenuUseMark(container);
+        },
+        { childList: true }
+    );
 }
 
 const questionText = chrome.i18n.getMessage("questionButtonText");
@@ -209,20 +307,6 @@ async function removeQuestionMenuUseMark() {
 }
 
 /**
- * Show extra options
- * @param {Element} dropDownElement - The YouTube video options menu.
- */
-function showExtraOptions(dropDownElement) {
-    const containerElement = dropDownElement.querySelector(`.${extraOptionsClassName}`);
-    if (!containerElement) {
-        console.error("No extra options container found", dropDownElement);
-        return;
-    }
-
-    containerElement.removeAttribute("aria-hidden");
-}
-
-/**
  * Event listener for the extra options.
  * @param {Event} e
  */
@@ -240,9 +324,10 @@ function onExtraOptionClick(e) {
         return;
     }
 
-    const videoInfo = focused.videoInfo;
+    const container = element.closest(`.${extraOptionsClassName}`);
+    const videoInfo = JSON.parse(container.dataset.videoInfoJson);
     if (!videoInfo) {
-        console.error("No video info found", focused);
+        console.error("No video info found", container);
         showToastMessage(Errors.UNKNOWN_ERROR.message);
         return;
     }
@@ -301,42 +386,9 @@ function pressEscKey() {
 export function detectVideoOptionClick(event) {
     const target = event.target;
     if (target.tagName != "DIV") {
+        optionClickResult = null;
         return;
     }
 
-    const result = getVideoInfo(target);
-
-    if (!result) {
-        return;
-    }
-
-    const { videoInfo, type } = result;
-
-    // for example, when the more options of comments is clicked
-    if (!videoInfo) {
-        if (type === ClickElementType.NO_EXTRA_OPTIONS) {
-            const containerElement = document.querySelector(
-                `${dropdownFullSelector} ytd-menu-popup-renderer .${extraOptionsClassName}`
-            );
-            if (containerElement) {
-                containerElement.setAttribute("aria-hidden", true);
-            }
-        }
-        return;
-    }
-
-    if (!/^[a-zA-Z0-9_-]{11}$/.test(videoInfo.id)) {
-        console.warn("Invalid video ID.", videoInfo.id, target);
-        return;
-    }
-
-    focused.videoInfo = videoInfo;
-
-    // TODO set timeout
-    observerManager.findOrObserveElement(
-        `${dropdownFullSelector}:not([aria-hidden='true'])`,
-        dropdown => {
-            showExtraOptions(dropdown);
-        }
-    );
+    optionClickResult = getVideoInfo(target);
 }

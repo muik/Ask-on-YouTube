@@ -53,7 +53,6 @@ export function getVideoInfoFromItemVideoOptionMenu(target) {
 
     for (const className of skipClassNames) {
         if (menuButton.classList.contains(className)) {
-            console.debug("Skip extra options", className);
             return {
                 type: ClickElementType.NO_EXTRA_OPTIONS,
             }; // extra options should not be shown
@@ -129,10 +128,17 @@ export function getVideoInfoFromItemVideoOptionMenu(target) {
 function getVideoInfoFromNotification(videoContainer) {
     const linkElement = videoContainer.querySelector(":scope > a");
 
-    if (!linkElement || !linkElement.href) {
+    if (!linkElement) {
         console.debug("No link element found", videoContainer);
         return {
             type: ClickElementType.OTHER,
+        };
+    }
+
+    if (!linkElement.href) {
+        // not for video detail page, example: comment reply
+        return {
+            type: ClickElementType.NO_EXTRA_OPTIONS,
         };
     }
 
