@@ -1,5 +1,6 @@
 import { BackgroundActions } from "../../../constants.js";
 import { Errors } from "../../../errors.js";
+import { VideoInfo } from "../../../types.js";
 import { extraOptionsClassName } from "../moreOptions.js";
 import { showQuestionDialog } from "../questionView.js";
 import { getQuestionMarkSvg } from "../simpleQuestion.js";
@@ -7,10 +8,10 @@ import { showToastMessage } from "../toast.js";
 
 const questionText = chrome.i18n.getMessage("questionButtonText");
 const shortcutTooltip = chrome.i18n.getMessage("questionShortcutTooltip");
-const useMarkElements = [];
-let questionMenuUsedBefore;
+const useMarkElements: HTMLElement[] = [];
+let questionMenuUsedBefore: boolean | undefined;
 
-export function createExtraOptionsContainer() {
+export function createExtraOptionsContainer(): HTMLElement {
     const optionItemClassName = "option-item";
     const container = document.createElement("div");
     container.classList.add("ytq");
@@ -34,27 +35,34 @@ export function createExtraOptionsContainer() {
  * Event listener for the extra options.
  * @param {Event} e
  */
-function onExtraOptionClick(e) {
+function onExtraOptionClick(e: Event): void {
     e.stopPropagation();
-    const element = e.target;
+    const element = e.target as HTMLElement;
 
     const target =
         element.getAttribute("target-value") ||
-        element.closest("[target-value]").getAttribute("target-value");
+        element.closest("[target-value]")?.getAttribute("target-value");
 
     const targets = ["chatgpt", "gemini", "question"];
-    if (!targets.includes(target)) {
+    if (!target || !targets.includes(target)) {
         console.error("Invalid option clicked.", e.target);
         return;
     }
 
     const container = element.closest(`.${extraOptionsClassName}`);
-    const videoInfo = JSON.parse(container.dataset.videoInfoJson);
-    if (!videoInfo) {
+    if (!container) {
+        console.error("No container found", element);
+        return;
+    }
+
+    const videoInfoJson = (container as HTMLElement).dataset.videoInfoJson;
+    if (!videoInfoJson) {
         console.error("No video info found", container);
         showToastMessage(Errors.UNKNOWN_ERROR.message);
         return;
     }
+
+    const videoInfo: VideoInfo = JSON.parse(videoInfoJson);
 
     if (!chrome.runtime || !chrome.runtime.sendMessage) {
         showToastMessage(Errors.EXTENSION_CONTEXT_INVALIDATED.message);
@@ -69,14 +77,14 @@ function onExtraOptionClick(e) {
     console.error("Invalid option clicked.", e.target);
 }
 
-function onQuestionClick(videoInfo) {
+function onQuestionClick(videoInfo: VideoInfo): void {
     // Close the dropdown menu
     pressEscKey();
 
     try {
         showQuestionDialog(videoInfo);
         removeQuestionMenuUseMark();
-    } catch (error) {
+    } catch (error: any) {
         if (error.code in Errors) {
             showToastMessage(error.message);
             return;
@@ -89,7 +97,7 @@ function onQuestionClick(videoInfo) {
 /**
  * Dispatch the ESC key press event on the document
  */
-function pressEscKey() {
+function pressEscKey(): void {
     // Create a new keyboard event
     const escEvent = new KeyboardEvent("keydown", {
         key: "Escape", // Key value
@@ -104,7 +112,7 @@ function pressEscKey() {
     document.dispatchEvent(escEvent);
 }
 
-async function removeQuestionMenuUseMark() {
+async function removeQuestionMenuUseMark(): Promise<void> {
     if (useMarkElements.length === 0) {
         return;
     }
@@ -127,7 +135,7 @@ async function removeQuestionMenuUseMark() {
     }
 }
 
-export async function insertQuestionMenuUseMark(container) {
+export async function insertQuestionMenuUseMark(container: HTMLElement): Promise<void> {
     if (questionMenuUsedBefore === undefined) {
         try {
             const response = await chrome.runtime.sendMessage({
@@ -135,7 +143,7 @@ export async function insertQuestionMenuUseMark(container) {
             });
             questionMenuUsedBefore = response.usedBefore;
         } catch (error) {
-            if (error.message === "Extension context invalidated.") {
+            if (error instanceof Error && error.message === "Extension context invalidated.") {
                 // ignore the error
                 return;
             }
@@ -150,7 +158,9 @@ export async function insertQuestionMenuUseMark(container) {
     const element = document.createElement("div");
     element.classList.add("use-mark");
 
-    container.querySelector(".vertical-menu").insertAdjacentElement("beforeend", element);
-
-    useMarkElements.push(element);
+    const verticalMenu = container.querySelector(".vertical-menu");
+    if (verticalMenu) {
+        verticalMenu.insertAdjacentElement("beforeend", element);
+        useMarkElements.push(element);
+    }
 }

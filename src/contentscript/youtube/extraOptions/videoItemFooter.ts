@@ -1,20 +1,20 @@
-import { ObserverManager } from "../../observer.ts";
+import { ObserverManager } from "../../observer";
 import {
     extraOptionsClassName,
     getOptionClickResult,
     setOptionClickResult,
-} from "../moreOptions.js";
-import { ClickElementType } from "../videoInfo.js";
-import { createExtraOptionsContainer, insertQuestionMenuUseMark } from "./elements.js";
+} from "../moreOptions";
+import { ClickElementType } from "../videoInfo";
+import { createExtraOptionsContainer, insertQuestionMenuUseMark } from "./elements";
 
 const observerManager = new ObserverManager();
 
 /**
  * Handle finding and inserting extra options into the footer of a video item dropdown
- * @param {Element} node - The dropdown node element
+ * @param {HTMLElement} dropdown - The dropdown node element
  * @returns {boolean} - Returns true if footer was found and handled, false otherwise
  */
-export function handleVideoItemFooter(dropdown) {
+export function handleVideoItemFooter(dropdown: HTMLElement): boolean {
     const footer = dropdown.querySelector(`ytd-menu-popup-renderer #footer`);
     if (!footer) {
         return false;
@@ -25,10 +25,10 @@ export function handleVideoItemFooter(dropdown) {
 
     observerManager.createObserver(
         dropdown,
-        mutations => {
+        (mutations: MutationRecord[]) => {
             mutations.forEach(mutation => {
-                const target = mutation.target;
-                const extraOptions = target.querySelector(`.${extraOptionsClassName}`);
+                const target = mutation.target as HTMLElement;
+                const extraOptions = target.querySelector(`.${extraOptionsClassName}`) as HTMLElement;
                 if (!extraOptions) {
                     console.debug("extra options not found", target);
                     return;
@@ -47,7 +47,7 @@ export function handleVideoItemFooter(dropdown) {
                     const optionClickResult = getOptionClickResult();
                     if (!optionClickResult) {
                         console.debug("no option click result", target);
-                        extraOptions.setAttribute("aria-hidden", true);
+                        extraOptions.setAttribute("aria-hidden", "true");
                         return;
                     }
 
@@ -55,7 +55,7 @@ export function handleVideoItemFooter(dropdown) {
                     setOptionClickResult(null);
 
                     if (type === ClickElementType.NO_EXTRA_OPTIONS) {
-                        extraOptions.setAttribute("aria-hidden", true);
+                        extraOptions.setAttribute("aria-hidden", "true");
                     }
 
                     extraOptions.dataset.videoInfoJson = JSON.stringify(videoInfo);
