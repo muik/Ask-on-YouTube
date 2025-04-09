@@ -1,8 +1,9 @@
 // Types
 interface ObserverConfig {
-    childList: boolean;
+    childList?: boolean;
     subtree?: boolean;
     attributes?: boolean;
+    attributeFilter?: string[];
 }
 
 type ObserverCallback = (mutations: MutationRecord[], observer: MutationObserver) => void;
