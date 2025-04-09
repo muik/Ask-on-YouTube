@@ -80,6 +80,12 @@ export const setupShortsClickHandlers = async (): Promise<void> => {
             observeShortsInItemSections
         );
 
+        // for search page
+        observerManager.findOrObserveElement(
+            "#page-manager > ytd-search ytd-two-column-search-results-renderer > #primary > ytd-section-list-renderer > #contents",
+            observeShortsInItemSections
+        );
+
         // for home page
         observerManager.findOrObserveElement(
             "#page-manager > ytd-browse[page-subtype='home'] #contents.ytd-rich-grid-renderer",
