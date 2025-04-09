@@ -5,7 +5,7 @@ import { injectShortcutHelp } from "./youtube/shortcutHelp.js";
 import {
     cleanup as cleanupShortsHandlers,
     setupShortsClickHandlers,
-} from "./youtube/shortsHandlers.js";
+} from "./youtube/shortsOptions/setupShortsClick.js";
 import { injectDetailRelatedElements } from "./youtube/videoDetail.js";
 
 /**

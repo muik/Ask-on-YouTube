@@ -3,7 +3,7 @@
  */
 
 import { detectVideoOptionClick } from "../moreOptions";
-import { cleanup, setupShortsClickHandlers } from "../shortsHandlers";
+import { cleanup, setupShortsClickHandlers } from "../shortsOptions/setupShortsClick";
 
 // Mock the moreOptions module
 jest.mock("../moreOptions", () => ({
