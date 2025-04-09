@@ -29,15 +29,24 @@ describe("Settings page Test", () => {
         }
         const page: Page = await browser.newPage();
         await page.goto(`chrome-extension://${EXTENSION_ID}/index.html#/settings`);
-        const title: string = await page.title();
-
+        
         const language: string = await page.evaluate(() => {
             return navigator.language;
         });
 
         if (language.startsWith("ko")) {
+            await page.waitForFunction(
+                () => document.title.includes("설정 - YouTube 질문하기"),
+                { timeout: 50 }
+            );
+            const title = await page.evaluate(() => document.title);
             expect(title).toContain("설정 - YouTube 질문하기");
         } else {
+            await page.waitForFunction(
+                () => document.title.includes("Settings - Ask on YouTube"),
+                { timeout: 50 }
+            );
+            const title = await page.evaluate(() => document.title);
             expect(title).toContain("Settings - Ask on YouTube");
         }
     });
