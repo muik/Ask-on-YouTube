@@ -54,7 +54,7 @@
         "node-fetch": "^3.3.2",
         "nodemon": "^3.1.9",
         "process": "^0.11.10",
-        "puppeteer": "^24.1.1",
+        "puppeteer": "^24.6.0",
         "rimraf": "^3.0.2",
         "style-loader": "^4.0.0",
         "terser-webpack-plugin": "^5.3.11",
