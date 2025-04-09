@@ -19,7 +19,7 @@ describe("defaultQuestions", () => {
     });
 
     it("should fetch and cache default questions for default language", async () => {
-        const mockQuestions = ["Question 1", "Question 2", "Question 3"];
+        const mockQuestions = ["Question 1", "Question 2", "Question 3", "Question 4"];
         mockedGetMessages.mockResolvedValueOnce(mockQuestions);
 
         // First call should fetch from the API
@@ -31,6 +31,7 @@ describe("defaultQuestions", () => {
                 "defaultFavoriteQuestion1",
                 "defaultFavoriteQuestion2",
                 "defaultFavoriteQuestion3",
+                "defaultFavoriteQuestion4",
             ],
             { lang: "en" }
         );
@@ -42,8 +43,8 @@ describe("defaultQuestions", () => {
     });
 
     it("should fetch and cache questions for different languages separately", async () => {
-        const mockEnQuestions = ["Question 1", "Question 2", "Question 3"];
-        const mockKoQuestions = ["질문 1", "질문 2", "질문 3"];
+        const mockEnQuestions = ["Question 1", "Question 2", "Question 3", "Question 4"];
+        const mockKoQuestions = ["질문 1", "질문 2", "질문 3", "질문 4"];
 
         mockedGetMessages
             .mockResolvedValueOnce(mockEnQuestions)
@@ -66,7 +67,7 @@ describe("defaultQuestions", () => {
     });
 
     it("should clear cache when extension is updated", async () => {
-        const mockQuestions = ["Question 1", "Question 2", "Question 3"];
+        const mockQuestions = ["Question 1", "Question 2", "Question 3", "Question 4"];
         mockedGetMessages.mockResolvedValue(mockQuestions);
 
         // First call
