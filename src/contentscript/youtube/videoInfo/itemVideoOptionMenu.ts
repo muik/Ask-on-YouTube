@@ -1,3 +1,4 @@
+import { getVideoIdFromUrl } from "../utils";
 import { ClickElementType, ClickResult } from "../videoInfo";
 
 /**
@@ -88,10 +89,9 @@ export function getVideoInfoFromItemVideoOptionMenu(target: HTMLElement): ClickR
     }
 
     // Extract the video ID from the URL (e.g., https://www.youtube.com/watch?v=VIDEO_ID)
-    const url = new URL(linkElement.href);
-    const id = url.searchParams.get("v");
+    const id = getVideoIdFromUrl(linkElement.href);
     if (!id) {
-        console.debug("No video ID found in URL", linkElement.href);
+        console.debug("No video ID found in URL on item video option menu", linkElement.href);
         return {
             type: ClickElementType.OTHER,
         };
@@ -150,10 +150,9 @@ function getVideoInfoFromNotification(videoContainer: HTMLElement): ClickResult 
         };
     }
 
-    const url = new URL(linkElement.href);
-    const id = url.searchParams.get("v");
+    const id = getVideoIdFromUrl(linkElement.href);
     if (!id) {
-        console.debug("No video ID found in URL", linkElement.href);
+        console.debug("No video ID found in URL on notification", linkElement.href);
         return {
             type: ClickElementType.OTHER,
         };
