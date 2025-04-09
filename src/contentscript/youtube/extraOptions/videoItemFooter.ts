@@ -14,7 +14,7 @@ const observerManager = new ObserverManager();
  * @param {HTMLElement} dropdown - The dropdown node element
  * @returns {boolean} - Returns true if footer was found and handled, false otherwise
  */
-export function handleVideoItemFooter(dropdown: HTMLElement): boolean {
+export function handleVideoItemFooter(dropdown: Element): boolean {
     const footer = dropdown.querySelector(`ytd-menu-popup-renderer #footer`);
     if (!footer) {
         return false;

@@ -3,8 +3,8 @@ import {
     extraOptionsClassName,
     getOptionClickResult,
     setOptionClickResult,
-} from "../moreOptions.js";
-import { ClickElementType } from "../videoInfo.js";
+} from "../moreOptions";
+import { ClickElementType } from "../videoInfo";
 import { createExtraOptionsContainer, insertQuestionMenuUseMark } from "./elements";
 
 const observerManager = new ObserverManager();

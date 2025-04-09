@@ -1,9 +1,9 @@
 import { Errors } from "../../errors.ts";
-import { findQuestionMenuShown } from "./moreOptions.js";
+import { findQuestionMenuShown } from "./moreOptions.ts";
 import { isQuestionDialogOpened, showQuestionDialog } from "./questionView.js";
 import { findSimpleQuestionInputShown } from "./simpleQuestion.js";
 import { showToastMessage } from "./toast.js";
-import { getVideoInfoFromShortsDetail } from "./videoInfo.js";
+import { getVideoInfoFromShortsDetail } from "./videoInfo.ts";
 
 /**
  * Check if current page is a video detail page

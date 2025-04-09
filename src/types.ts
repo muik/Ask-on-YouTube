@@ -1,7 +1,8 @@
 export interface VideoInfo {
     id: string;
     title: string;
-    caption: string;
+    caption?: string | null;
+    thumbnail?: string | null;
 }
 
 export interface HistoryItem {

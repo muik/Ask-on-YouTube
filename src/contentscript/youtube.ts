@@ -1,6 +1,6 @@
 import { BackgroundActions } from "../constants.js";
 import { handleQuestionShortcut } from "./youtube/keyboardShortcuts.js";
-import { detectVideoOptionClick, injectExtraOptions } from "./youtube/moreOptions.js";
+import { detectVideoOptionClick, injectExtraOptions } from "./youtube/moreOptions";
 import { injectShortcutHelp } from "./youtube/shortcutHelp.js";
 import {
     cleanup as cleanupShortsHandlers,

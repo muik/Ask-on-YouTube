@@ -1,18 +1,23 @@
 import { Errors } from "../../errors.js";
+import { VideoInfo } from "../../types";
 
-/**
- * @typedef {Object} VideoInfo
- * @property {string} id - The video ID
- * @property {string} title - The video title
- * @property {string} [thumbnail] - The video thumbnail URL (optional)
- */
+export enum ClickElementType {
+    OTHER = 1, // not dropdown click
+    NO_EXTRA_OPTIONS = 2, // the dropdown from this click should not show extra options
+    UNEXPECTED = 3, // unexpected click type, should not happen
+}
+
+export interface ClickResult {
+    type?: ClickElementType;
+    videoInfo?: VideoInfo;
+}
 
 /**
  * Attempts to get video information from a clicked element, trying different strategies.
- * @param {Element} target - The clicked element.
- * @returns {ClickResult | undefined} - The click result. If undefined, this is not the correct type of element.
+ * @param target - The clicked element.
+ * @returns The click result. If undefined, this is not the correct type of element.
  */
-export function getVideoInfo(target) {
+export function getVideoInfo(target: HTMLElement): ClickResult | undefined {
     return (
         getVideoInfoFromItemVideoOptionMenu(target) || getVideoInfoFromMainVideoOptionMenu(target)
     );
@@ -20,10 +25,10 @@ export function getVideoInfo(target) {
 
 /**
  * Identify the video info from the YouTube video options menu.
- * @param {Element} target - The clicked element.
- * @returns {ClickResult | undefined} - The click result. If undefined, this is not the correct type of element and other options need to be considered.
+ * @param target - The clicked element.
+ * @returns The click result. If undefined, this is not the correct type of element and other options need to be considered.
  */
-export function getVideoInfoFromItemVideoOptionMenu(target) {
+export function getVideoInfoFromItemVideoOptionMenu(target: HTMLElement): ClickResult | undefined {
     if (!target.parentElement || !target.parentElement.classList.contains("yt-icon")) {
         // not this type of element, need to find other options
         return;
@@ -36,7 +41,7 @@ export function getVideoInfoFromItemVideoOptionMenu(target) {
     }
 
     // Locate the actual menu button on YouTube, often identified by certain attributes or classes.
-    const menuButton = target.closest("ytd-menu-renderer");
+    const menuButton = target.closest("ytd-menu-renderer") as HTMLElement | null;
     if (!menuButton) {
         console.debug("No menu button found", target);
         // Exit if the click did not occur on an options menu
@@ -71,7 +76,7 @@ export function getVideoInfoFromItemVideoOptionMenu(target) {
     }
 
     // Find the video container, which could be one of several YouTube element types
-    const videoContainer = menuButton.closest(rendererClassName);
+    const videoContainer = menuButton.closest(rendererClassName) as HTMLElement | null;
     if (!videoContainer) {
         console.debug("No video container found", menuButton);
         return {
@@ -80,11 +85,11 @@ export function getVideoInfoFromItemVideoOptionMenu(target) {
     }
 
     if (rendererClassName === "ytd-notification-renderer") {
-        return getVideoInfoFromNotification(videoContainer);
+        return getVideoInfoFromNotification(videoContainer as HTMLElement);
     }
 
     // Locate an <a> tag within the container that links to the video
-    const linkElement = videoContainer.querySelector("a#thumbnail");
+    const linkElement = videoContainer.querySelector<HTMLAnchorElement>("a#thumbnail");
     if (!linkElement || !linkElement.href) {
         console.debug("No video link found", videoContainer);
         return {
@@ -92,7 +97,7 @@ export function getVideoInfoFromItemVideoOptionMenu(target) {
         };
     }
 
-    const thumbnailElement = videoContainer.querySelector("img.yt-core-image");
+    const thumbnailElement = videoContainer.querySelector<HTMLImageElement>("img.yt-core-image");
     if (!thumbnailElement) {
         console.debug("No thumbnail element found", videoContainer);
     }
@@ -108,25 +113,31 @@ export function getVideoInfoFromItemVideoOptionMenu(target) {
     // Extract the video ID from the URL (e.g., https://www.youtube.com/watch?v=VIDEO_ID)
     const url = new URL(linkElement.href);
     const id = url.searchParams.get("v");
+    if (!id) {
+        console.debug("No video ID found in URL", linkElement.href);
+        return {
+            type: ClickElementType.OTHER,
+        };
+    }
     const title = titleElement.textContent.trim();
     const thumbnail = thumbnailElement?.src;
 
     return {
         videoInfo: {
-            id: id,
-            title: title,
-            thumbnail: thumbnail,
+            id,
+            title,
+            thumbnail,
         },
     };
 }
 
 /**
  * Extracts the video info from the notification.
- * @param {Element} videoContainer - The video container.
- * @returns {ClickResult | undefined} - The click result. If undefined, this is not the correct type of element and other options need to be considered.
+ * @param videoContainer - The video container.
+ * @returns The click result. If undefined, this is not the correct type of element and other options need to be considered.
  */
-function getVideoInfoFromNotification(videoContainer) {
-    const linkElement = videoContainer.querySelector(":scope > a");
+function getVideoInfoFromNotification(videoContainer: HTMLElement): ClickResult | undefined {
+    const linkElement = videoContainer.querySelector<HTMLAnchorElement>(":scope > a");
 
     if (!linkElement) {
         console.debug("No link element found", videoContainer);
@@ -145,7 +156,9 @@ function getVideoInfoFromNotification(videoContainer) {
     const titleElement = linkElement.querySelector(
         ":scope > div.text > yt-formatted-string > span:last-child"
     );
-    const thumbnailElement = linkElement.querySelector(":scope > div.thumbnail-container img");
+    const thumbnailElement = linkElement.querySelector<HTMLImageElement>(
+        ":scope > div.thumbnail-container img"
+    );
 
     if (!titleElement || !titleElement.textContent) {
         console.debug("No video title found", videoContainer);
@@ -162,6 +175,12 @@ function getVideoInfoFromNotification(videoContainer) {
 
     const url = new URL(linkElement.href);
     const id = url.searchParams.get("v");
+    if (!id) {
+        console.debug("No video ID found in URL", linkElement.href);
+        return {
+            type: ClickElementType.OTHER,
+        };
+    }
     const title = titleElement.textContent.trim();
     const thumbnail = thumbnailElement.src;
 
@@ -176,10 +195,10 @@ function getVideoInfoFromNotification(videoContainer) {
 
 /**
  * Extracts the video ID from the main YouTube video options menu.
- * @param {Element} target - The clicked element.
- * @returns {ClickResult | undefined} - The click result. If undefined, this is not the correct type of element and other options need to be considered.
+ * @param target - The clicked element.
+ * @returns The click result. If undefined, this is not the correct type of element and other options need to be considered.
  */
-export function getVideoInfoFromMainVideoOptionMenu(target) {
+export function getVideoInfoFromMainVideoOptionMenu(target: HTMLElement): ClickResult | undefined {
     if (!target.classList.contains("yt-spec-touch-feedback-shape__fill")) {
         // not this type of element, need to find other options
         return;
@@ -187,7 +206,7 @@ export function getVideoInfoFromMainVideoOptionMenu(target) {
 
     // for shorts item on home page
     if (
-        target.parentElement.parentElement.parentElement.parentElement.classList.contains(
+        target.parentElement?.parentElement?.parentElement?.parentElement?.classList.contains(
             "shortsLockupViewModelHostOutsideMetadataMenu"
         )
     ) {
@@ -195,8 +214,8 @@ export function getVideoInfoFromMainVideoOptionMenu(target) {
     }
 
     const expectedMenuButton =
-        target.parentElement.parentElement.parentElement.parentElement.parentElement;
-    if (expectedMenuButton.nodeName === "BUTTON-VIEW-MODEL") {
+        target.parentElement?.parentElement?.parentElement?.parentElement?.parentElement;
+    if (expectedMenuButton?.nodeName === "BUTTON-VIEW-MODEL") {
         const adButtonSelector = "ytwReelsPlayerOverlayLayoutViewModelHostMenuButton";
         if (expectedMenuButton.classList.contains(adButtonSelector)) {
             // skip ad on shorts page
@@ -207,16 +226,16 @@ export function getVideoInfoFromMainVideoOptionMenu(target) {
     }
 
     let menuButton = expectedMenuButton;
-    if (expectedMenuButton.nodeName !== "YTD-MENU-RENDERER") {
+    if (expectedMenuButton?.nodeName !== "YTD-MENU-RENDERER") {
         console.debug("expectedMenuButton", expectedMenuButton);
-        menuButton = target.closest("ytd-menu-renderer");
+        menuButton = target.closest("ytd-menu-renderer") as HTMLElement | null;
     }
 
     if (!menuButton) {
         console.debug(
             "No menu button found",
             target,
-            target.parentElement.parentElement.parentElement.parentElement.parentElement
+            target.parentElement?.parentElement?.parentElement?.parentElement?.parentElement
         );
         return {
             type: ClickElementType.OTHER,
@@ -243,7 +262,7 @@ export function getVideoInfoFromMainVideoOptionMenu(target) {
     if (rendererClassName.includes("-reel-")) {
         // check if the url is a shorts detail page like https://www.youtube.com/shorts/VIDEO_ID
         if (window.location.pathname.startsWith("/shorts/")) {
-            const videoContainer = target.closest(rendererClassName);
+            const videoContainer = target.closest(rendererClassName) as HTMLElement | null;
             if (!videoContainer) {
                 console.debug("No video container found", target);
                 return {
@@ -262,10 +281,10 @@ export function getVideoInfoFromMainVideoOptionMenu(target) {
 
 /**
  * Extracts the video ID from the shorts item.
- * @param {Element} target - The clicked element.
- * @returns {ClickResult | undefined} - The click result. If undefined, this is not the correct type of element and other options need to be considered.
+ * @param target - The clicked element.
+ * @returns The click result. If undefined, this is not the correct type of element and other options need to be considered.
  */
-function getVideoInfoFromShortsItem(target) {
+function getVideoInfoFromShortsItem(target: HTMLElement): ClickResult | undefined {
     const selector = "ytm-shorts-lockup-view-model";
     const container = target.closest(selector);
     if (!container) {
@@ -276,20 +295,20 @@ function getVideoInfoFromShortsItem(target) {
     }
     console.debug("getVideoInfoFromShortsItem", container);
 
-    const linkElement = container.querySelector("h3 a");
-    const thumbnailElement = container.querySelector("img.yt-core-image");
+    const linkElement = container.querySelector<HTMLAnchorElement>("h3 a");
+    const thumbnailElement = container.querySelector<HTMLImageElement>("img.yt-core-image");
 
     return getVideoInfoFromShortsLinkElement(linkElement, thumbnailElement);
 }
 
 /**
  * Extracts the video ID from the shorts detail page.
- * @param {Element} rendererElement - The renderer element.
- * @returns {ClickResult | undefined} - The click result. If undefined, this is not the correct type of element and other options need to be considered.
+ * @param rendererElement - The renderer element.
+ * @returns The click result. If undefined, this is not the correct type of element and other options need to be considered.
  */
-export function getVideoInfoFromShortsDetail(videoContainer) {
+export function getVideoInfoFromShortsDetail(videoContainer: HTMLElement): ClickResult | undefined {
     const id = window.location.pathname.split("/")[2];
-    const title = videoContainer.querySelector("h2").textContent.trim();
+    const title = videoContainer.querySelector("h2")?.textContent?.trim();
 
     if (!title || !id) {
         console.debug("Unexpected shorts detail page", id, title, videoContainer);
@@ -309,10 +328,13 @@ export function getVideoInfoFromShortsDetail(videoContainer) {
 
 /**
  * Extracts the video info from the link element.
- * @param {Element} linkElement - The link element.
- * @returns {ClickResult | undefined} - The click result. If undefined, this is not the correct type of element and other options need to be considered.
+ * @param linkElement - The link element.
+ * @returns The click result. If undefined, this is not the correct type of element and other options need to be considered.
  */
-function getVideoInfoFromShortsLinkElement(linkElement, thumbnailElement = null) {
+function getVideoInfoFromShortsLinkElement(
+    linkElement: HTMLAnchorElement | null,
+    thumbnailElement: HTMLImageElement | null = null
+): ClickResult | undefined {
     if (!linkElement || !linkElement.href) {
         console.debug("No link element found", linkElement);
         return {
@@ -321,7 +343,13 @@ function getVideoInfoFromShortsLinkElement(linkElement, thumbnailElement = null)
     }
 
     const id = getVideoIdFromShortsUrl(linkElement.href);
-    const title = linkElement.textContent.trim();
+    const title = linkElement.textContent?.trim();
+    if (!title) {
+        console.debug("No title found in link element", linkElement);
+        return {
+            type: ClickElementType.UNEXPECTED,
+        };
+    }
     const thumbnail = thumbnailElement?.src;
 
     return {
@@ -335,9 +363,9 @@ function getVideoInfoFromShortsLinkElement(linkElement, thumbnailElement = null)
 
 /**
  * Extracts the video info from the YouTube video detail page.
- * @returns {VideoInfo} - The video info.
+ * @returns The video info.
  */
-export function getVideoInfoFromVideoDetail() {
+export function getVideoInfoFromVideoDetail(): VideoInfo {
     const titleElement = document.querySelector("#title > h1");
     if (!titleElement || !titleElement.textContent) {
         console.error("No title element found on video detail page", document);
@@ -348,6 +376,10 @@ export function getVideoInfoFromVideoDetail() {
     // get the v param from the url
     const url = new URL(window.location.href);
     const id = url.searchParams.get("v");
+    if (!id) {
+        console.error("No video ID found in URL", window.location.href);
+        throw Errors.UNKNOWN_ERROR;
+    }
     const title = titleElement.textContent.trim();
 
     return {
@@ -359,22 +391,10 @@ export function getVideoInfoFromVideoDetail() {
 /**
  * Extracts the video ID from the shorts URL.
  * get the last pathname without query params
- * @param {string} link - The shorts URL. like https://www.youtube.com/shorts/VIDEO_ID
- * @returns {string} The video ID.
+ * @param link - The shorts URL. like https://www.youtube.com/shorts/VIDEO_ID
+ * @returns The video ID.
  */
-function getVideoIdFromShortsUrl(link) {
+function getVideoIdFromShortsUrl(link: string): string {
     const url = new URL(link);
     return url.pathname.split("/")[2];
 }
-
-export const ClickElementType = {
-    OTHER: 1, // not dropdown click
-    NO_EXTRA_OPTIONS: 2, // the dropdown from this click should not show extra options
-    UNEXPECTED: 3, // unexpected click type, should not happen
-};
-
-/**
- * @typedef {Object} ClickResult
- * @property {ClickElementType} [type] - The type of click event
- * @property {VideoInfo} [videoInfo] - The video information if available
- */

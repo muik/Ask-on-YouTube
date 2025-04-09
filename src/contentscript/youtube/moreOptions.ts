@@ -1,21 +1,21 @@
 import { ObserverManager } from "../observer";
 import { handleShortsItemFooter } from "./extraOptions/shortsItemFooter.js";
 import { handleVideoItemFooter } from "./extraOptions/videoItemFooter.js";
-import { getVideoInfo } from "./videoInfo.js";
+import { ClickResult, getVideoInfo } from "./videoInfo";
 
 export const extraOptionsClassName = "ytq-extra-options";
 const dropdownSelector = "tp-yt-iron-dropdown.ytd-popup-container";
 const dropdownFullSelector = `body > ytd-app > ytd-popup-container > ${dropdownSelector}`;
 
-let optionClickResult: any = null;
+let optionClickResult: ClickResult | null = null;
 
 const observerManager = new ObserverManager();
 
-export function setOptionClickResult(result: any): void {
+export function setOptionClickResult(result: ClickResult | null): void {
     optionClickResult = result;
 }
 
-export function getOptionClickResult(): any {
+export function getOptionClickResult(): ClickResult | null {
     return optionClickResult;
 }
 
@@ -34,12 +34,12 @@ export function findQuestionMenuShown(): Element | null {
  */
 export function injectExtraOptions(): void {
     // for video item
-    observerManager.findOrObserveElement(`body > ytd-app > ytd-popup-container`, (container: Element) => {
+    observerManager.findOrObserveElement(`body > ytd-app > ytd-popup-container`, container => {
         observeDropdown(container, handleVideoItemFooter);
     });
 
     // for shorts item
-    observerManager.findOrObserveElement(`body > ytd-app > ytd-popup-container`, (container: Element) => {
+    observerManager.findOrObserveElement(`body > ytd-app > ytd-popup-container`, container => {
         observeDropdown(container, handleShortsItemFooter);
     });
 }
@@ -55,11 +55,15 @@ function observeDropdown(container: Element, handler: (node: Element) => boolean
         (mutations: MutationRecord[], observer: MutationObserver) => {
             for (const mutation of mutations) {
                 for (const node of mutation.addedNodes) {
-                    if (node.nodeType !== Node.ELEMENT_NODE || !(node as Element).matches(dropdownSelector)) {
+                    if (
+                        node.nodeType !== Node.ELEMENT_NODE ||
+                        !(node instanceof Element) ||
+                        !node.matches(dropdownSelector)
+                    ) {
                         continue;
                     }
 
-                    if (!handler(node as Element)) {
+                    if (!handler(node)) {
                         continue;
                     }
 
@@ -76,11 +80,11 @@ function observeDropdown(container: Element, handler: (node: Element) => boolean
  * Detects when a video option is clicked.
  */
 export function detectVideoOptionClick(event: Event): void {
-    const target = event.target as HTMLElement;
-    if (target.tagName != "DIV") {
+    const target = event.target;
+    if (!(target instanceof Element) || target.tagName !== "DIV") {
         optionClickResult = null;
         return;
     }
 
-    optionClickResult = getVideoInfo(target);
+    optionClickResult = getVideoInfo(target as HTMLElement) ?? null;
 }

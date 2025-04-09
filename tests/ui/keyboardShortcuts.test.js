@@ -34,7 +34,7 @@ const mockShowQuestionDialog = jest.fn();
 const mockGetVideoInfoFromShortsDetail = jest.fn();
 
 // Mock the modules
-jest.unstable_mockModule("../../src/contentscript/youtube/moreOptions.js", () => ({
+jest.unstable_mockModule("../../src/contentscript/youtube/moreOptions.ts", () => ({
     findQuestionMenuShown: mockFindQuestionMenuShown,
     detectVideoOptionClick: jest.fn(),
     injectExtraOptions: jest.fn(),
@@ -49,7 +49,7 @@ jest.unstable_mockModule("../../src/contentscript/youtube/questionView.js", () =
     isQuestionDialogOpened: jest.fn().mockReturnValue(false),
 }));
 
-jest.unstable_mockModule("../../src/contentscript/youtube/videoInfo.js", () => ({
+jest.unstable_mockModule("../../src/contentscript/youtube/videoInfo.ts", () => ({
     getVideoInfoFromShortsDetail: mockGetVideoInfoFromShortsDetail,
 }));
 
