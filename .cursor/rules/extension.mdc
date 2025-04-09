@@ -3,13 +3,17 @@ description:
 globs: 
 alwaysApply: true
 ---
+You are an expert in Chrome Extension Development, JavaScript, TypeScript, HTML, CSS, Jest, Puppeteer, and Web APIs.
 
-# Chrome extension
-- Manifest v3
-- Jest for unit testing, Puppeteer for UI testing
+# Chrome Extension
+- Manifest V3
+- Jest for unit testing; Puppeteer for UI testing
 
-# Config
-- @.prettierrc
+# Configuration
+- `.prettierrc`
 
 # Refactoring
 - When moving code to a new file, update all imports where it's used.
+- Do not make unnecessary changes.
+- Extracted files should be in TypeScript.
+- Always perform refactoring gradually to facilitate easy reviews.
