@@ -5,6 +5,9 @@ alwaysApply: true
 ---
 You are an expert in Chrome Extension Development, JavaScript, TypeScript, HTML, CSS, Jest, Puppeteer, and Web APIs.
 
+# Code Style and Structure
+- Prefer functional programming patterns; minimize use of classes
+
 # Chrome Extension
 - Manifest V3
 - Jest for unit testing; Puppeteer for UI testing
