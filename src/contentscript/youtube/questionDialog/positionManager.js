@@ -25,6 +25,25 @@ export function repositionDialog() {
     containerElement.style.top = `${dialogY}px`;
 
     const backdropElement = document.querySelector("tp-yt-iron-overlay-backdrop");
-    backdropElement.style.zIndex = 2201;
-    containerElement.style.zIndex = 2202;
-} 
+    const zIndex = getMaxZIndex(containerElement);
+    backdropElement.style.zIndex = `${zIndex + 1}`;
+    containerElement.style.zIndex = `${zIndex + 2}`;
+}
+
+/**
+ * Gets the maximum z-index of all elements in the popup container, excluding the given element.
+ * @param {Element} excludeElement - The element to exclude from the calculation.
+ * @returns {number} The maximum z-index of all elements in the popup container, excluding the given element.
+ */
+function getMaxZIndex(excludeElement) {
+    return Math.max(
+        ...Array.from(document.querySelectorAll("body > ytd-app > ytd-popup-container > *"))
+            .filter(
+                element =>
+                    element.style.zIndex &&
+                    element.style.display !== "none" &&
+                    element !== excludeElement
+            )
+            .map(element => parseInt(element.style.zIndex))
+    );
+}
