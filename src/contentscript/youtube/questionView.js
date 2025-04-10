@@ -10,7 +10,7 @@ import {
     handleResponseError,
     setInputError,
 } from "./questionDialog/errorHandler.js";
-import { repositionDialog } from "./questionDialog/positionManager.js";
+import { repositionDialog } from "./questionDialog/positionManager.ts";
 import {
     cleanupQuestionOptions,
     clearRequestQuestionsPendingListener,
@@ -43,7 +43,7 @@ export function showQuestionDialog(videoInfo) {
             insertQuestionDialog({
                 onRequestButtonClick,
                 onCloseButtonClick: hideQuestionDialog,
-                onResize: repositionDialog,
+                onResize: () => repositionDialog(getContainerElement()),
             });
         containerElement.style.display = "block";
 
@@ -55,7 +55,7 @@ export function showQuestionDialog(videoInfo) {
         loadQuestionOptions(containerElement);
         loadGeminiServiceAvailable();
         loadDefaultQuestion(containerElement);
-        repositionDialog();
+        repositionDialog(containerElement);
     } catch (error) {
         if (error.message === "Extension context invalidated.") {
             throw Errors.EXTENSION_CONTEXT_INVALIDATED;
