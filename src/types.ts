@@ -11,3 +11,10 @@ export interface HistoryItem {
     timestamp: string;
     answerUrl?: string;
 } 
+
+export interface PromptData {
+    videoInfo: VideoInfo;
+    transcript: string;
+    question: string;
+    langCode: string;
+}
