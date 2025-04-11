@@ -14,6 +14,7 @@ You are an expert in Chrome Extension Development, JavaScript, TypeScript, HTML,
 
 # Configuration
 - `.prettierrc`
+- Tests: [jest.config.mjs](mdc:jest.config.mjs) [jest.setup.js](mdc:jest.setup.js)
 
 # Refactoring
 - When moving code to a new file, update all imports where it's used.

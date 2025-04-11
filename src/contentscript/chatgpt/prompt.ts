@@ -2,6 +2,7 @@ import { PromptData } from "../../types";
 import { waitForElm } from "../utils.js";
 import { isAnswerUrlObserving, observeAnswerUrl, stopAnswerUrlObserver } from "./answer";
 import { promptDivider } from "./messages";
+import { setPromptText, setPromptWithTranscript } from "./promptInteractions";
 import { getTranscriptPrompt, getVideoInfoPrompt } from "./transcript";
 import { getNewChatButton, hasErrorResponseArticle, isNotLogin, SELECTORS } from "./ui";
 
@@ -98,37 +99,6 @@ function tryAttachTranscript(promptData: PromptData): void {
     }, 100);
 }
 
-function setPromptWithTranscript(
-    promptTextarea: HTMLTextAreaElement,
-    promptData: PromptData
-): void {
-    const { prompt, transcript } = getPromptTextWithTranscript(promptData);
-
-    setPromptText(promptTextarea, prompt);
-
-    const attachFilename = chrome.i18n.getMessage("attachFilename");
-    attachTextAsFile(promptTextarea, transcript, attachFilename);
-}
-
-function setPromptText(textarea: HTMLTextAreaElement, text: string): void {
-    const lines = text.split("\n");
-    const promptHtml = `<p>${lines.join("</p><p>")}</p>`;
-    textarea.innerHTML = promptHtml;
-}
-
-function attachTextAsFile(dropZone: HTMLTextAreaElement, text: string, filename: string): void {
-    const dataTransfer = new DataTransfer();
-    dataTransfer.items.add(new File([text], filename, { type: "text/plain" }));
-
-    const event = new DragEvent("drop", {
-        bubbles: true,
-        cancelable: true,
-        dataTransfer: dataTransfer,
-    });
-
-    dropZone.dispatchEvent(event);
-}
-
 function getPromptText({ videoInfo, transcript, question, langCode }: PromptData): string {
     const videoInfoPrompt = getVideoInfoPrompt(videoInfo, langCode);
     const transcriptPrompt = getTranscriptPrompt(transcript, langCode);
@@ -137,19 +107,4 @@ function getPromptText({ videoInfo, transcript, question, langCode }: PromptData
 ${promptDivider}
 ${videoInfoPrompt}
 ${transcriptPrompt}`;
-}
-
-function getPromptTextWithTranscript({ videoInfo, transcript, question, langCode }: PromptData): {
-    prompt: string;
-    transcript: string;
-} {
-    const videoInfoPrompt = getVideoInfoPrompt(videoInfo, langCode);
-    const transcriptPrompt = getTranscriptPrompt(transcript, langCode);
-
-    return {
-        prompt: `${question}
-${promptDivider}
-${videoInfoPrompt}`,
-        transcript: transcriptPrompt,
-    };
 }

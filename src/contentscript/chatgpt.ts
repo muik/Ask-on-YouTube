@@ -1,35 +1,35 @@
 import Config from "../config";
 import { BackgroundActions, Targets } from "../constants";
-import { PromptData } from "../types";
+import { BackgroundMessage, PromptResponse } from "../types/chatgpt";
 import { handlePromptResponse } from "./chatgpt/prompt";
 
-interface BackgroundMessage {
-    action: BackgroundActions;
-    target: Targets;
-}
+const isChatGPTExtensionPage = (): boolean => {
+    return (
+        window.location.hostname === "chatgpt.com" &&
+        window.location.search === `?ref=${Config.REF_CODE}`
+    );
+};
 
-interface PromptResponse {
-    promptData: PromptData;
-}
+const getPromptFromBackground = async (): Promise<PromptResponse> => {
+    const message: BackgroundMessage = {
+        action: BackgroundActions.GET_PROMPT,
+        target: Targets.CHATGPT,
+    };
+    return chrome.runtime.sendMessage<BackgroundMessage, PromptResponse>(message);
+};
 
-window.onload = async (): Promise<void> => {
-    // If opened by the extension, insert the prompt
-    if (
-        window.location.hostname !== "chatgpt.com" ||
-        window.location.search !== `?ref=${Config.REF_CODE}`
-    ) {
+const initializeChatGPT = async (): Promise<void> => {
+    if (!isChatGPTExtensionPage()) {
         return;
     }
 
     try {
-        // get prompt from background.js
-        const response = await chrome.runtime.sendMessage<BackgroundMessage, PromptResponse>({
-            action: BackgroundActions.GET_PROMPT,
-            target: Targets.CHATGPT,
-        });
-
+        const response = await getPromptFromBackground();
         handlePromptResponse(response);
     } catch (error: unknown) {
         console.error("Error getting prompt", error);
+        // TODO: Add proper error handling and user feedback
     }
 };
+
+window.onload = initializeChatGPT;
