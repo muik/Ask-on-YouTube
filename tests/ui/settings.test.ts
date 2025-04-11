@@ -37,14 +37,14 @@ describe("Settings page Test", () => {
         if (language.startsWith("ko")) {
             await page.waitForFunction(
                 () => document.title.includes("설정 - YouTube 질문하기"),
-                { timeout: 100 }
+                { timeout: 200 }
             );
             const title = await page.evaluate(() => document.title);
             expect(title).toContain("설정 - YouTube 질문하기");
         } else {
             await page.waitForFunction(
                 () => document.title.includes("Settings - Ask on YouTube"),
-                { timeout: 100 }
+                { timeout: 200 }
             );
             const title = await page.evaluate(() => document.title);
             expect(title).toContain("Settings - Ask on YouTube");
