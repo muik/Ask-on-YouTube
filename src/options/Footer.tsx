@@ -7,7 +7,7 @@ const Footer: React.FC = () => {
                 {chrome.i18n.getMessage("privacy")}
             </a>
             <a
-                href={`mailto:muikor+ytq@gmail.com?subject=[Ask%20on%20YouTube]%20${encodeURIComponent(
+                href={`mailto:ytq.extension@gmail.com?subject=[Ask%20on%20YouTube]%20${encodeURIComponent(
                     chrome.i18n.getMessage("feedback")
                 )}`}
                 rel="noreferrer"
