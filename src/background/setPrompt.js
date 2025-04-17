@@ -5,8 +5,9 @@ import { validateVideoInfo } from "../data.js";
 import { Errors } from "../errors.js";
 import { handleError } from "./handlers.js";
 import { LRUCache } from "./lruCache.js";
-import { loadTranscript } from "./prompt.js";
+import { loadTranscriptLink } from "./prompt.js";
 import { getDefaultQuestion, saveQuestionHistory } from "./questionHistory.js";
+import { getTranscriptParagraphised } from "./transcript.js";
 
 const transcriptCache = new LRUCache(10);
 let promptDataTemp = "";
@@ -89,7 +90,9 @@ async function getTranscriptCached(videoId, langCode) {
         return transcript;
     }
 
-    const transcript = await loadTranscript(videoId, langCode);
+    const link = await loadTranscriptLink(videoId, langCode);
+    const transcript = await getTranscriptParagraphised(link);
+
     transcriptCache.put(cacheKey, transcript);
     console.debug(`Cached transcript for video ID: ${videoId} and langCode: ${langCode}`);
     return transcript;
