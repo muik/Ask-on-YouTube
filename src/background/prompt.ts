@@ -72,18 +72,23 @@ export async function getGeminiPrompt(videoId: string, prompt?: string): Promise
 }
 
 async function getTranscriptItems(videoId: string): Promise<TranscriptItem[] | undefined> {
+    const CAPTIONS_MARKER = '"captions":';
+    const VIDEO_DETAILS_MARKER = ',"videoDetails';
+
     // Get a transcript URL
     const videoPageResponse = await fetch("https://www.youtube.com/watch?v=" + videoId);
     const videoPageHtml = await videoPageResponse.text();
-    const splittedHtml = videoPageHtml.split('"captions":');
+    const captionsIndex = videoPageHtml.indexOf(CAPTIONS_MARKER);
 
-    if (splittedHtml.length < 2) {
+    if (captionsIndex === -1) {
         return;
     } // No Caption Available
 
-    const captionsJson = JSON.parse(
-        splittedHtml[1].split(',"videoDetails')[0].replace("\n", "")
-    ) as YouTubeCaptionsResponse;
+    const captionsEndIndex = videoPageHtml.indexOf(VIDEO_DETAILS_MARKER, captionsIndex);
+    const captionsJsonString = videoPageHtml
+        .slice(captionsIndex + CAPTIONS_MARKER.length, captionsEndIndex)
+        .replace("\n", "");
+    const captionsJson = JSON.parse(captionsJsonString) as YouTubeCaptionsResponse;
     const captionTracks = captionsJson.playerCaptionsTracklistRenderer.captionTracks;
 
     return captionTracks.map(track => ({
