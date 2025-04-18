@@ -50,9 +50,7 @@ export function handlePromptResponse(response: { promptData: PromptData }): void
 }
 
 function tryAttachTranscript(promptData: PromptData): void {
-    const promptTextarea = document.querySelector<HTMLTextAreaElement>(
-        SELECTORS.PROMPT_TEXTAREA
-    );
+    const promptTextarea = document.querySelector<HTMLTextAreaElement>(SELECTORS.PROMPT_TEXTAREA);
     if (!promptTextarea) {
         console.debug("promptTextarea not found");
         return;
@@ -99,11 +97,11 @@ function tryAttachTranscript(promptData: PromptData): void {
     }, 100);
 }
 
-function getPromptText({ videoInfo, transcript, question, langCode }: PromptData): string {
-    const videoInfoPrompt = getVideoInfoPrompt(videoInfo, langCode);
-    const transcriptPrompt = getTranscriptPrompt(transcript, langCode);
+function getPromptText(promptData: PromptData): string {
+    const videoInfoPrompt = getVideoInfoPrompt(promptData);
+    const transcriptPrompt = getTranscriptPrompt(promptData);
 
-    return `${question}
+    return `${promptData.question}
 ${promptDivider}
 ${videoInfoPrompt}
 ${transcriptPrompt}`;

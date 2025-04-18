@@ -1,5 +1,6 @@
 import { VideoInfo } from '../../types';
 import { getGeminiCustomPrompt, getGeminiPrompt, loadTranscriptLink } from '../prompt';
+import { TranscriptItem } from '../promptData/page';
 
 // Mock fetch globally
 global.fetch = jest.fn();
@@ -11,68 +12,44 @@ describe('prompt.ts', () => {
 
     describe('loadTranscriptLink', () => {
         it('should return transcript link for specified language', async () => {
-            const mockVideoId = 'test123';
-            const mockHtml = `
-                "captions":{
-                    "playerCaptionsTracklistRenderer":{
-                        "captionTracks":[
-                            {
-                                "languageCode":"en",
-                                "name":{"simpleText":"English"},
-                                "baseUrl":"https://example.com/en"
-                            },
-                            {
-                                "languageCode":"es",
-                                "name":{"simpleText":"Spanish"},
-                                "baseUrl":"https://example.com/es"
-                            }
-                        ]
-                    }
+            const mockTranscriptItems: TranscriptItem[] = [
+                {
+                    language: {
+                        code: 'en',
+                        name: 'English'
+                    },
+                    link: 'https://example.com/en'
+                },
+                {
+                    language: {
+                        code: 'es',
+                        name: 'Spanish'
+                    },
+                    link: 'https://example.com/es'
                 }
-            `;
+            ];
 
-            (global.fetch as jest.Mock).mockResolvedValueOnce({
-                text: () => Promise.resolve(mockHtml)
-            });
-
-            const result = await loadTranscriptLink(mockVideoId, 'en');
+            const result = await loadTranscriptLink(mockTranscriptItems, 'en');
             expect(result).toBe('https://example.com/en');
         });
 
         it('should return first available transcript if specified language not found', async () => {
-            const mockVideoId = 'test123';
-            const mockHtml = `
-                "captions":{
-                    "playerCaptionsTracklistRenderer":{
-                        "captionTracks":[
-                            {
-                                "languageCode":"es",
-                                "name":{"simpleText":"Spanish"},
-                                "baseUrl":"https://example.com/es"
-                            }
-                        ]
-                    }
+            const mockTranscriptItems: TranscriptItem[] = [
+                {
+                    language: {
+                        code: 'es',
+                        name: 'Spanish'
+                    },
+                    link: 'https://example.com/es'
                 }
-            `;
+            ];
 
-            (global.fetch as jest.Mock).mockResolvedValueOnce({
-                text: () => Promise.resolve(mockHtml)
-            });
-
-            const result = await loadTranscriptLink(mockVideoId, 'en');
+            const result = await loadTranscriptLink(mockTranscriptItems, 'en');
             expect(result).toBe('https://example.com/es');
         });
 
-        it('should return undefined if no captions available', async () => {
-            const mockVideoId = 'test123';
-            const mockHtml = 'no captions here';
-
-            (global.fetch as jest.Mock).mockResolvedValueOnce({
-                text: () => Promise.resolve(mockHtml)
-            });
-
-            const result = await loadTranscriptLink(mockVideoId);
-            expect(result).toBeUndefined();
+        it('should throw error if no transcript items provided', async () => {
+            await expect(loadTranscriptLink([])).rejects.toThrow('Cannot read properties of undefined (reading \'link\')');
         });
     });
 

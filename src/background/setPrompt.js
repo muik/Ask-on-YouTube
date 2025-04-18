@@ -4,12 +4,9 @@ import { Targets } from "../constants.js";
 import { validateVideoInfo } from "../data.js";
 import { Errors } from "../errors.js";
 import { handleError } from "./handlers.js";
-import { LRUCache } from "./lruCache.js";
-import { loadTranscriptLink } from "./prompt.js";
+import { getVideoPagePromptDataCached } from "./promptData/transcriptCache.ts";
 import { getDefaultQuestion, saveQuestionHistory } from "./questionHistory.js";
-import { getTranscriptParagraphised } from "./transcript.js";
 
-const transcriptCache = new LRUCache(10);
 let promptDataTemp = "";
 
 export function getPrompt(sendResponse) {
@@ -34,7 +31,10 @@ async function processSetPrompt({ videoInfo, target, question, langCode }) {
     validateVideoInfo(videoInfo);
 
     if (target === Targets.CHATGPT) {
-        const transcript = await getTranscriptCached(videoInfo.id, langCode);
+        const { transcript, description } = await getVideoPagePromptDataCached(
+            videoInfo.id,
+            langCode
+        );
         if (!transcript) {
             return {
                 error: Errors.TRANSCRIPT_NOT_FOUND,
@@ -48,6 +48,7 @@ async function processSetPrompt({ videoInfo, target, question, langCode }) {
         const promptData = {
             videoInfo,
             transcript,
+            description,
             question,
             langCode,
         };
@@ -56,7 +57,7 @@ async function processSetPrompt({ videoInfo, target, question, langCode }) {
             response: { targetUrl: getTargetUrl(target) },
         };
     } else if (target === Targets.GEMINI) {
-        const transcript = await getTranscriptCached(videoInfo.id);
+        const { transcript, description } = await getVideoPagePromptDataCached(videoInfo.id);
         if (!question) {
             question = await getDefaultQuestion();
         }
@@ -64,6 +65,7 @@ async function processSetPrompt({ videoInfo, target, question, langCode }) {
         const promptData = {
             videoInfo,
             transcript,
+            description,
             question,
         };
 
@@ -80,22 +82,6 @@ async function processSetPrompt({ videoInfo, target, question, langCode }) {
             },
         };
     }
-}
-
-async function getTranscriptCached(videoId, langCode) {
-    const cacheKey = `${videoId}-${langCode}`;
-    if (transcriptCache.has(cacheKey)) {
-        const transcript = transcriptCache.get(cacheKey);
-        console.debug(`Using cached transcript for video ID: ${videoId} and langCode: ${langCode}`);
-        return transcript;
-    }
-
-    const link = await loadTranscriptLink(videoId, langCode);
-    const transcript = await getTranscriptParagraphised(link);
-
-    transcriptCache.put(cacheKey, transcript);
-    console.debug(`Cached transcript for video ID: ${videoId} and langCode: ${langCode}`);
-    return transcript;
 }
 
 function getTargetUrl(target) {

@@ -15,6 +15,7 @@ export interface HistoryItem {
 export interface PromptData {
     videoInfo: VideoInfo;
     transcript: string;
+    description: string | null;
     question: string;
     langCode: string;
 }

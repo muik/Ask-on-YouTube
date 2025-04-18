@@ -33,15 +33,15 @@ export function setPromptWithTranscript(
     attachTextAsFile(promptTextarea, transcript, attachFilename);
 }
 
-function getPromptTextWithTranscript({ videoInfo, transcript, question, langCode }: PromptData): {
+function getPromptTextWithTranscript(promptData: PromptData): {
     prompt: string;
     transcript: string;
 } {
-    const videoInfoPrompt = getVideoInfoPrompt(videoInfo, langCode);
-    const transcriptPrompt = getTranscriptPrompt(transcript, langCode);
+    const videoInfoPrompt = getVideoInfoPrompt(promptData);
+    const transcriptPrompt = getTranscriptPrompt(promptData);
 
     return {
-        prompt: `${question}
+        prompt: `${promptData.question}
 ${promptDivider}
 ${videoInfoPrompt}`,
         transcript: transcriptPrompt,

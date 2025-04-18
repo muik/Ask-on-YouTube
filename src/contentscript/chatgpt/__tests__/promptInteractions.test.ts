@@ -76,6 +76,7 @@ describe("promptInteractions", () => {
                 transcript: "Test transcript",
                 question: "Test question",
                 langCode: "en",
+                description: "Test description",
             };
 
             // Spy on dispatchEvent
@@ -114,14 +115,15 @@ describe("promptInteractions", () => {
                 transcript: "Test transcript",
                 question: "Test question",
                 langCode: "fr",
+                description: "Test description",
             };
 
             // Execute
             setPromptWithTranscript(textarea, promptData);
 
             // Verify
-            expect(getVideoInfoPrompt).toHaveBeenCalledWith(promptData.videoInfo, "fr");
-            expect(getTranscriptPrompt).toHaveBeenCalledWith("Test transcript", "fr");
+            expect(getVideoInfoPrompt).toHaveBeenCalledWith(promptData);
+            expect(getTranscriptPrompt).toHaveBeenCalledWith(promptData);
         });
     });
 });

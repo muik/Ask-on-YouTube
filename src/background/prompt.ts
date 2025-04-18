@@ -1,26 +1,5 @@
 import { VideoInfo } from "../types";
-
-interface TranscriptItem {
-    language: {
-        code: string;
-        name: string;
-    };
-    link: string;
-}
-
-interface YouTubeCaptionTrack {
-    languageCode: string;
-    name: {
-        simpleText: string;
-    };
-    baseUrl: string;
-}
-
-interface YouTubeCaptionsResponse {
-    playerCaptionsTracklistRenderer: {
-        captionTracks: YouTubeCaptionTrack[];
-    };
-}
+import { TranscriptItem } from "./promptData/page";
 
 /**
  * Load a transcript link for a given video ID and language code.
@@ -29,12 +8,11 @@ interface YouTubeCaptionsResponse {
  * @returns The transcript link for the given video ID and language code
  */
 export async function loadTranscriptLink(
-    videoId: string,
+    items: TranscriptItem[],
     langCode: string = "en"
-): Promise<string | undefined> {
-    const items = await getTranscriptItems(videoId);
+): Promise<string> {
     if (!items) {
-        return;
+        throw new Error("No transcript items found");
     }
 
     const item = items.find(i => i.language.code === langCode) || items[0];
@@ -69,33 +47,4 @@ export async function getGeminiPrompt(videoId: string, prompt?: string): Promise
     const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
     return prompt ? `${prompt}\n${videoUrl}` : videoUrl;
-}
-
-async function getTranscriptItems(videoId: string): Promise<TranscriptItem[] | undefined> {
-    const CAPTIONS_MARKER = '"captions":';
-    const VIDEO_DETAILS_MARKER = ',"videoDetails';
-
-    // Get a transcript URL
-    const videoPageResponse = await fetch("https://www.youtube.com/watch?v=" + videoId);
-    const videoPageHtml = await videoPageResponse.text();
-    const captionsIndex = videoPageHtml.indexOf(CAPTIONS_MARKER);
-
-    if (captionsIndex === -1) {
-        return;
-    } // No Caption Available
-
-    const captionsEndIndex = videoPageHtml.indexOf(VIDEO_DETAILS_MARKER, captionsIndex);
-    const captionsJsonString = videoPageHtml
-        .slice(captionsIndex + CAPTIONS_MARKER.length, captionsEndIndex)
-        .replace("\n", "");
-    const captionsJson = JSON.parse(captionsJsonString) as YouTubeCaptionsResponse;
-    const captionTracks = captionsJson.playerCaptionsTracklistRenderer.captionTracks;
-
-    return captionTracks.map(track => ({
-        language: {
-            code: track.languageCode,
-            name: track.name.simpleText,
-        },
-        link: track.baseUrl,
-    }));
 }
