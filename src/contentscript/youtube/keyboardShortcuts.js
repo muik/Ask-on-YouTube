@@ -1,6 +1,6 @@
 import { Errors } from "../../errors.ts";
 import { findQuestionMenuShown } from "./moreOptions.ts";
-import { isQuestionDialogOpened, showQuestionDialog } from "./questionView.js";
+import { isQuestionDialogOpened, showQuestionDialog } from "./questionView.ts";
 import { findSimpleQuestionInputShown } from "./simpleQuestion.js";
 import { showToastMessage } from "./toast.js";
 import { getVideoInfoFromShortsDetail } from "./videoInfo.ts";

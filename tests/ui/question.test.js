@@ -1,5 +1,5 @@
 import puppeteer from "puppeteer";
-import { getElementAttr, getElementText, waitAndClick } from "./helpers";
+import { getElementAttr, waitAndClick } from "./helpers";
 
 const EXTENSION_PATH = "./dist";
 
@@ -110,9 +110,15 @@ describe("Question dialog Test", () => {
             hidden: false,
         });
 
-        // Quick validation of dialog contents
-        const dialogTitle = await getElementText(page, questionDialogSelector, "#contents .title");
-        expect(dialogTitle).toBeTruthy();
+        // Wait for title to be updated with a non-empty value
+        await page.waitForFunction(
+            selector => {
+                const title = document.querySelector(selector);
+                return title && title.textContent.trim().length > 0;
+            },
+            { timeout: 500 },
+            `${questionDialogSelector} #contents .title`
+        );
 
         const thumbnailUrl = await getElementAttr(
             page,

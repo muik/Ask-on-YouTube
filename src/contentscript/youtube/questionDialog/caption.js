@@ -1,7 +1,9 @@
 import { BackgroundActions } from "../../../constants.ts";
 import { Errors } from "../../../errors.ts";
 import { isGeminiServiceNotLoaded, isGeminiServiceUnavailable } from "../geminiService.js";
-import { getContainerElement, getDialogData, isQuestionDialogClosed } from "../questionView.js";
+import { isQuestionDialogClosed } from "../questionView.ts";
+import { getContainerElement } from "./container.ts";
+import { getDialogData } from "./dialogState.ts";
 
 const CaptionStatus = {
     PENDING: "pending",

@@ -2,7 +2,7 @@ import { BackgroundActions } from "../../../constants.js";
 import { Errors } from "../../../errors.js";
 import { VideoInfo } from "../../../types.js";
 import { extraOptionsClassName } from "../moreOptions.js";
-import { showQuestionDialog } from "../questionView.js";
+import { showQuestionDialog } from "../questionView";
 import { getQuestionMarkSvg } from "../simpleQuestion.js";
 import { showToastMessage } from "../toast.js";
 

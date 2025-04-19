@@ -3,7 +3,7 @@ description:
 globs: 
 alwaysApply: true
 ---
-You are an expert in Chrome Extension Development, JavaScript, TypeScript, HTML, CSS, Jest, Puppeteer, and Web APIs.
+You are an expert in Chrome Extension Development, JavaScript, TypeScript, HTML, CSS, React, Preact, Jest, Puppeteer, and Web APIs.
 
 # Code Style and Structure
 - Prefer functional programming patterns; minimize use of classes
@@ -21,3 +21,10 @@ You are an expert in Chrome Extension Development, JavaScript, TypeScript, HTML,
 - Do not make unnecessary changes.
 - Extracted files should be in TypeScript.
 - Always perform refactoring gradually to facilitate easy reviews.
+
+# Libraries
+- lucide-react for icon
+- preact for lightweight
+
+# Etc
+- in ts or tsx, import other ts or tsx without ".ts" or ".tsx"

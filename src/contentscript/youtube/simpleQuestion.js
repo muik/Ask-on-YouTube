@@ -1,6 +1,6 @@
 import { BackgroundActions } from "../../constants.js";
 import { Errors } from "../../errors.js";
-import { getYouTubeLanguageCode, pauseVideoPlayer, showQuestionDialog } from "./questionView.js";
+import { getYouTubeLanguageCode, pauseVideoPlayer, showQuestionDialog } from "./questionView.ts";
 import { getVideoInfoFromVideoDetail } from "./videoInfo.js";
 
 const containerId = "ytq-simple-question";

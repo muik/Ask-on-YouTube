@@ -44,7 +44,7 @@ jest.unstable_mockModule("../../src/contentscript/youtube/simpleQuestion.js", ()
     findSimpleQuestionInputShown: mockFindSimpleQuestionInputShown,
 }));
 
-jest.unstable_mockModule("../../src/contentscript/youtube/questionView.js", () => ({
+jest.unstable_mockModule("../../src/contentscript/youtube/questionView.ts", () => ({
     showQuestionDialog: mockShowQuestionDialog,
     isQuestionDialogOpened: jest.fn().mockReturnValue(false),
 }));

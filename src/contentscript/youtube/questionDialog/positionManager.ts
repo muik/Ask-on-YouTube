@@ -26,7 +26,6 @@ export function repositionDialog(containerElement: HTMLElement | null): void {
     );
     if (backdropElement) {
         const zIndex: number = getBaseZIndex(containerElement);
-        console.log("zIndex", zIndex);
         backdropElement.style.zIndex = `${zIndex + 1}`;
         containerElement.style.zIndex = `${zIndex + 2}`;
     }

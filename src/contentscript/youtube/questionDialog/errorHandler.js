@@ -1,5 +1,5 @@
 import { Errors } from "../../../errors.ts";
-import { getContainerElement } from "../questionView.js";
+import { getContainerElement } from "./container.ts";
 
 /**
  * Sets an error message in the input error element

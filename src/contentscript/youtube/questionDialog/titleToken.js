@@ -1,4 +1,4 @@
-import { textToInputClickListener } from "./dialogUI.js";
+import { textToInputClickListener } from "./textToInputClickListener.ts";
 
 const TokenTypes = {
     INPUTABLE: "inputable",
@@ -49,7 +49,7 @@ export function getTitleTokens(inputString) {
 }
 
 export function setTitleToken(titleElement) {
-    return (token) => {
+    return token => {
         const spanElement = document.createElement("span");
         spanElement.textContent = token.text;
         spanElement.classList.add(token.type);

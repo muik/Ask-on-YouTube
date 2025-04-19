@@ -1,22 +1,17 @@
 import React from "react";
+import { textToInputClickListener } from "./textToInputClickListener";
 
 interface QuestionItemProps {
     question: string;
-    onQuestionClick: () => void;
-    onOptionClick: () => void;
 }
 
-const QuestionItem: React.FC<QuestionItemProps> = ({
-    question,
-    onQuestionClick,
-    onOptionClick,
-}) => {
+const QuestionItem: React.FC<QuestionItemProps> = ({ question }) => {
     return (
         <li>
-            <span className="question" onClick={onQuestionClick}>
+            <span className="question" onClick={handleQuestionItemClick}>
                 {question}
             </span>
-            <button className="option" onClick={onOptionClick}>
+            <button className="option" onClick={handleQuestionOptionClick}>
                 <UpLeftSvg />
             </button>
         </li>
@@ -31,5 +26,40 @@ const UpLeftSvg = () => {
         </svg>
     );
 };
+
+function handleQuestionItemClick(e: React.MouseEvent<HTMLSpanElement>) {
+    e.preventDefault();
+
+    const target = e.target as HTMLElement;
+    if (!target) {
+        return;
+    }
+
+    // set question input value
+    (target.closest("li")?.querySelector("button.option") as HTMLButtonElement)?.click();
+
+    // request question
+    (
+        target
+            .closest("#contents")
+            ?.querySelector(".question-input-container .question-button") as HTMLButtonElement
+    )?.click();
+}
+
+function handleQuestionOptionClick(e: React.MouseEvent<HTMLButtonElement>) {
+    const questionElement = (e.target as HTMLElement).closest("li")?.querySelector("span.question");
+    if (!questionElement) {
+        return;
+    }
+
+    const newEvent = new MouseEvent("click", {
+        bubbles: true,
+        cancelable: true,
+    });
+    Object.defineProperty(newEvent, "target", {
+        value: questionElement,
+    });
+    textToInputClickListener(newEvent as unknown as MouseEvent);
+}
 
 export default QuestionItem;
