@@ -1,9 +1,9 @@
 import { BackgroundActions } from "../../../constants.js";
 import { Errors } from "../../../errors.js";
 import { VideoInfo } from "../../../types.js";
+import { getQuestionMarkSvg } from "../components/SimpleQuestionForm";
 import { extraOptionsClassName } from "../moreOptions.js";
 import { showQuestionDialog } from "../questionView";
-import { getQuestionMarkSvg } from "../simpleQuestion.js";
 import { showToastMessage } from "../toast.js";
 
 const questionText = chrome.i18n.getMessage("questionButtonText");

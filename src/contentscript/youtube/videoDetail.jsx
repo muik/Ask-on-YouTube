@@ -1,5 +1,6 @@
+import { render } from "preact";
 import { ObserverManager } from "../observer.js";
-import { createQuestionInputForm } from "./simpleQuestion.js";
+import { SimpleQuestionForm } from "./components/SimpleQuestionForm.tsx";
 
 const observerManager = new ObserverManager();
 
@@ -12,8 +13,7 @@ export function injectDetailRelatedElements() {
         containerElement.id = containerId;
         containerElement.className = "ytq";
 
-        const inputForm = createQuestionInputForm();
-        containerElement.appendChild(inputForm);
+        render(<SimpleQuestionForm />, containerElement);
 
         return containerElement;
     }

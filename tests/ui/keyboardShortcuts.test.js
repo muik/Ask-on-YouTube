@@ -23,7 +23,7 @@ jest.unstable_mockModule("../../src/constants", () => ({
     },
 }));
 
-jest.unstable_mockModule("../../src/contentscript/youtube/videoDetail.js", () => ({
+jest.unstable_mockModule("../../src/contentscript/youtube/videoDetail.jsx", () => ({
     injectElements: jest.fn(),
 }));
 
@@ -40,7 +40,7 @@ jest.unstable_mockModule("../../src/contentscript/youtube/moreOptions.ts", () =>
     injectExtraOptions: jest.fn(),
 }));
 
-jest.unstable_mockModule("../../src/contentscript/youtube/simpleQuestion.js", () => ({
+jest.unstable_mockModule("../../src/contentscript/youtube/components/SimpleQuestionForm.tsx", () => ({
     findSimpleQuestionInputShown: mockFindSimpleQuestionInputShown,
 }));
 

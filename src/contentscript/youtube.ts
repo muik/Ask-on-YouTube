@@ -6,7 +6,7 @@ import {
     cleanup as cleanupShortsHandlers,
     setupShortsClickHandlers,
 } from "./youtube/shortsOptions/setupShortsClick.js";
-import { injectDetailRelatedElements } from "./youtube/videoDetail.js";
+import { injectDetailRelatedElements } from "./youtube/videoDetail.jsx";
 
 /**
  * Handle clicks on the settings link

@@ -1,7 +1,7 @@
 import { Errors } from "../../errors.ts";
+import { findSimpleQuestionInputShown } from "./components/SimpleQuestionForm.tsx";
 import { findQuestionMenuShown } from "./moreOptions.ts";
 import { isQuestionDialogOpened, showQuestionDialog } from "./questionView.ts";
-import { findSimpleQuestionInputShown } from "./simpleQuestion.js";
 import { showToastMessage } from "./toast.js";
 import { getVideoInfoFromShortsDetail } from "./videoInfo.ts";
 
