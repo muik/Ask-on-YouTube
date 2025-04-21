@@ -3,7 +3,7 @@ import { VideoInfo } from "../../types";
 import { getContainerElement } from "./questionDialog/container";
 import { hideQuestionDialog } from "./questionDialog/dialogManager";
 import { getDialogData } from "./questionDialog/dialogState";
-import { createBackgroundElement, insertQuestionDialog } from "./questionDialog/dialogUI.jsx";
+import { createBackgroundElement, insertQuestionDialog } from "./questionDialog/dialogUI";
 
 export function getYouTubeLanguageCode(): string {
     const lang = document.querySelector("html")?.getAttribute("lang");
