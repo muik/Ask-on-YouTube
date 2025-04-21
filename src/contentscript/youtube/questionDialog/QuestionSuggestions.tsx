@@ -70,10 +70,14 @@ export function QuestionSuggestions({ videoInfo }: QuestionSuggestionsProps) {
         setIsLoading(true);
         setError(null);
         setQuestions([]);
-        requestQuestions(option, abortSignal);
+        requestQuestions(option, abortSignal, videoInfo);
     }
 
-    async function requestQuestions(option: string, abortSignal: AbortSignal) {
+    async function requestQuestions(
+        option: string,
+        abortSignal: AbortSignal,
+        videoInfo: VideoInfo
+    ) {
         clearRequestQuestionsPendingListener();
 
         try {
@@ -83,7 +87,7 @@ export function QuestionSuggestions({ videoInfo }: QuestionSuggestionsProps) {
                 if (!isCaptionResolved()) {
                     requestQuestionsPendingListener = (event: any) => {
                         if (event.isResolved) {
-                            requestQuestions(option, abortSignal);
+                            requestQuestions(option, abortSignal, videoInfo);
                         }
                     };
                     addCaptionLoadChangedListener(requestQuestionsPendingListener);
@@ -103,7 +107,7 @@ export function QuestionSuggestions({ videoInfo }: QuestionSuggestionsProps) {
                 return;
             }
 
-            handleQuestionsResponse(response, setQuestions, setError, selectedOption);
+            handleQuestionsResponse(response, setQuestions, setError, selectedOption, videoInfo);
         } catch (error: any) {
             setRequestQuestionsError(error, setError);
         } finally {
@@ -176,7 +180,8 @@ function handleQuestionsResponse(
     },
     setQuestions: (questions: string[]) => void,
     setError: (error: { type?: string; message: string } | null) => void,
-    selectedOption: string | null
+    selectedOption: string | null,
+    videoInfo: VideoInfo
 ) {
     if (handleQuestionsResponseError(response, setError)) {
         return;
@@ -193,7 +198,7 @@ function handleQuestionsResponse(
     }
 
     if (response.caption) {
-        setCaption(response.caption);
+        setCaption(response.caption, videoInfo);
     }
     setQuestions(response.questions);
 }

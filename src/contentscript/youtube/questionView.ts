@@ -1,6 +1,5 @@
 import { Errors } from "../../errors";
 import { VideoInfo } from "../../types";
-import { loadGeminiServiceAvailable } from "./geminiService.js";
 import { getContainerElement } from "./questionDialog/container";
 import { hideQuestionDialog } from "./questionDialog/dialogManager";
 import { getDialogData } from "./questionDialog/dialogState";
@@ -21,8 +20,6 @@ export function showQuestionDialog(videoInfo: VideoInfo): void {
 
         const backgroundElement = createBackgroundElement({ onClick: hideQuestionDialog });
         document.body.insertAdjacentElement("beforeend", backgroundElement);
-
-        loadGeminiServiceAvailable();
     } catch (error: any) {
         if (error.message === "Extension context invalidated.") {
             throw Errors.EXTENSION_CONTEXT_INVALIDATED;

@@ -1,11 +1,9 @@
 import { BackgroundActions } from "../../../constants.ts";
 import { Errors } from "../../../errors.ts";
-import { isGeminiServiceNotLoaded, isGeminiServiceUnavailable } from "../geminiService.js";
 import { isQuestionDialogClosed } from "../questionView.ts";
 import { getContainerElement } from "./container.ts";
-import { getDialogData } from "./dialogState.ts";
 
-const CaptionStatus = {
+export const CaptionStatus = {
     PENDING: "pending",
     LOADING: "loading",
     LOADED: "loaded",
@@ -14,37 +12,11 @@ const CaptionStatus = {
 };
 const CAPTION_LOAD_CHANGED_EVENT = "captionLoadChanged";
 
-let loadCaptionPendingArg = null;
-
-export function loadCaptionIfPending() {
-    if (loadCaptionPendingArg) {
-        loadCaption(loadCaptionPendingArg);
-    }
-}
-
-export function clearCaptionPending() {
-    loadCaptionPendingArg = null;
-}
-
-export async function loadCaption(event) {
+export async function loadCaption(thumbnailElement, videoInfo) {
     const containerElement = getContainerElement();
     const captionElement = containerElement.querySelector(".video-info .caption");
 
-    if (isGeminiServiceNotLoaded()) {
-        setCaptionStatus(captionElement, CaptionStatus.PENDING);
-        loadCaptionPendingArg = event;
-        return;
-    } else if (isGeminiServiceUnavailable()) {
-        setCaptionUnavailable();
-        return;
-    }
-    loadCaptionPendingArg = null;
-
     setCaptionStatus(captionElement, CaptionStatus.LOADING);
-
-    // When the event is triggered from a pending state, event.target will be null
-    const thumbnailElement =
-        event.target || containerElement.querySelector(".video-info img.thumbnail");
 
     const imageUrl = thumbnailElement.getAttribute("src");
     const imageData = getImageData(thumbnailElement);
@@ -64,7 +36,7 @@ export async function loadCaption(event) {
         }
 
         if (response.caption) {
-            setCaption(response.caption);
+            setCaption(response.caption, videoInfo);
         }
     } catch (error) {
         setCaptionStatus(captionElement, CaptionStatus.ERROR);
@@ -128,12 +100,12 @@ export function removeCaptionLoadChangedListener(callback) {
     captionElement.removeEventListener(CAPTION_LOAD_CHANGED_EVENT, callback);
 }
 
-export function setCaption(caption) {
-    if (isQuestionDialogClosed() || getDialogData().videoInfo.caption) {
+export function setCaption(caption, videoInfo) {
+    if (isQuestionDialogClosed() || videoInfo.caption) {
         return;
     }
 
-    getDialogData().videoInfo.caption = caption;
+    videoInfo.caption = caption;
     const containerElement = getContainerElement();
     const thumbnailElement = containerElement.querySelector(".video-info img.thumbnail");
     const captionElement = containerElement.querySelector(".video-info .caption");
@@ -143,7 +115,7 @@ export function setCaption(caption) {
     setCaptionStatus(captionElement, CaptionStatus.LOADED);
 }
 
-function setCaptionStatus(captionElement, newStatus) {
+export function setCaptionStatus(captionElement, newStatus) {
     const currentStatus = captionElement.getAttribute("status");
     if (currentStatus === newStatus) {
         return;

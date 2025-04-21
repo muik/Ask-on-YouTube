@@ -1,6 +1,6 @@
 import { containerId } from "./container";
 
-export function textToInputClickListener(e: MouseEvent) {
+export function textToInputClickListener(e: React.MouseEvent<HTMLElement>) {
     e.preventDefault();
 
     const target = e.target as HTMLElement;

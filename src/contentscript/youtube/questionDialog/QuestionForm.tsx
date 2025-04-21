@@ -22,6 +22,7 @@ export function QuestionForm({ videoInfo }: { videoInfo: VideoInfoType }) {
     const inputElementRef = useRef<HTMLTextAreaElement>(null);
     const errorMessageRef = useRef<HTMLParagraphElement>(null);
     const autoCompleteTextRef = useRef<HTMLDivElement>(null);
+    const requestButtonRef = useRef<HTMLButtonElement>(null);
 
     const [error, setError] = useState<{ message: string; type?: string } | null>(null);
     const [placeholder, setPlaceholder] = useState<string>("");
@@ -134,9 +135,15 @@ export function QuestionForm({ videoInfo }: { videoInfo: VideoInfoType }) {
                     className="question-input"
                     rows={1}
                     onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-                        if (!inputElementRef.current || !autoCompleteTextRef.current) {
+                        if (!inputElementRef.current) {
                             return;
                         }
+
+                        if (!autoCompleteData && e.key === "Enter") {
+                            requestButtonRef.current?.click();
+                            return;
+                        }
+
                         handleKeyDown(
                             e,
                             inputElementRef.current,
@@ -149,6 +156,7 @@ export function QuestionForm({ videoInfo }: { videoInfo: VideoInfoType }) {
                     {...(isRequesting ? { disabled: true } : {})}
                 />
                 <button
+                    ref={requestButtonRef}
                     className="question-button"
                     onClick={e =>
                         onRequestButtonClick(
