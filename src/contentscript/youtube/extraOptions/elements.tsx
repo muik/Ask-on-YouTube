@@ -1,41 +1,22 @@
-import { BackgroundActions } from "../../../constants.js";
+import { render } from "preact";
 import { Errors } from "../../../errors.js";
 import { VideoInfo } from "../../../types.js";
-import { getQuestionMarkSvg } from "../components/SimpleQuestionForm";
 import { extraOptionsClassName } from "../moreOptions.js";
 import { showQuestionDialog } from "../questionView";
 import { showToastMessage } from "../toast.js";
-
-const questionText = chrome.i18n.getMessage("questionButtonText");
-const shortcutTooltip = chrome.i18n.getMessage("questionShortcutTooltip");
-const useMarkElements: HTMLElement[] = [];
-let questionMenuUsedBefore: boolean | undefined;
+import { QuestionOptionMenu } from "./QuestionOptionMenu";
 
 export function createExtraOptionsContainer(): HTMLElement {
-    const optionItemClassName = "option-item";
     const container = document.createElement("div");
     container.classList.add("ytq");
     container.classList.add(extraOptionsClassName);
-    container.innerHTML = `
-            <div class="vertical-menu ${optionItemClassName}" target-value="question">
-                <div class="icon">${getQuestionMarkSvg()}</div>
-                <span class="text">${questionText}</span>
-                <span class="shortcut" title="${shortcutTooltip}">q</span>
-            </div>`.trim();
 
-    // Click event listener for the "View in Gemini" button
-    container.querySelectorAll(`.${optionItemClassName}`).forEach(elm => {
-        elm.addEventListener("click", onExtraOptionClick);
-    });
+    render(<QuestionOptionMenu />, container);
 
     return container;
 }
 
-/**
- * Event listener for the extra options.
- * @param {Event} e
- */
-function onExtraOptionClick(e: Event): void {
+export function onExtraOptionClick(e: React.MouseEvent<HTMLElement>): void {
     e.stopPropagation();
     const element = e.target as HTMLElement;
 
@@ -83,7 +64,6 @@ function onQuestionClick(videoInfo: VideoInfo): void {
 
     try {
         showQuestionDialog(videoInfo);
-        removeQuestionMenuUseMark();
     } catch (error: any) {
         if (error.code in Errors) {
             showToastMessage(error.message);
@@ -110,57 +90,4 @@ function pressEscKey(): void {
 
     // Dispatch the event on the document or a specific element
     document.dispatchEvent(escEvent);
-}
-
-async function removeQuestionMenuUseMark(): Promise<void> {
-    if (useMarkElements.length === 0) {
-        return;
-    }
-
-    useMarkElements.forEach(element => {
-        element.remove();
-    });
-    useMarkElements.length = 0;
-    questionMenuUsedBefore = true;
-
-    try {
-        const response = await chrome.runtime.sendMessage({
-            action: BackgroundActions.SET_QUESTION_MENU_USED_BEFORE,
-        });
-        if (!response.success) {
-            console.error("removeQuestionMenuUseMark failed:", response);
-        }
-    } catch (error) {
-        console.error("removeQuestionMenuUseMark Error:", error);
-    }
-}
-
-export async function insertQuestionMenuUseMark(container: HTMLElement): Promise<void> {
-    if (questionMenuUsedBefore === undefined) {
-        try {
-            const response = await chrome.runtime.sendMessage({
-                action: BackgroundActions.GET_QUESTION_MENU_USED_BEFORE,
-            });
-            questionMenuUsedBefore = response.usedBefore;
-        } catch (error) {
-            if (error instanceof Error && error.message === "Extension context invalidated.") {
-                // ignore the error
-                return;
-            }
-            throw error;
-        }
-    }
-
-    if (questionMenuUsedBefore) {
-        return;
-    }
-
-    const element = document.createElement("div");
-    element.classList.add("use-mark");
-
-    const verticalMenu = container.querySelector(".vertical-menu");
-    if (verticalMenu) {
-        verticalMenu.insertAdjacentElement("beforeend", element);
-        useMarkElements.push(element);
-    }
 }

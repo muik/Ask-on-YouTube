@@ -1,11 +1,7 @@
 import { ObserverManager } from "../../observer";
-import {
-    extraOptionsClassName,
-    getOptionClickResult,
-    setOptionClickResult,
-} from "../moreOptions";
+import { extraOptionsClassName, getOptionClickResult, setOptionClickResult } from "../moreOptions";
 import { ClickElementType } from "../videoInfo";
-import { createExtraOptionsContainer, insertQuestionMenuUseMark } from "./elements";
+import { createExtraOptionsContainer } from "./elements";
 
 const observerManager = new ObserverManager();
 
@@ -21,14 +17,15 @@ export function handleVideoItemFooter(dropdown: Element): boolean {
     }
     const extraOptions = createExtraOptionsContainer();
     footer.insertAdjacentElement("beforeend", extraOptions);
-    insertQuestionMenuUseMark(extraOptions);
 
     observerManager.createObserver(
         dropdown,
         (mutations: MutationRecord[]) => {
             mutations.forEach(mutation => {
                 const target = mutation.target as HTMLElement;
-                const extraOptions = target.querySelector(`.${extraOptionsClassName}`) as HTMLElement;
+                const extraOptions = target.querySelector(
+                    `.${extraOptionsClassName}`
+                ) as HTMLElement;
                 if (!extraOptions) {
                     console.debug("extra options not found", target);
                     return;

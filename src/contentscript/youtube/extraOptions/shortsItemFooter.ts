@@ -1,11 +1,7 @@
 import { ObserverManager } from "../../observer";
-import {
-    extraOptionsClassName,
-    getOptionClickResult,
-    setOptionClickResult,
-} from "../moreOptions";
+import { extraOptionsClassName, getOptionClickResult, setOptionClickResult } from "../moreOptions";
 import { ClickElementType } from "../videoInfo";
-import { createExtraOptionsContainer, insertQuestionMenuUseMark } from "./elements";
+import { createExtraOptionsContainer } from "./elements";
 
 const observerManager = new ObserverManager();
 
@@ -29,7 +25,9 @@ export function handleShortsItemFooter(dropdown: Element): boolean {
                 const target = mutation.target as Element;
 
                 if (mutation.attributeName === "focused" && target.hasAttribute("focused")) {
-                    const extraOptions = target.querySelector(`.${extraOptionsClassName}`) as HTMLElement;
+                    const extraOptions = target.querySelector(
+                        `.${extraOptionsClassName}`
+                    ) as HTMLElement;
                     if (!extraOptions) {
                         console.debug("extra options not found", target);
                         return;
@@ -82,7 +80,6 @@ function observeShortsSheetViewModel(sheetViewModel: Element): void {
 
                     const extraOptions = createExtraOptionsContainer();
                     footer.insertAdjacentElement("beforeend", extraOptions);
-                    insertQuestionMenuUseMark(extraOptions);
 
                     // prevent the extra options from being removed
                     preventExtraOptionsRemoval(footer);
@@ -108,7 +105,6 @@ function preventExtraOptionsRemoval(footer: Element): void {
                             const footer = mutation.target as Element;
                             const extraOptions = createExtraOptionsContainer();
                             footer.insertAdjacentElement("beforeend", extraOptions);
-                            insertQuestionMenuUseMark(extraOptions);
                         }
                     });
                 }
@@ -116,4 +112,4 @@ function preventExtraOptionsRemoval(footer: Element): void {
         },
         { childList: true }
     );
-} 
+}
