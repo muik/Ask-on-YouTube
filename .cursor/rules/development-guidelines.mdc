@@ -1,0 +1,42 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Development Guidelines
+
+## Code Style and Architecture
+- Use functional programming patterns over classes
+- Write code in TypeScript
+- Follow Prettier formatting rules defined in [.prettierrc](mdc:.prettierrc)
+- Use ESLint for code quality (see [eslint.config.mjs](mdc:eslint.config.mjs))
+
+## TypeScript Guidelines
+- Import TypeScript files without `.ts` or `.tsx` extensions
+- Define shared types in [src/types/](mdc:src/types)
+- Use strict type checking as configured in [tsconfig.json](mdc:tsconfig.json)
+
+## UI Development
+- Use Preact for UI components (lightweight alternative to React)
+- Use `lucide-react` for icons
+- Follow modern web development best practices
+- Ensure responsive and accessible design
+
+## Testing Guidelines
+- Colocate tests and mocks with source code:
+  - `__tests__/` for unit tests (`.test.ts` or `.test.tsx`)
+  - `__mocks__/` for module mocks (match source filename)
+- Write UI tests in [specs/](mdc:specs) using Puppeteer
+- Tests must pass before deployment
+
+## Chrome Extension Guidelines
+- Follow Manifest V3 best practices
+- Keep background service worker lightweight
+- Use content scripts judiciously
+- Handle permissions appropriately
+
+## Refactoring Guidelines
+- Make changes gradually for easier review
+- Update all imports when moving code
+- Keep changes focused and minimal
+- Extract reusable code into TypeScript modules

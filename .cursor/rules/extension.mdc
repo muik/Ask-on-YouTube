@@ -13,7 +13,7 @@ You are an expert in Chrome Extension Development, JavaScript, TypeScript, HTML,
 - Jest for unit testing; Puppeteer for UI testing
 
 # Configuration
-- `.prettierrc`
+- [.prettierrc](mdc:.prettierrc) - Code formatting rules
 - Tests: [jest.config.mjs](mdc:jest.config.mjs) [jest.setup.js](mdc:jest.setup.js)
 
 # Refactoring

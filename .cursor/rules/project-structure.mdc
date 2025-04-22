@@ -1,0 +1,40 @@
+---
+description: 
+globs: *.tsx
+alwaysApply: false
+---
+# Project Structure Guide
+
+This is a Chrome Extension project using Manifest V3, built with TypeScript, Preact, and modern web technologies.
+
+## Core Configuration Files
+- [manifest.json](mdc:manifest.json) - Chrome Extension manifest (V3)
+- [tsconfig.json](mdc:tsconfig.json) - TypeScript configuration
+- [webpack.config.cjs](mdc:webpack.config.cjs) - Webpack build configuration
+- [jest.config.mjs](mdc:jest.config.mjs) and [jest.setup.js](mdc:jest.setup.js) - Testing configuration
+- [.prettierrc](mdc:.prettierrc) - Code formatting rules
+- [eslint.config.mjs](mdc:eslint.config.mjs) - Linting configuration
+
+## Source Code Structure
+The main source code is in the `src` directory:
+- [src/background/](mdc:src/background) - Background service worker
+- [src/contentscript/](mdc:src/contentscript) - Content scripts injected into web pages
+- [src/options/](mdc:src/options) - Extension options page
+- [src/types/](mdc:src/types) - TypeScript type definitions
+- [src/constants.ts](mdc:src/constants.ts) - Shared constants
+- [src/config.ts](mdc:src/config.ts) - Extension configuration
+- [src/errors.ts](mdc:src/errors.ts) - Error handling utilities
+
+## Directory Organization
+Each feature directory follows this structure:
+```
+feature/
+  __tests__/      # Unit tests
+    feature.test.ts
+  __mocks__/      # Module mocks
+    dependency.ts
+  feature.ts      # Source code
+```
+
+## Testing
+- [specs/](mdc:specs) - UI tests using Puppeteer

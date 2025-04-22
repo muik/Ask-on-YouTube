@@ -1,0 +1,32 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Build and Deployment Guide
+
+## Build Configuration
+- Webpack is the primary build tool ([webpack.config.cjs](mdc:webpack.config.cjs))
+- TypeScript compilation settings in [tsconfig.json](mdc:tsconfig.json)
+- Built files are output to the `dist/` directory
+
+## Development Process
+1. Install dependencies with `npm install`
+2. Run development build with webpack watch mode
+3. Load unpacked extension from `dist/` in Chrome
+4. Make changes and see live updates
+
+## Testing Process
+- Run tests: `npm test` (Jest will automatically find tests and mocks)
+- Run UI tests separately with Puppeteer
+- All tests must pass before deployment
+
+## Production Build
+- Builds are configured for production in [webpack.config.cjs](mdc:webpack.config.cjs)
+- Manifest settings in [manifest.json](mdc:manifest.json)
+- Assets are optimized and bundled to `dist/`
+
+## Chrome Web Store Deployment
+- Package contents of `dist/` directory
+- Follow Chrome Web Store publishing guidelines
+- Update version in [manifest.json](mdc:manifest.json) for each release
