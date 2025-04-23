@@ -1,62 +1,53 @@
-import React, { useState } from 'react';
-
+import React from "react";
+import { VideoInfo } from "../../../types";
+import { useInclusionsService } from "./useInclusionsService";
 interface InclusionsProps {
-  onInclusionsChange?: (inclusions: { transcript: boolean; comments: boolean }) => void;
-  commentCount?: number;
-  onLoadMoreComments?: () => void;
+    videoInfo: VideoInfo;
+    onInclusionsChange?: (inclusions: { transcript: boolean; comments: boolean }) => void;
 }
 
-export const Inclusions: React.FC<InclusionsProps> = ({ 
-  onInclusionsChange,
-  commentCount,
-  onLoadMoreComments 
-}) => {
-  const [inclusions, setInclusions] = useState({
-    transcript: true,
-    comments: true,
-  });
+export const Inclusions: React.FC<InclusionsProps> = ({ videoInfo, onInclusionsChange }) => {
+    const {
+        isEnabled,
+        inclusions,
+        toggleInclusion,
+        isAllCommentsLoaded,
+        totalCommentsCount,
+        commentsCount,
+        handleLoadMoreComments,
+    } = useInclusionsService(videoInfo, { transcript: true, comments: false }, onInclusionsChange);
 
-  const handleCheckboxChange = (key: keyof typeof inclusions) => {
-    const newInclusions = {
-      ...inclusions,
-      [key]: !inclusions[key],
-    };
-    setInclusions(newInclusions);
-    onInclusionsChange?.(newInclusions);
-  };
+    if (!isEnabled) {
+        return <></>;
+    }
 
-  return (
-    <div className="flex flex-col gap-2">
-      <label className="flex items-center gap-2 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={inclusions.transcript}
-          onChange={() => handleCheckboxChange('transcript')}
-          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-        />
-        <span className="text-sm text-gray-700">Include Transcript</span>
-      </label>
-      <div className="flex items-center justify-between">
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={inclusions.comments}
-            onChange={() => handleCheckboxChange('comments')}
-            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-          />
-          <span className="text-sm text-gray-700">
-            Include Comments {commentCount !== undefined && `(${commentCount})`}
-          </span>
-        </label>
-        {inclusions.comments && onLoadMoreComments && (
-          <button
-            onClick={onLoadMoreComments}
-            className="text-xs text-blue-600 hover:text-blue-800 font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
-          >
-            Load More
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}; 
+    return (
+        <div>
+            <label>
+                <input
+                    type="checkbox"
+                    checked={inclusions.transcript}
+                    onChange={() => toggleInclusion("transcript")}
+                />
+                <span>Transcript</span>
+            </label>
+            <div className="flex items-center justify-between">
+                <label>
+                    <input
+                        type="checkbox"
+                        checked={inclusions.comments}
+                        onChange={() => toggleInclusion("comments")}
+                    />
+                    <span>
+                        Comments{" "}
+                        {totalCommentsCount !== undefined &&
+                            `(${commentsCount} / ${totalCommentsCount})`}
+                    </span>
+                </label>
+                {inclusions.comments && isAllCommentsLoaded === false && (
+                    <button onClick={handleLoadMoreComments}>Load More</button>
+                )}
+            </div>
+        </div>
+    );
+};

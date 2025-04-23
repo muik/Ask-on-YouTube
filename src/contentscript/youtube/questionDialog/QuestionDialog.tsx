@@ -3,6 +3,7 @@ import { VideoInfo as VideoInfoType } from "../../../types";
 import { CloseButton } from "./CloseButton";
 import { getContainerElement } from "./container";
 import { hideQuestionDialog } from "./dialogManager";
+import { Inclusions } from "./Inclusions";
 import { repositionDialog } from "./positionManager";
 import { QuestionDialogHeader } from "./QuestionDialogHeader";
 import { QuestionForm } from "./QuestionForm";
@@ -39,7 +40,7 @@ export function QuestionDialog({ initialVideoInfo }: { initialVideoInfo: VideoIn
             <QuestionDialogHeader />
             <div id="contents" className="style-scope ytd-unified-share-panel-renderer">
                 <VideoInfo videoInfo={videoInfo} />
-                <div id="inclusion-container" />
+                <Inclusions videoInfo={videoInfo} />
                 <QuestionForm videoInfo={videoInfo} />
                 <QuestionSuggestions videoInfo={videoInfo} />
             </div>
