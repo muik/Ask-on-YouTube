@@ -1,7 +1,4 @@
 import { ObserverManager } from "../../observer";
-import { traverseCommentElements } from "./traverse-comments";
-
-export { traverseCommentElements };
 
 export function scrollForLoadingComments(): void {
     const commentsContainer = document.querySelector("#comments");

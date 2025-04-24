@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { ObserverManager } from "../../observer";
 import {
     scrollForLoadingComments,
-    traverseCommentElements,
     validateTotalCommentsCount,
     watchCommentsExpanded,
 } from "../elements/comments";
+import { traverseCommentElements } from "../elements/traverse-comments";
 import { loadTotalCommentsHeadCount } from "../elements/commentsHeadCount";
 import { Comment } from "../../../types";
+import { pauseVideoPlayer } from "../utils";
 
 interface UseCommentsServiceReturn {
     isAllCommentsLoaded: boolean;
@@ -31,6 +32,7 @@ export function useCommentsService(
     const [isCommentsLoading, setIsCommentsLoading] = useState<boolean>(false);
     const [cursorThread, setCursorThread] = useState<Element | null>(null);
     const [abortController, setAbortController] = useState<AbortController | null>(null);
+    const [startTime, setStartTime] = useState<number | null>(null);
 
     const observerManager = new ObserverManager();
 
@@ -47,6 +49,21 @@ export function useCommentsService(
         }
     }, [isEnabled]);
 
+    useEffect(() => {
+        if (isCommentsChecked) {
+            if (!isAllCommentsLoaded) {
+                // set start time
+                const startTime = Date.now();
+                setStartTime(startTime);
+            } else if (startTime) {
+                // set end time
+                const endTime = Date.now();
+                const duration = endTime - startTime;
+                console.debug("comments loading duration (seconds)", duration / 1000);
+            }
+        }
+    }, [isCommentsChecked, isAllCommentsLoaded]);
+
     // when comments are enabled, scroll to the comments element
     useEffect(() => {
         if (!isCommentsChecked || commentsCount) {
@@ -54,6 +71,7 @@ export function useCommentsService(
             return;
         }
         if (headCommentsCount === undefined) {
+            setIsCommentsLoading(true);
             scrollForLoadingComments();
             return;
         }
@@ -74,7 +92,6 @@ export function useCommentsService(
             newCommentsCount,
             newComments,
             isAllCommentsLoaded,
-            abortController.signal.aborted
         );
         setCursorThread(newCursorThread);
         setComments(comments => [...comments, ...newComments]);
@@ -83,6 +100,7 @@ export function useCommentsService(
 
         if (!isAllCommentsLoaded && !abortController.signal.aborted) {
             watchCommentsExpanded(observerManager, setIsCommentsExpanded, abortController.signal);
+            pauseVideoPlayer();
         } else {
             setIsCommentsLoading(false);
         }
@@ -99,7 +117,6 @@ export function useCommentsService(
                 newCommentsCount,
                 newComments,
                 isAllCommentsLoaded,
-                abortController.signal.aborted
             );
             setCursorThread(newCursorThread);
             setComments(comments => [...comments, ...newComments]);

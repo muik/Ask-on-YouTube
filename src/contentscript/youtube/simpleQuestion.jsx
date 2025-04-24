@@ -1,7 +1,8 @@
 import { BackgroundActions } from "../../constants.js";
 import { Errors } from "../../errors.js";
-import { getYouTubeLanguageCode, pauseVideoPlayer } from "./questionView.js";
+import { getYouTubeLanguageCode } from "./questionView.ts";
 import { getVideoInfoFromVideoDetail } from "./videoInfo.js";
+import { pauseVideoPlayer } from "./utils.ts";
 
 export async function loadDefaultQuestion(inputElement, setError, signal) {
     try {

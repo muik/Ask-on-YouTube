@@ -3,8 +3,8 @@ import { Errors } from "../../../errors.ts";
 import {
     getYouTubeLanguageCode,
     isQuestionDialogClosed,
-    pauseVideoPlayer,
 } from "../questionView.ts";
+import { pauseVideoPlayer } from "../utils.ts";
 import { hideQuestionDialog } from "./dialogManager.ts";
 import { handleResponseError } from "./errorHandler.js";
 

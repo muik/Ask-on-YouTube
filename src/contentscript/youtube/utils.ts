@@ -15,3 +15,10 @@ export function getVideoIdFromUrl(url: string): string | null {
     }
     return null;
 }
+
+export function pauseVideoPlayer(): void {
+    const videoPlayer = document.querySelector<HTMLVideoElement>("video.html5-main-video");
+    if (videoPlayer) {
+        videoPlayer.pause();
+    }
+}
