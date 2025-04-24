@@ -1,6 +1,6 @@
 ---
 description: 
-globs: *.tsx
+globs: *.tsx,*.ts,*.jsx,*.js
 alwaysApply: false
 ---
 # Project Structure Guide

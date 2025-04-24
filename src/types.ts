@@ -10,7 +10,7 @@ export interface HistoryItem {
     question: string;
     timestamp: string;
     answerUrl?: string;
-} 
+}
 
 export interface PromptData {
     videoInfo: VideoInfo;
@@ -18,4 +18,13 @@ export interface PromptData {
     description: string | null;
     question: string;
     langCode: string;
+}
+
+export interface Comment {
+    author: string;
+    publishedTime: string;
+    text: string;
+    likesCount: string;
+    repliesCount?: number;
+    replies?: Comment[];
 }
