@@ -1,16 +1,7 @@
 import { Comment } from "../../../types";
+import { processCompleteThread, TraverseState } from "./process-complete-thread";
 
 // --- Interfaces ---
-interface TraverseState {
-    /** Element to scroll to if traversal stops early to wait for replies/more replies to load. */
-    scrollTarget: Element | null;
-    /** The last successfully processed comment thread element before stopping or finishing. */
-    lastProcessedThread: Element | null;
-    /** Accumulator for the number of new comments (including replies) found in this pass. */
-    newCommentsCount: number;
-    /** Accumulator for the new comments (including replies) found in this pass. */
-    newComments: Comment[];
-}
 
 interface TraverseCommentElementsResult {
     /** The last successfully processed comment thread element. Used as the starting point for the next traversal. */
@@ -24,15 +15,9 @@ interface TraverseCommentElementsResult {
 }
 
 // --- Constants ---
+
 const SELECTORS = {
     threadsContainer: "#comments > #sections > #contents",
-    commentContent: ":scope > #comment > #body > #main",
-    comment: {
-        author: "#author-text",
-        publishedTime: "#published-time-text",
-        text: "#content",
-        likesCount: "#vote-count-middle",
-    },
     replies: {
         container: "#replies:not([hidden])",
         expandButton: "#expander #more-replies:not([hidden]) button",
@@ -55,76 +40,6 @@ const NODE_NAMES = {
 const SCROLL_BEHAVIOR = "auto";
 
 // --- Utility Functions ---
-
-/**
- * Extracts text with emojis from a comment element.
- * @param contentElement - The comment content element
- * @returns The text content with emojis
- */
-function getTextWithEmojis(contentElement: HTMLElement): string {
-    const attributedString = contentElement.querySelector<HTMLElement>("yt-attributed-string");
-    if (!attributedString) {
-        return "";
-    }
-
-    // Get all text nodes and spans that might contain emojis
-    const nodes = Array.from(attributedString.childNodes).filter(node => 
-        node.nodeType === Node.TEXT_NODE || 
-        (node.nodeType === Node.ELEMENT_NODE && 
-         (node as Element).nodeName === "SPAN")
-    );
-
-    // Use array join instead of string concatenation
-    return nodes.map(node => {
-        if (node.nodeType === Node.TEXT_NODE) {
-            return node.textContent || "";
-        }
-        // For spans, check if they contain an emoji image
-        const img = (node as Element).querySelector("img");
-        if (img) {
-            return img.getAttribute("alt") || "";
-        }
-        // If no emoji found, return the span's text content
-        return (node as Element).textContent || "";
-    }).join("").trim();
-}
-
-/**
- * Extracts the main comment data from a thread element.
- */
-function getCommentFromThread(thread: Element): Comment {
-    const commentContent = thread.querySelector<HTMLElement>(SELECTORS.commentContent);
-    if (!commentContent) {
-        console.debug("Unexpected: No comment content found", thread);
-        throw new Error("Unexpected: No comment content found");
-    }
-    return getComment(commentContent);
-}
-
-function getComment(node: HTMLElement): Comment {
-    const author =
-        node.querySelector<HTMLElement>(SELECTORS.comment.author)?.textContent?.trim() || "";
-    const publishedTime =
-        node.querySelector<HTMLElement>(SELECTORS.comment.publishedTime)?.textContent?.trim() || "";
-    const text = getTextWithEmojis(node.querySelector<HTMLElement>(SELECTORS.comment.text) || node);
-    const comment: Comment = {
-        author: author.substring(1), // exclude the "@", ex: "@John" -> "John"
-        publishedTime,
-        text,
-    };
-
-    const likesText = node
-        .querySelector<HTMLElement>(SELECTORS.comment.likesCount)
-        ?.textContent?.trim();
-    if (likesText) {
-        const likesCount = parseInt(likesText);
-        if (!isNaN(likesCount)) {
-            comment.likesCount = likesCount;
-        }
-    }
-
-    return comment;
-}
 
 function handleCommentWithNotExpandedReplies(
     expandRepliesButton: HTMLButtonElement,
@@ -171,32 +86,6 @@ function handleCommentWithMoreReplies(
             throw new Error("Unexpected: No scroll target found");
         }
         state.lastProcessedThread = thread.previousElementSibling;
-    }
-}
-
-/**
- * Processes a thread where replies are fully loaded or non-existent.
- * Only processes if the traversal hasn't already been stopped.
- * @param thread The comment thread element.
- * @param state The traversal state object.
- * @param replyElements Optional array of reply content elements.
- */
-function processCompleteThread(
-    thread: Element,
-    state: TraverseState,
-    replyElements?: NodeListOf<HTMLElement>
-): void {
-    if (!state.scrollTarget) {
-        // Only process if we haven't decided to stop
-        const comment = getCommentFromThread(thread);
-        let count = 1;
-        if (replyElements && replyElements.length > 0) {
-            comment.replies = Array.from(replyElements).map(getComment);
-            count += comment.replies.length;
-        }
-        state.newComments.push(comment);
-        state.newCommentsCount += count;
-        state.lastProcessedThread = thread; // Update cursor to this successfully processed thread
     }
 }
 
