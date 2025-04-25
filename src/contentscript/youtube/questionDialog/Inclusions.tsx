@@ -20,7 +20,7 @@ export const Inclusions: React.FC<InclusionsProps> = ({ inclusionsService, comme
                     checked={inclusionsService.inclusions.transcript}
                     onChange={() => inclusionsService.toggleInclusion("transcript")}
                 />
-                <span>Transcript</span>
+                <span>{chrome.i18n.getMessage("transcriptLabelName")}</span>
             </label>
             <label>
                 <input
@@ -30,7 +30,7 @@ export const Inclusions: React.FC<InclusionsProps> = ({ inclusionsService, comme
                     onChange={() => inclusionsService.toggleInclusion("comments")}
                 />
                 <span>
-                    Comments{" "}
+                    {chrome.i18n.getMessage("commentsLabelName")}{" "}
                     {getCommentsCountText(
                         commentsService.totalCommentsCount,
                         commentsService.commentsCount,

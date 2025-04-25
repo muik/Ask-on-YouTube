@@ -139,5 +139,11 @@
     },
     "loadMoreButtonName": {
         "message": "Load more"
+    },
+    "transcriptLabelName": {
+        "message": "Transcript"
+    },
+    "commentsLabelName": {
+        "message": "Comments"
     }
 }
