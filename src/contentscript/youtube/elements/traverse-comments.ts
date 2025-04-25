@@ -176,6 +176,14 @@ function scrollAndDetermineCompletion(state: TraverseState, thread: Element | nu
         throw new Error("Unexpected: No last thread found");
     }
     lastThread.scrollIntoView({ behavior: SCROLL_BEHAVIOR, block: "end" });
+
+    if (!thread) {
+        const canShowMore = document
+            .querySelector("#comments > #sections")
+            ?.hasAttribute("can-show-more");
+        return !canShowMore;
+    }
+
     return !thread;
 }
 
@@ -227,9 +235,17 @@ export function traverseCommentElements(
         thread = thread.nextElementSibling;
     }
 
-    console.debug("after while loop", state.scrollTarget, state.lastProcessedThread, thread);
+    console.debug("after while loop", state, thread);
 
     const isAllCommentsLoaded = scrollAndDetermineCompletion(state, thread);
+
+    if (isAllCommentsLoaded) {
+        console.debug(
+            "section html:",
+            document.querySelector("#comments > #sections"),
+            document.querySelector("#comments > #sections")?.cloneNode(true)
+        );
+    }
 
     return {
         newCursorThread: state.lastProcessedThread,

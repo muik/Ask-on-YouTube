@@ -91,8 +91,9 @@ export function useCommentsService(
             newCursorThread,
             newCommentsCount,
             newComments,
-            isAllCommentsLoaded,
+            isAllCommentsLoaded
         );
+
         setCursorThread(newCursorThread);
         setComments(comments => [...comments, ...newComments]);
         setCommentsCount(count => count + newCommentsCount);
@@ -116,7 +117,7 @@ export function useCommentsService(
                 newCursorThread,
                 newCommentsCount,
                 newComments,
-                isAllCommentsLoaded,
+                isAllCommentsLoaded
             );
             setCursorThread(newCursorThread);
             setComments(comments => [...comments, ...newComments]);
