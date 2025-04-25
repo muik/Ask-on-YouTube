@@ -101,6 +101,9 @@
     "attachFilename": {
         "message": "transcript.txt"
     },
+    "attachCommentsFilename": {
+        "message": "comments.txt"
+    },
     "chatgptMorePages": {
         "message": "Do not respond yet. There are more pages to come."
     },

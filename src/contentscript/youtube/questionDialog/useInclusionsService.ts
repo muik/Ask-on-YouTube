@@ -1,13 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import { VideoInfo } from "../../../types";
+import { VideoInfo, InclusionsState } from "../../../types";
 import { getVideoIdFromUrl } from "../utils";
 
-export interface InclusionsState {
-    transcript: boolean;
-    comments: boolean;
-}
-
-interface UseInclusionsServiceReturn {
+export interface UseInclusionsServiceReturn {
     isEnabled: boolean;
     inclusions: InclusionsState;
     setInclusion: (key: keyof InclusionsState, value: boolean) => void;

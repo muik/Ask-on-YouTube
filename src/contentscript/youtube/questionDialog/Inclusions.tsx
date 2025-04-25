@@ -1,30 +1,14 @@
 import React from "react";
-import { VideoInfo } from "../../../types";
-import { useInclusionsService } from "./useInclusionsService";
-import { useCommentsService } from "./useCommentsService";
+import { UseInclusionsServiceReturn } from "./useInclusionsService";
+import { UseCommentsServiceReturn } from "./useCommentsService";
 
 interface InclusionsProps {
-    videoInfo: VideoInfo;
-    onInclusionsChange?: (inclusions: { transcript: boolean; comments: boolean }) => void;
+    inclusionsService: UseInclusionsServiceReturn;
+    commentsService: UseCommentsServiceReturn;
 }
 
-export const Inclusions: React.FC<InclusionsProps> = ({ videoInfo, onInclusionsChange }) => {
-    const { isEnabled, inclusions, toggleInclusion } = useInclusionsService(
-        videoInfo,
-        { transcript: true, comments: false },
-        onInclusionsChange
-    );
-
-    const {
-        isAllCommentsLoaded,
-        totalCommentsCount,
-        commentsCount,
-        handleLoadMoreComments,
-        handleStopLoadingComments,
-        isCommentsLoading,
-    } = useCommentsService(isEnabled, inclusions.comments);
-
-    if (!isEnabled) {
+export const Inclusions: React.FC<InclusionsProps> = ({ inclusionsService, commentsService }) => {
+    if (!inclusionsService.isEnabled) {
         return <></>;
     }
 
@@ -33,8 +17,8 @@ export const Inclusions: React.FC<InclusionsProps> = ({ videoInfo, onInclusionsC
             <label>
                 <input
                     type="checkbox"
-                    checked={inclusions.transcript}
-                    onChange={() => toggleInclusion("transcript")}
+                    checked={inclusionsService.inclusions.transcript}
+                    onChange={() => inclusionsService.toggleInclusion("transcript")}
                 />
                 <span>Transcript</span>
             </label>
@@ -42,26 +26,28 @@ export const Inclusions: React.FC<InclusionsProps> = ({ videoInfo, onInclusionsC
                 <label>
                     <input
                         type="checkbox"
-                        checked={inclusions.comments}
-                        disabled={totalCommentsCount === 0}
-                        onChange={() => toggleInclusion("comments")}
+                        checked={inclusionsService.inclusions.comments}
+                        disabled={commentsService.totalCommentsCount === 0}
+                        onChange={() => inclusionsService.toggleInclusion("comments")}
                     />
                     <span>
                         Comments{" "}
                         {getCommentsCountText(
-                            totalCommentsCount,
-                            commentsCount,
-                            isAllCommentsLoaded,
-                            inclusions.comments
+                            commentsService.totalCommentsCount,
+                            commentsService.commentsCount,
+                            commentsService.isAllCommentsLoaded,
+                            inclusionsService.inclusions.comments
                         )}
                     </span>
                 </label>
-                {inclusions.comments &&
-                    isAllCommentsLoaded === false &&
-                    (isCommentsLoading ? (
-                        <button onClick={handleStopLoadingComments}>Stop Loading</button>
+                {inclusionsService.inclusions.comments &&
+                    commentsService.isAllCommentsLoaded === false &&
+                    (commentsService.isCommentsLoading ? (
+                        <button onClick={commentsService.handleStopLoadingComments}>
+                            Stop Loading
+                        </button>
                     ) : (
-                        <button onClick={handleLoadMoreComments}>Load More</button>
+                        <button onClick={commentsService.handleLoadMoreComments}>Load More</button>
                     ))}
             </div>
         </div>

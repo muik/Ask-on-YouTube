@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { VideoInfo as VideoInfoType } from "../../../types";
+import { SharedQuestionFormData, VideoInfo as VideoInfoType } from "../../../types";
 import {
     adjustInputHeight,
     cancelPendingRequest,
@@ -11,12 +11,18 @@ import {
 import { CompleteTextContainer } from "../components/CompleteTextContainer";
 import { useGeminiService } from "../geminiService";
 import { loadDefaultQuestion } from "./loadDefaultQuestion";
-import { onRequestButtonClick } from "./requestHandler.js";
+import { onRequestButtonClick } from "./requestHandler";
 
 // Debounce delay in milliseconds
 const DEBOUNCE_DELAY = 200;
 
-export function QuestionForm({ videoInfo }: { videoInfo: VideoInfoType }) {
+export function QuestionForm({
+    videoInfo,
+    sharedFormData,
+}: {
+    videoInfo: VideoInfoType;
+    sharedFormData: SharedQuestionFormData;
+}) {
     const requestButtonName = chrome.i18n.getMessage("requestButtonName");
     const requestingButtonName = chrome.i18n.getMessage("requestingButtonName");
     const inputElementRef = useRef<HTMLTextAreaElement>(null);
@@ -158,15 +164,18 @@ export function QuestionForm({ videoInfo }: { videoInfo: VideoInfoType }) {
                 <button
                     ref={requestButtonRef}
                     className="question-button"
-                    onClick={e =>
+                    onClick={() => {
+                        if (!inputElementRef.current) {
+                            return;
+                        }
                         onRequestButtonClick(
-                            e,
                             setIsRequesting,
                             setError,
                             videoInfo,
-                            inputElementRef.current
-                        )
-                    }
+                            inputElementRef.current,
+                            sharedFormData
+                        );
+                    }}
                     {...(isRequesting ? { disabled: true } : {})}
                 >
                     <span className="default-text">{requestButtonName}</span>

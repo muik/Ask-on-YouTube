@@ -10,7 +10,7 @@ import { loadTotalCommentsHeadCount } from "../elements/commentsHeadCount";
 import { Comment } from "../../../types";
 import { pauseVideoPlayer } from "../utils";
 
-interface UseCommentsServiceReturn {
+export interface UseCommentsServiceReturn {
     isAllCommentsLoaded: boolean;
     totalCommentsCount: number | undefined;
     commentsCount: number;

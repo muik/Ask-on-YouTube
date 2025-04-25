@@ -6,7 +6,7 @@ import { PromptData } from "../../../types";
 import { MockDataTransfer, MockDragEvent, MockFile } from "../../__mocks__/domMocks";
 import { promptDivider } from "../messages";
 import { setPromptText, setPromptWithTranscript } from "../promptInteractions";
-import { getTranscriptPrompt, getVideoInfoPrompt } from "../transcript";
+import { getCodeBlockedText, getVideoInfoPrompt } from "../prompt-formatter";
 
 // Mock chrome.i18n.getMessage
 global.chrome = {
@@ -16,8 +16,8 @@ global.chrome = {
 } as any;
 
 // Mock transcript functions
-jest.mock("../transcript", () => ({
-    getTranscriptPrompt: jest.fn(),
+jest.mock("../prompt-formatter", () => ({
+    getCodeBlockedText: jest.fn(),
     getVideoInfoPrompt: jest.fn(),
 }));
 
@@ -62,7 +62,7 @@ describe("promptInteractions", () => {
     describe("setPromptWithTranscript", () => {
         beforeEach(() => {
             (getVideoInfoPrompt as jest.Mock).mockReturnValue("Mock Video Info");
-            (getTranscriptPrompt as jest.Mock).mockReturnValue("Mock Transcript");
+            (getCodeBlockedText as jest.Mock).mockReturnValue("Mock Transcript");
         });
 
         it("should set prompt and attach transcript file", () => {
@@ -123,7 +123,10 @@ describe("promptInteractions", () => {
 
             // Verify
             expect(getVideoInfoPrompt).toHaveBeenCalledWith(promptData);
-            expect(getTranscriptPrompt).toHaveBeenCalledWith(promptData);
+            expect(getCodeBlockedText).toHaveBeenCalledWith({
+                title: "Transcript",
+                text: promptData.transcript
+            });
         });
     });
 });

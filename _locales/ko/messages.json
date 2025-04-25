@@ -101,6 +101,9 @@
     "attachFilename": {
         "message": "자막.txt"
     },
+    "attachCommentsFilename": {
+        "message": "댓글.txt"
+    },
     "privacy": {
         "message": "개인정보 처리방침"
     },

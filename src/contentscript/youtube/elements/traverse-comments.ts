@@ -74,9 +74,19 @@ function getComment(node: HTMLElement): Comment {
     const publishedTime =
         node.querySelector<HTMLElement>(SELECTORS.comment.publishedTime)?.textContent?.trim() || "";
     const text = node.querySelector<HTMLElement>(SELECTORS.comment.text)?.textContent?.trim() || "";
-    const likesCount =
-        node.querySelector<HTMLElement>(SELECTORS.comment.likesCount)?.textContent?.trim() || "";
-    return { author, publishedTime, text, likesCount };
+    const comment: Comment = { author, publishedTime, text };
+
+    const likesText = node
+        .querySelector<HTMLElement>(SELECTORS.comment.likesCount)
+        ?.textContent?.trim();
+    if (likesText) {
+        const likesCount = parseInt(likesText);
+        if (!isNaN(likesCount)) {
+            comment.likesCount = likesCount;
+        }
+    }
+
+    return comment;
 }
 
 function handleCommentWithNotExpandedReplies(

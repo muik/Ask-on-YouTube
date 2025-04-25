@@ -12,19 +12,36 @@ export interface HistoryItem {
     answerUrl?: string;
 }
 
+/**
+ * Prompt data for setting it from background to chatgpt content script.
+ */
 export interface PromptData {
     videoInfo: VideoInfo;
-    transcript: string;
+    transcript: string | null;
     description: string | null;
     question: string;
     langCode: string;
+    commentsText?: string;
 }
 
-export interface Comment {
+interface BaseComment {
     author: string;
-    publishedTime: string;
+    publishedTime: string; // ex: "1 day ago"
     text: string;
-    likesCount: string;
+    likesCount?: number;
+}
+
+export interface Comment extends BaseComment {
     repliesCount?: number;
-    replies?: Comment[];
+    replies?: BaseComment[];
+}
+
+export interface InclusionsState {
+    transcript: boolean;
+    comments: boolean;
+}
+
+export interface SharedQuestionFormData {
+    inclusions: InclusionsState;
+    comments?: Comment[];
 }

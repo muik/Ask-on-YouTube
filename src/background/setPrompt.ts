@@ -4,17 +4,34 @@ import { Targets } from "../constants.js";
 import { validateVideoInfo } from "../data.js";
 import { Errors } from "../errors.js";
 import { handleError } from "./handlers.js";
-import { getVideoPagePromptDataCached } from "./promptData/transcriptCache.ts";
+import { getVideoPagePromptDataCached } from "./promptData/transcriptCache";
 import { getDefaultQuestion, saveQuestionHistory } from "./questionHistory.js";
+import { PromptData } from "../types";
+import { SetPromptResponse, SetPromptRequest } from "../types/messages.js";
+import { getCommentsPromptText } from "./promptData/comments.js";
 
-let promptDataTemp = "";
-
-export function getPrompt(sendResponse) {
-    sendResponse({ promptData: promptDataTemp });
-    promptDataTemp = ""; // Reset prompt
+interface ProcessSetPromptResult {
+    promptData?: PromptData;
+    response?: SetPromptResponse;
+    error?: {
+        code?: string;
+        message: string;
+    };
 }
 
-export function setPrompt(request, sendResponse) {
+let promptDataTemp: PromptData | null = null;
+
+export function getPrompt(
+    sendResponse: (response: { promptData: PromptData | null }) => void
+): void {
+    sendResponse({ promptData: promptDataTemp });
+    promptDataTemp = null; // Reset prompt
+}
+
+export function setPrompt(
+    request: SetPromptRequest,
+    sendResponse: (response: SetPromptResponse) => void
+): boolean {
     processSetPrompt(request)
         .then(handleSetPromptResult(sendResponse))
         .then(() => {
@@ -27,15 +44,23 @@ export function setPrompt(request, sendResponse) {
     return true;
 }
 
-async function processSetPrompt({ videoInfo, target, question, langCode }) {
+async function processSetPrompt({
+    videoInfo,
+    target,
+    question,
+    langCode,
+    inclusions,
+    comments,
+}: SetPromptRequest): Promise<ProcessSetPromptResult> {
     validateVideoInfo(videoInfo);
 
     if (target === Targets.CHATGPT) {
         const { transcript, description } = await getVideoPagePromptDataCached(
             videoInfo.id,
-            langCode
+            langCode,
+            inclusions.transcript
         );
-        if (!transcript) {
+        if (inclusions.transcript && !transcript) {
             return {
                 error: Errors.TRANSCRIPT_NOT_FOUND,
             };
@@ -45,28 +70,39 @@ async function processSetPrompt({ videoInfo, target, question, langCode }) {
             question = await getDefaultQuestion();
         }
 
-        const promptData = {
+        const promptData: PromptData = {
             videoInfo,
             transcript,
             description,
             question,
             langCode,
         };
+
+        if (inclusions.comments) {
+            const commentsText = getCommentsPromptText(comments);
+            promptData.commentsText = commentsText;
+        }
+
         return {
             promptData,
             response: { targetUrl: getTargetUrl(target) },
         };
     } else if (target === Targets.GEMINI) {
-        const { transcript, description } = await getVideoPagePromptDataCached(videoInfo.id);
+        const { transcript, description } = await getVideoPagePromptDataCached(
+            videoInfo.id,
+            langCode,
+            inclusions.transcript
+        );
         if (!question) {
             question = await getDefaultQuestion();
         }
 
-        const promptData = {
+        const promptData: PromptData = {
             videoInfo,
             transcript,
             description,
             question,
+            langCode,
         };
 
         return {
@@ -84,20 +120,20 @@ async function processSetPrompt({ videoInfo, target, question, langCode }) {
     }
 }
 
-function getTargetUrl(target) {
-    let url;
+function getTargetUrl(target: Targets): string {
+    let url: string;
     if (target === Targets.CHATGPT) {
         url = "https://chatgpt.com/";
     } else if (target === Targets.GEMINI) {
         url = "https://gemini.google.com/app";
     } else {
-        throw new Error("Invalid target", { code: "INVALID_TARGET" });
+        throw new Error("Invalid target");
     }
     return `${url}?ref=${Config.REF_CODE}`;
 }
 
-function handleSetPromptResult(sendResponse) {
-    return result => {
+function handleSetPromptResult(sendResponse: (response: SetPromptResponse) => void) {
+    return (result: ProcessSetPromptResult) => {
         if (result.error) {
             throw result.error;
         }
@@ -106,6 +142,6 @@ function handleSetPromptResult(sendResponse) {
         }
 
         promptDataTemp = result.promptData;
-        sendResponse(result.response);
+        sendResponse(result.response!);
     };
 }

@@ -5,7 +5,7 @@ import { getQuestionComplete } from "./background/questionComplete.js";
 import { getQuestionCompleteAvailable } from "./background/questionCompleteAvailable.js";
 import { setAnswer } from "./background/questionHistory.js";
 import { getDefaultQuestion, getLastQuestionOption, getQuestions } from "./background/questions.js";
-import { getPrompt, setPrompt } from "./background/setPrompt.js";
+import { getPrompt, setPrompt } from "./background/setPrompt.ts";
 import { loadSettings, updateSettings } from "./background/settingsLoader.js";
 import { getQuestionMenuUsedBefore, setQuestionMenuUsedBefore } from "./background/usedBefore.js";
 import { BackgroundActions } from "./constants.js";

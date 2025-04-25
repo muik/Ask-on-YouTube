@@ -52,6 +52,7 @@ describe("handlePromptResponse", () => {
                 title: "Test Video",
             },
             transcript: "Test transcript",
+            description: "Test video description",
             question: "Test question",
             langCode: "en",
         };
@@ -94,6 +95,7 @@ describe("handlePromptResponse", () => {
                 title: "Test Video",
             },
             transcript: "Test transcript",
+            description: "Test video description",
             question: "Test question",
             langCode: "en",
         };
@@ -147,6 +149,7 @@ describe("handlePromptResponse", () => {
                 title: "Test Video",
             },
             transcript: "Test transcript",
+            description: "Test video description",
             question: "Test question",
             langCode: "en",
         };

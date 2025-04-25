@@ -9,9 +9,16 @@ import { QuestionDialogHeader } from "./QuestionDialogHeader";
 import { QuestionForm } from "./QuestionForm";
 import { QuestionSuggestions } from "./QuestionSuggestions";
 import { VideoInfo } from "./VideoInfo";
+import { useInclusionsService } from "./useInclusionsService";
+import { useCommentsService } from "./useCommentsService";
 
 export function QuestionDialog({ initialVideoInfo }: { initialVideoInfo: VideoInfoType }) {
     const [videoInfo] = useState(initialVideoInfo);
+    const inclusionsService = useInclusionsService(videoInfo, { transcript: true, comments: false });
+    const commentsService = useCommentsService(
+        inclusionsService.isEnabled,
+        inclusionsService.inclusions.comments
+    );
 
     const onEscapeKeyDown = (event: KeyboardEvent) => {
         if (event.key === "Escape") {
@@ -40,8 +47,17 @@ export function QuestionDialog({ initialVideoInfo }: { initialVideoInfo: VideoIn
             <QuestionDialogHeader />
             <div id="contents" className="style-scope ytd-unified-share-panel-renderer">
                 <VideoInfo videoInfo={videoInfo} />
-                <Inclusions videoInfo={videoInfo} />
-                <QuestionForm videoInfo={videoInfo} />
+                <Inclusions
+                    inclusionsService={inclusionsService}
+                    commentsService={commentsService}
+                />
+                <QuestionForm
+                    videoInfo={videoInfo}
+                    sharedFormData={{
+                        inclusions: inclusionsService.inclusions,
+                        comments: commentsService.comments,
+                    }}
+                />
                 <QuestionSuggestions videoInfo={videoInfo} />
             </div>
         </ytd-unified-share-panel-renderer>
