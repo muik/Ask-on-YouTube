@@ -280,3 +280,28 @@
     font-weight: 500;
     pointer-events: none;
 }
+
+.ytq-dialog .inclusions {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    margin-top: 6px;
+}
+.ytq-dialog .inclusions label {
+    display: flex;
+    flex-direction: row;
+    gap: 2px;
+    align-items: center;
+}
+.ytq-dialog .inclusions button {
+    border: none;
+    cursor: pointer;
+    background-color: var(--yt-spec-badge-chip-background);
+    color: var(--yt-spec-text-primary);
+    border-radius: 4px;
+    padding: 2px 8px;
+}
+.ytq-dialog .inclusions button:hover {
+    background-color: var(--yt-spec-text-primary);
+    color: var(--yt-spec-text-primary-inverse);
+}

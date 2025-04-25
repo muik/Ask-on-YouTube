@@ -72,6 +72,7 @@ export function useCommentsService(
         }
         if (headCommentsCount === undefined) {
             setIsCommentsLoading(true);
+            setAbortController(new AbortController());
             scrollForLoadingComments();
             return;
         }
@@ -79,10 +80,14 @@ export function useCommentsService(
             setIsAllCommentsLoaded(true);
             return;
         }
+        if (abortController && abortController.signal.aborted) {
+            setAbortController(null);
+            return;
+        }
 
         setIsCommentsLoading(true);
-        const abortController = new AbortController();
-        setAbortController(abortController);
+        const newAbortController = new AbortController();
+        setAbortController(newAbortController);
 
         const { newCursorThread, newCommentsCount, newComments, isAllCommentsLoaded } =
             traverseCommentElements(cursorThread);
@@ -99,8 +104,8 @@ export function useCommentsService(
         setCommentsCount(count => count + newCommentsCount);
         setIsAllCommentsLoaded(isAllCommentsLoaded);
 
-        if (!isAllCommentsLoaded && !abortController.signal.aborted) {
-            watchCommentsExpanded(observerManager, setIsCommentsExpanded, abortController.signal);
+        if (!isAllCommentsLoaded && !newAbortController.signal.aborted) {
+            watchCommentsExpanded(observerManager, setIsCommentsExpanded, newAbortController.signal);
             pauseVideoPlayer();
         } else {
             setIsCommentsLoading(false);
@@ -134,7 +139,7 @@ export function useCommentsService(
                 setIsCommentsLoading(false);
             }
         }
-    }, [isCommentsExpanded, abortController]);
+    }, [isCommentsExpanded]);
 
     useEffect(() => {
         if (isAllCommentsLoaded) {

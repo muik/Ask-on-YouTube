@@ -133,5 +133,11 @@
     },
     "geminiApiTimeoutError": {
         "message": "Request to Gemini API timed out. Please try again."
+    },
+    "stopLoadingButtonName": {
+        "message": "Stop"
+    },
+    "loadMoreButtonName": {
+        "message": "Load more"
     }
 }

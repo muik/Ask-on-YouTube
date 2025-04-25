@@ -13,7 +13,7 @@ export const Inclusions: React.FC<InclusionsProps> = ({ inclusionsService, comme
     }
 
     return (
-        <div>
+        <div className="inclusions">
             <label>
                 <input
                     type="checkbox"
@@ -22,34 +22,34 @@ export const Inclusions: React.FC<InclusionsProps> = ({ inclusionsService, comme
                 />
                 <span>Transcript</span>
             </label>
-            <div className="flex items-center justify-between">
-                <label>
-                    <input
-                        type="checkbox"
-                        checked={inclusionsService.inclusions.comments}
-                        disabled={commentsService.totalCommentsCount === 0}
-                        onChange={() => inclusionsService.toggleInclusion("comments")}
-                    />
-                    <span>
-                        Comments{" "}
-                        {getCommentsCountText(
-                            commentsService.totalCommentsCount,
-                            commentsService.commentsCount,
-                            commentsService.isAllCommentsLoaded,
-                            inclusionsService.inclusions.comments
-                        )}
-                    </span>
-                </label>
-                {inclusionsService.inclusions.comments &&
-                    commentsService.isAllCommentsLoaded === false &&
-                    (commentsService.isCommentsLoading ? (
-                        <button onClick={commentsService.handleStopLoadingComments}>
-                            Stop Loading
-                        </button>
-                    ) : (
-                        <button onClick={commentsService.handleLoadMoreComments}>Load More</button>
-                    ))}
-            </div>
+            <label>
+                <input
+                    type="checkbox"
+                    checked={inclusionsService.inclusions.comments}
+                    disabled={commentsService.totalCommentsCount === 0}
+                    onChange={() => inclusionsService.toggleInclusion("comments")}
+                />
+                <span>
+                    Comments{" "}
+                    {getCommentsCountText(
+                        commentsService.totalCommentsCount,
+                        commentsService.commentsCount,
+                        commentsService.isAllCommentsLoaded,
+                        inclusionsService.inclusions.comments
+                    )}
+                </span>
+            </label>
+            {inclusionsService.inclusions.comments &&
+                commentsService.isAllCommentsLoaded === false &&
+                (commentsService.isCommentsLoading ? (
+                    <button onClick={commentsService.handleStopLoadingComments}>
+                        {chrome.i18n.getMessage("stopLoadingButtonName")}
+                    </button>
+                ) : (
+                    <button onClick={commentsService.handleLoadMoreComments}>
+                        {chrome.i18n.getMessage("loadMoreButtonName")}
+                    </button>
+                ))}
         </div>
     );
 };
