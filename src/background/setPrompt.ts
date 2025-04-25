@@ -9,6 +9,7 @@ import { getDefaultQuestion, saveQuestionHistory } from "./questionHistory.js";
 import { PromptData } from "../types";
 import { SetPromptResponse, SetPromptRequest } from "../types/messages.js";
 import { getCommentsPromptText } from "./promptData/comments.js";
+import { formatInlineText } from "./promptData/format";
 
 interface ProcessSetPromptResult {
     promptData?: PromptData;
@@ -73,7 +74,7 @@ async function processSetPrompt({
         const promptData: PromptData = {
             videoInfo,
             transcript,
-            description,
+            description: description ? formatInlineText(description) : null,
             question,
             langCode,
         };

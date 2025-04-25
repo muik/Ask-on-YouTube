@@ -1,5 +1,6 @@
 import { getCommentsPromptText } from "../comments";
 import { Comment } from "../../../types";
+import { formatInlineText } from "../format";
 
 describe("getCommentsPromptText", () => {
     it("should return empty string when comments is undefined", () => {
@@ -105,5 +106,73 @@ describe("getCommentsPromptText", () => {
 - User3: "Second comment"`;
 
         expect(getCommentsPromptText(comments)).toBe(expected);
+    });
+
+    it("should format text by replacing newlines with spaces", () => {
+        const comments: Comment[] = [
+            {
+                author: "User1",
+                text: "First line\nSecond line",
+                publishedTime: "1 day ago",
+                likesCount: undefined,
+                replies: [],
+            },
+        ];
+
+        const expected = `- User1: "First line Second line"`;
+
+        expect(getCommentsPromptText(comments)).toBe(expected);
+    });
+
+    it("should format text by replacing multiple spaces with single space", () => {
+        const comments: Comment[] = [
+            {
+                author: "User1",
+                text: "Too    many    spaces",
+                publishedTime: "1 day ago",
+                likesCount: undefined,
+                replies: [],
+            },
+        ];
+
+        const expected = `- User1: "Too many spaces"`;
+
+        expect(getCommentsPromptText(comments)).toBe(expected);
+    });
+
+    it("should handle both newlines and multiple spaces in text", () => {
+        const comments: Comment[] = [
+            {
+                author: "User1",
+                text: "First line\nSecond    line\nThird  line",
+                publishedTime: "1 day ago",
+                likesCount: undefined,
+                replies: [],
+            },
+        ];
+
+        const expected = `- User1: "First line Second line Third line"`;
+
+        expect(getCommentsPromptText(comments)).toBe(expected);
+    });
+});
+
+describe("formatInlineText", () => {
+    it("should replace newlines with spaces", () => {
+        const text = "First line\nSecond line";
+        const expected = "First line Second line";
+        expect(formatInlineText(text)).toBe(expected);
+    });
+
+    it("should replace multiple spaces with single space", () => {
+        const text = "Too    many    spaces";
+        const expected = "Too many spaces";
+        expect(formatInlineText(text)).toBe(expected);
+    });
+
+    it("should handle both newlines and multiple spaces in text", () => {
+        const text = "First line\nSecond    line\nThird  line";
+        const expected = "First line Second line Third line";
+        expect(formatInlineText(text)).toBe(expected);
     });
 });

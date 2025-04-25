@@ -74,7 +74,11 @@ function getComment(node: HTMLElement): Comment {
     const publishedTime =
         node.querySelector<HTMLElement>(SELECTORS.comment.publishedTime)?.textContent?.trim() || "";
     const text = node.querySelector<HTMLElement>(SELECTORS.comment.text)?.textContent?.trim() || "";
-    const comment: Comment = { author, publishedTime, text };
+    const comment: Comment = {
+        author: author.substring(1), // exclude the "@", ex: "@John" -> "John"
+        publishedTime,
+        text,
+    };
 
     const likesText = node
         .querySelector<HTMLElement>(SELECTORS.comment.likesCount)

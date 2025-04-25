@@ -60,7 +60,8 @@ function getDescriptionFromText(text: string): string | null {
         return null;
     }
 
-    return text.slice(startIndex, endIndex);
+    const description = text.slice(startIndex, endIndex);
+    return description.replace(/\\n/g, "\n");
 }
 
 function getTranscriptItemsFromHtml(videoPageHtml: string): {

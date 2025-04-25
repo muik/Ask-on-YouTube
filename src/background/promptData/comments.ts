@@ -1,4 +1,5 @@
 import { Comment } from "../../types";
+import { formatInlineText } from "./format";
 
 /**
  * Build a prompt with bullets showing nesting, and a "Replies:" header before replies.
@@ -15,20 +16,22 @@ export function getCommentsPromptText(comments: Comment[] | undefined): string {
 
     const lines: string[] = [];
 
+    function formatCommentLine(c: Comment): string {
+        const inlineText = formatInlineText(c.text);
+        const postText = c.likesCount ? `, ${c.likesCount} likes` : "";
+        return `- ${c.author}: "${inlineText}"${postText}`;
+    }
+
     for (const c of comments) {
         // Top-level comment line
-        const commentLine = `- ${c.author}: "${c.text}"${
-            c.likesCount != null ? `, ${c.likesCount} likes` : ""
-        }`;
+        const commentLine = formatCommentLine(c);
         lines.push(commentLine);
 
         // If replies exist, add header and list replies
         if (c.replies && c.replies.length > 0) {
             lines.push(`  - ${c.replies.length} Replies:`);
             for (const r of c.replies) {
-                const replyLine = `    - ${r.author}: "${r.text}"${
-                    r.likesCount != null ? `, ${r.likesCount} likes` : ""
-                }`;
+                const replyLine = `    ${formatCommentLine(r)}`;
                 lines.push(replyLine);
             }
         }
