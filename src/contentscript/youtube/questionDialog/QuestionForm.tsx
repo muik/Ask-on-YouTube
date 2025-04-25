@@ -48,10 +48,8 @@ export function QuestionForm({
         DEBOUNCE_DELAY
     );
     const onInput = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        const inputElement = inputElementRef.current;
-        if (!inputElement) {
-            return;
-        }
+        const inputElement = e.target as HTMLTextAreaElement;
+
         if (autoCompleteData) {
             cancelPendingRequest();
 
@@ -72,21 +70,18 @@ export function QuestionForm({
         if (!(e instanceof CustomEvent) && isGeminiServiceAvailable) {
             debouncedInputHandler(e);
         }
+
+        adjustInputHeight(inputElement);
     };
 
     useEffect(() => {
-        if (autoCompleteData && inputElementRef.current && autoCompleteTextRef.current) {
-            inputElementRef.current.style.height = autoCompleteTextRef.current.scrollHeight + "px";
-        }
-    }, [autoCompleteData, inputElementRef.current, autoCompleteTextRef.current]);
-
-    useEffect(() => {
-        if (inputElementRef.current) {
-            adjustInputHeight(inputElementRef.current);
+        const inputElement = inputElementRef.current;
+        if (inputElement) {
+            adjustInputHeight(inputElement);
 
             // cursor focus on the input field
             const focusTimeout = setTimeout(() => {
-                inputElementRef.current?.focus();
+                inputElement.focus();
             }, 100);
 
             return () => {
@@ -121,6 +116,18 @@ export function QuestionForm({
         }
     }, [isRequesting]);
 
+    useEffect(() => {
+        const inputElement = inputElementRef.current;
+        if (!inputElement) {
+            return;
+        }
+
+        const autoCompleteText = autoCompleteTextRef.current;
+        if (autoCompleteData && autoCompleteText) {
+            inputElement.style.height = autoCompleteText.scrollHeight + "px";
+        }
+    }, [autoCompleteData, inputElementRef.current, autoCompleteTextRef.current]);
+
     function getInputWidth() {
         const inputElement = inputElementRef.current;
         if (!inputElement) {
@@ -143,21 +150,15 @@ export function QuestionForm({
                     className="question-input"
                     rows={1}
                     onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-                        if (!inputElementRef.current) {
-                            return;
-                        }
+                        console.debug("onKeyDown", e);
+                        const inputElement = e.target as HTMLTextAreaElement;
 
                         if (!autoCompleteData && e.key === "Enter") {
                             requestButtonRef.current?.click();
                             return;
                         }
 
-                        handleKeyDown(
-                            e,
-                            inputElementRef.current,
-                            setAutoCompleteData,
-                            autoCompleteData
-                        );
+                        handleKeyDown(e, inputElement, setAutoCompleteData, autoCompleteData);
                     }}
                     onInput={onInput}
                     placeholder={placeholder}
