@@ -3,9 +3,9 @@ export const SELECTORS = {
     SEND_BUTTON: "button[data-testid='send-button']",
     SEND_BUTTON_NOT_DISABLED: "button[data-testid='send-button']:not([disabled])",
     SPEECH_BUTTON: "button[data-testid='composer-speech-button']",
-    NEW_CHAT_BUTTON: "button[data-testid='create-new-chat-button']",
+    NEW_CHAT_BUTTON: "[data-testid='create-new-chat-button']",
     NEW_CHAT_BUTTON_IN_CLOSED_SIDEBAR:
-        "main div.items-center > span.flex[data-state='closed']:nth-child(2) > button",
+        "main div.items-center > span.flex[data-state='closed']:nth-child(2) > *",
     ERROR_RESPONSE_ARTICLE:
         'article[data-testid="conversation-turn-2"] button[data-testid="regenerate-thread-error-button"]',
     LOGIN_BUTTON: 'button[data-testid="login-button"]',
