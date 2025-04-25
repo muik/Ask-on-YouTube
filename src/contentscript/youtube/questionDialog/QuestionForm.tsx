@@ -19,9 +19,11 @@ const DEBOUNCE_DELAY = 200;
 export function QuestionForm({
     videoInfo,
     sharedFormData,
+    isCommentsLoading,
 }: {
     videoInfo: VideoInfoType;
     sharedFormData: SharedQuestionFormData;
+    isCommentsLoading: boolean;
 }) {
     const requestButtonName = chrome.i18n.getMessage("requestButtonName");
     const requestingButtonName = chrome.i18n.getMessage("requestingButtonName");
@@ -176,10 +178,14 @@ export function QuestionForm({
                             sharedFormData
                         );
                     }}
-                    {...(isRequesting ? { disabled: true } : {})}
+                    {...(isRequesting || isCommentsLoading ? { disabled: true } : {})}
                 >
                     <span className="default-text">{requestButtonName}</span>
-                    <span className="loading-text">{requestingButtonName}</span>
+                    <span className="loading-text">
+                        {isCommentsLoading && !isRequesting
+                            ? requestButtonName
+                            : requestingButtonName}
+                    </span>
                 </button>
                 {autoCompleteData && (
                     <div

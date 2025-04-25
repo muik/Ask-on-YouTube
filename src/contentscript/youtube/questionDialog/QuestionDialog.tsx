@@ -14,7 +14,10 @@ import { useCommentsService } from "./useCommentsService";
 
 export function QuestionDialog({ initialVideoInfo }: { initialVideoInfo: VideoInfoType }) {
     const [videoInfo] = useState(initialVideoInfo);
-    const inclusionsService = useInclusionsService(videoInfo, { transcript: true, comments: false });
+    const inclusionsService = useInclusionsService(videoInfo, {
+        transcript: true,
+        comments: false,
+    });
     const commentsService = useCommentsService(
         inclusionsService.isEnabled,
         inclusionsService.inclusions.comments
@@ -57,6 +60,7 @@ export function QuestionDialog({ initialVideoInfo }: { initialVideoInfo: VideoIn
                         inclusions: inclusionsService.inclusions,
                         comments: commentsService.comments,
                     }}
+                    isCommentsLoading={commentsService.isCommentsLoading}
                 />
                 <QuestionSuggestions videoInfo={videoInfo} />
             </div>
