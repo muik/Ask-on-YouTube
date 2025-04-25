@@ -57,6 +57,39 @@ const SCROLL_BEHAVIOR = "auto";
 // --- Utility Functions ---
 
 /**
+ * Extracts text with emojis from a comment element.
+ * @param contentElement - The comment content element
+ * @returns The text content with emojis
+ */
+function getTextWithEmojis(contentElement: HTMLElement): string {
+    const attributedString = contentElement.querySelector<HTMLElement>("yt-attributed-string");
+    if (!attributedString) {
+        return "";
+    }
+
+    // Get all text nodes and spans that might contain emojis
+    const nodes = Array.from(attributedString.childNodes).filter(node => 
+        node.nodeType === Node.TEXT_NODE || 
+        (node.nodeType === Node.ELEMENT_NODE && 
+         (node as Element).nodeName === "SPAN")
+    );
+
+    // Use array join instead of string concatenation
+    return nodes.map(node => {
+        if (node.nodeType === Node.TEXT_NODE) {
+            return node.textContent || "";
+        }
+        // For spans, check if they contain an emoji image
+        const img = (node as Element).querySelector("img");
+        if (img) {
+            return img.getAttribute("alt") || "";
+        }
+        // If no emoji found, return the span's text content
+        return (node as Element).textContent || "";
+    }).join("").trim();
+}
+
+/**
  * Extracts the main comment data from a thread element.
  */
 function getCommentFromThread(thread: Element): Comment {
@@ -73,7 +106,7 @@ function getComment(node: HTMLElement): Comment {
         node.querySelector<HTMLElement>(SELECTORS.comment.author)?.textContent?.trim() || "";
     const publishedTime =
         node.querySelector<HTMLElement>(SELECTORS.comment.publishedTime)?.textContent?.trim() || "";
-    const text = node.querySelector<HTMLElement>(SELECTORS.comment.text)?.textContent?.trim() || "";
+    const text = getTextWithEmojis(node.querySelector<HTMLElement>(SELECTORS.comment.text) || node);
     const comment: Comment = {
         author: author.substring(1), // exclude the "@", ex: "@John" -> "John"
         publishedTime,
