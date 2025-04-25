@@ -1,4 +1,5 @@
 import { ObserverManager } from "../../observer";
+import { getNumberFromText } from "./number";
 
 function getTotalCommentsCountFromCountElement(countElement: HTMLElement): number | undefined {
     const countText = countElement.textContent;
@@ -8,10 +9,6 @@ function getTotalCommentsCountFromCountElement(countElement: HTMLElement): numbe
     }
 
     return getNumberFromText(countText);
-}
-
-function getNumberFromText(text: string): number {
-    return parseInt(text.replace(/,/g, "")) || 0;
 }
 
 /**
