@@ -68,6 +68,7 @@ export function QuestionForm({
         }
 
         if (!(e instanceof CustomEvent) && isGeminiServiceAvailable) {
+            cancelPendingRequest();
             debouncedInputHandler(e);
         }
 
