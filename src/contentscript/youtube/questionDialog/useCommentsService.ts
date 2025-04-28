@@ -37,6 +37,7 @@ export function useCommentsService(
     const cursorThreadRef = useRef<Element | null>(null);
     const startTimeRef = useRef<number | null>(null);
 
+    // Cleanup effect
     useEffect(() => {
         return () => {
             observerManagerRef.current.cleanupAll();
@@ -44,28 +45,28 @@ export function useCommentsService(
         };
     }, []);
 
+    // Load head comments count
     useEffect(() => {
         if (isEnabled) {
             loadTotalCommentsHeadCount(setHeadCommentsCount, observerManagerRef.current);
         }
     }, [isEnabled]);
 
+    // Handle comments checked state
     useEffect(() => {
         if (!isCommentsChecked) {
             handleStopLoadingComments();
         }
     }, [isCommentsChecked]);
 
-    // for debugging purposes
+    // Debug timing effect
     useEffect(() => {
         if (!isCommentsChecked) {
             return;
         }
         if (!isAllCommentsLoaded) {
-            // set start time
             startTimeRef.current = Date.now();
         } else if (startTimeRef.current) {
-            // set end time
             const endTime = Date.now();
             const duration = endTime - startTimeRef.current;
             startTimeRef.current = null;
@@ -100,31 +101,37 @@ export function useCommentsService(
         handleLoadMoreComments();
     }, [isCommentsChecked, headCommentsCount]);
 
+    // Handle expanded comments
     useEffect(() => {
-        console.debug("isCommentsExpanded", isCommentsExpanded);
-        if (
-            isCommentsExpanded &&
-            abortControllerRef.current &&
-            !abortControllerRef.current.signal.aborted
-        ) {
-            const result = traverseCommentElements(cursorThreadRef.current);
+        const controller = abortControllerRef.current;
+        if (!isCommentsExpanded || !controller || controller.signal.aborted) {
+            return;
+        }
+
+        const processComments = async () => {
+            const result = await traverseCommentElements(cursorThreadRef.current);
             cursorThreadRef.current = result.newCursorThread;
-            setComments(comments => [...comments, ...result.newComments]);
-            setCommentsCount(count => count + result.newCommentsCount);
+            
+            // Update state
+            setComments(prevComments => [...prevComments, ...result.newComments]);
+            setCommentsCount(prevCount => prevCount + result.newCommentsCount);
             setIsAllCommentsLoaded(result.isAllCommentsLoaded);
 
-            if (!result.isAllCommentsLoaded && !abortControllerRef.current.signal.aborted) {
+            if (!result.isAllCommentsLoaded && controller && !controller.signal.aborted) {
                 watchCommentsExpanded(
                     observerManagerRef.current,
                     setIsCommentsExpanded,
-                    abortControllerRef.current.signal
+                    controller.signal
                 );
             } else {
                 setIsCommentsLoading(false);
             }
-        }
+        };
+
+        processComments();
     }, [isCommentsExpanded]);
 
+    // Validate comments count
     useEffect(() => {
         if (isAllCommentsLoaded) {
             // for debugging purposes

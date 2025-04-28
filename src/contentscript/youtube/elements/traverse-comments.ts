@@ -172,9 +172,9 @@ function scrollAndDetermineCompletion(state: TraverseState, thread: Element | nu
  * @returns An object containing the new comments found, count, the last processed thread (cursor),
  * and a flag indicating if all comments on the page appear to be loaded.
  */
-export function traverseCommentElements(
+export async function traverseCommentElements(
     startThread: Element | null
-): TraverseCommentElementsResult {
+): Promise<TraverseCommentElementsResult> {
     if (startThread && !startThread.nextElementSibling) {
         // startThread is the last thread
         startThread.scrollIntoView({ behavior: SCROLL_BEHAVIOR, block: "end" });
@@ -186,10 +186,13 @@ export function traverseCommentElements(
         };
     }
 
+    // Cache the threads container
     const threadsContainer = document.querySelector(SELECTORS.comments.threadsContainer);
     if (!threadsContainer) {
         throw new Error("Unexpected: No threads container found");
     }
+
+    // Use more efficient DOM traversal
     let thread = startThread?.nextElementSibling || threadsContainer.firstElementChild;
     if (!thread) {
         throw new Error("Unexpected: No thread found");
@@ -202,10 +205,17 @@ export function traverseCommentElements(
         newComments: [],
     };
 
+    // Process all threads at once since DOM operations are the bottleneck
+    // and we want to minimize layout thrashing
+    const threads: Element[] = [];
     while (thread && thread.nodeName === NODE_NAMES.commentThread) {
-        handleThread(thread, state);
-
+        threads.push(thread);
         thread = thread.nextElementSibling;
+    }
+
+    // Process all threads in a single batch
+    for (const currentThread of threads) {
+        handleThread(currentThread, state);
     }
 
     const isAllCommentsLoaded = scrollAndDetermineCompletion(state, thread);
