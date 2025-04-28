@@ -31,12 +31,14 @@ export const Inclusions: React.FC<InclusionsProps> = ({ inclusionsService, comme
                 />
                 <span>
                     {chrome.i18n.getMessage("commentsLabelName")}{" "}
-                    {getCommentsCountText(
-                        commentsService.totalCommentsCount,
-                        commentsService.commentsCount,
-                        commentsService.isAllCommentsLoaded,
-                        inclusionsService.inclusions.comments
-                    )}
+                    <span className="comments-count">
+                        {getCommentsCountText(
+                            commentsService.totalCommentsCount,
+                            commentsService.commentsCount,
+                            commentsService.isAllCommentsLoaded,
+                            inclusionsService.inclusions.comments
+                        )}
+                    </span>
                 </span>
             </label>
             {inclusionsService.inclusions.comments &&
