@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { processCompleteThread } from "../process-complete-thread";
+import { processCompleteThread } from "../comments/process-complete-thread";
 import { Comment } from "../../../../types";
 
 describe("processCompleteThread", () => {

@@ -1,6 +1,6 @@
-import { Comment } from "../../../types";
+import { Comment } from "../../../../types";
 import { processCompleteThread, TraverseState } from "./process-complete-thread";
-import { SELECTORS, NODE_NAMES, SCROLL_BEHAVIOR, ATTRIBUTES } from "./comments/constants";
+import { SELECTORS, NODE_NAMES, SCROLL_BEHAVIOR, ATTRIBUTES } from "./constants";
 
 // --- Interfaces ---
 

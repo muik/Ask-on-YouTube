@@ -1,5 +1,5 @@
-import { Comment } from "../../../types";
-import { SELECTORS } from "./comments/constants";
+import { Comment } from "../../../../types";
+import { SELECTORS } from "./constants";
 
 export interface TraverseState {
     /** Element to scroll to if traversal stops early to wait for replies/more replies to load. */
@@ -106,16 +106,20 @@ export function processCompleteThread(
     state: TraverseState,
     replyElements?: NodeListOf<HTMLElement>
 ): void {
-    if (!state.scrollTarget) {
-        // Only process if we haven't decided to stop
-        const comment = getCommentFromThread(thread);
-        let count = 1;
-        if (replyElements && replyElements.length > 0) {
-            comment.replies = Array.from(replyElements).map(getComment);
-            count += comment.replies.length;
-        }
-        state.newComments.push(comment);
-        state.newCommentsCount += count;
-        state.lastProcessedThread = thread; // Update cursor to this successfully processed thread
+    if (state.scrollTarget) {
+        // the scroll target is the thread that is not fully loaded.
+        // so we don't process it
+        return;
     }
+
+    // Only process if we haven't decided to stop
+    const comment = getCommentFromThread(thread);
+    let count = 1;
+    if (replyElements && replyElements.length > 0) {
+        comment.replies = Array.from(replyElements).map(getComment);
+        count += comment.replies.length;
+    }
+    state.newComments.push(comment);
+    state.newCommentsCount += count;
+    state.lastProcessedThread = thread; // Update cursor to this successfully processed thread
 }

@@ -3,10 +3,10 @@ import { ObserverManager } from "../../observer";
 import {
     scrollForLoadingComments,
     validateTotalCommentsCount,
-    watchCommentsExpanded,
 } from "../elements/comments";
-import { traverseCommentElements } from "../elements/traverse-comments";
-import { loadTotalCommentsHeadCount } from "../elements/commentsHeadCount";
+import { watchCommentsExpanded } from "../elements/comments/observe";
+import { traverseCommentElements } from "../elements/comments/traverse";
+import { loadTotalCommentsHeadCount } from "../elements/comments/header";
 import { Comment } from "../../../types";
 import { pauseVideoPlayer } from "../utils";
 

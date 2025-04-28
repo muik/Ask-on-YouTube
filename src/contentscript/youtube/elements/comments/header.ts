@@ -1,6 +1,6 @@
-import { ObserverManager } from "../../observer";
-import { NODE_NAMES, SELECTORS } from "./comments/constants";
-import { getNumberFromText } from "./number";
+import { ObserverManager } from "../../../observer";
+import { NODE_NAMES, SELECTORS } from "./constants";
+import { getNumberFromText } from "../number";
 
 /**
  * Loads the total comments head count from the comments head section.
