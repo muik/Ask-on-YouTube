@@ -1,6 +1,7 @@
 import React from "react";
 import { UseInclusionsServiceReturn } from "./useInclusionsService";
 import { UseCommentsServiceReturn } from "./useCommentsService";
+import Config from "../../../config";
 
 interface InclusionsProps {
     inclusionsService: UseInclusionsServiceReturn;
@@ -8,7 +9,7 @@ interface InclusionsProps {
 }
 
 export const Inclusions: React.FC<InclusionsProps> = ({ inclusionsService, commentsService }) => {
-    if (!inclusionsService.isEnabled) {
+    if (!Config.INCLUSIONS_ENABLED || !inclusionsService.isEnabled) {
         return <></>;
     }
 

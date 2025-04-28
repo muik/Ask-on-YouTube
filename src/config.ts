@@ -15,6 +15,9 @@ interface Config {
 
     /** Referral code for the extension */
     REF_CODE: string;
+
+    /** Inclusions for the question dialog */
+    INCLUSIONS_ENABLED: boolean;
 }
 
 const Config: Config = {
@@ -22,6 +25,7 @@ const Config: Config = {
     MAX_HISTORY_SIZE: 500,
     MAX_HISTORY_SIZE_IN_PROMPT: 10,
     REF_CODE: "ytq",
+    INCLUSIONS_ENABLED: false,
 };
 
 export default Config; 
