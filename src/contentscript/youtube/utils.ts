@@ -16,8 +16,11 @@ export function getVideoIdFromUrl(url: string): string | null {
     return null;
 }
 
+/**
+ * Pauses the video player of the video page.
+ */
 export function pauseVideoPlayer(): void {
-    const videoPlayer = document.querySelector<HTMLVideoElement>("video.html5-main-video");
+    const videoPlayer = document.querySelector<HTMLVideoElement>("video.html5-main-video[src]");
     if (videoPlayer) {
         videoPlayer.pause();
     }
