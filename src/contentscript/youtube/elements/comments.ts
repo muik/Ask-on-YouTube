@@ -1,4 +1,5 @@
 import { ObserverManager } from "../../observer";
+import { SELECTORS } from "./comments/constants";
 
 export function scrollForLoadingComments(): void {
     const commentsContainer = document.querySelector("#comments");
@@ -28,29 +29,35 @@ export function watchCommentsExpanded(
     setIsCommentsExpanded: (isCommentsExpanded: boolean) => void,
     abortSignal: AbortSignal
 ): void {
-    const commentsContainerSelector = "#comments > #sections > #contents";
-    let scrollTimeout: NodeJS.Timeout | undefined;
+    let timeout: NodeJS.Timeout | undefined;
 
     setIsCommentsExpanded(false);
 
-    observerManager.findOrObserveElement(commentsContainerSelector, commentsContainer => {
-        observerManager.createObserver(
+    function onExpanded(observer: MutationObserver): () => void {
+        return () => {
+            observerManager.cleanupObserver(observer);
+            if (!abortSignal.aborted) {
+                setIsCommentsExpanded(true);
+            }
+        };
+    }
+
+    observerManager.findOrObserveElement(SELECTORS.comments.threadsContainer, commentsContainer => {
+        const observer = observerManager.createObserver(
             commentsContainer,
             (_mutations, observer) => {
-                clearTimeout(scrollTimeout);
+                clearTimeout(timeout);
                 if (abortSignal.aborted) {
                     observerManager.cleanupObserver(observer);
                     return;
                 }
-                scrollTimeout = setTimeout(() => {
-                    observerManager.cleanupObserver(observer);
-                    if (!abortSignal.aborted) {
-                        setIsCommentsExpanded(true);
-                    }
-                }, 50);
+                timeout = setTimeout(onExpanded(observer), 50);
             },
             { childList: true, subtree: true }
         );
+
+        // timeout is used to ensure that the observer is not cleaned up prematurely
+        timeout = setTimeout(onExpanded(observer), 100);
     });
 }
 

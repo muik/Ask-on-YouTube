@@ -73,7 +73,7 @@ export function useCommentsService(
         }
     }, [isCommentsChecked, isAllCommentsLoaded]);
 
-    // when comments are enabled, scroll to the comments element
+    // when comments are checked, scroll to the comments element
     useEffect(() => {
         if (!isCommentsChecked || commentsCount) {
             // when there are already comments, do not load more comments automatically
@@ -89,48 +89,31 @@ export function useCommentsService(
             setIsAllCommentsLoaded(true);
             return;
         }
+
+        // if the abort controller is aborted, after the head comments are loaded, stop
         if (abortControllerRef.current && abortControllerRef.current.signal.aborted) {
             abortControllerRef.current = null;
+            console.debug("abortControllerRef.current.signal.aborted");
             return;
         }
 
-        setIsCommentsLoading(true);
-        abortControllerRef.current = new AbortController();
-
-        const { newCursorThread, newCommentsCount, newComments, isAllCommentsLoaded } =
-            traverseCommentElements(cursorThreadRef.current);
-
-        cursorThreadRef.current = newCursorThread;
-        setComments(comments => [...comments, ...newComments]);
-        setCommentsCount(count => count + newCommentsCount);
-        setIsAllCommentsLoaded(isAllCommentsLoaded);
-
-        if (!isAllCommentsLoaded && !abortControllerRef.current.signal.aborted) {
-            watchCommentsExpanded(
-                observerManagerRef.current,
-                setIsCommentsExpanded,
-                abortControllerRef.current.signal
-            );
-            pauseVideoPlayer();
-        } else {
-            setIsCommentsLoading(false);
-        }
+        handleLoadMoreComments();
     }, [isCommentsChecked, headCommentsCount]);
 
     useEffect(() => {
+        console.debug("isCommentsExpanded", isCommentsExpanded);
         if (
             isCommentsExpanded &&
             abortControllerRef.current &&
             !abortControllerRef.current.signal.aborted
         ) {
-            const { newCursorThread, newCommentsCount, newComments, isAllCommentsLoaded } =
-                traverseCommentElements(cursorThreadRef.current);
-            cursorThreadRef.current = newCursorThread;
-            setComments(comments => [...comments, ...newComments]);
-            setCommentsCount(count => count + newCommentsCount);
-            setIsAllCommentsLoaded(isAllCommentsLoaded);
+            const result = traverseCommentElements(cursorThreadRef.current);
+            cursorThreadRef.current = result.newCursorThread;
+            setComments(comments => [...comments, ...result.newComments]);
+            setCommentsCount(count => count + result.newCommentsCount);
+            setIsAllCommentsLoaded(result.isAllCommentsLoaded);
 
-            if (!isAllCommentsLoaded && !abortControllerRef.current.signal.aborted) {
+            if (!result.isAllCommentsLoaded && !abortControllerRef.current.signal.aborted) {
                 watchCommentsExpanded(
                     observerManagerRef.current,
                     setIsCommentsExpanded,
@@ -151,8 +134,9 @@ export function useCommentsService(
 
     const handleLoadMoreComments = () => {
         abortControllerRef.current = new AbortController();
-        setIsCommentsExpanded(true);
         setIsCommentsLoading(true);
+        setIsCommentsExpanded(true);
+        pauseVideoPlayer();
     };
 
     const handleStopLoadingComments = () => {
