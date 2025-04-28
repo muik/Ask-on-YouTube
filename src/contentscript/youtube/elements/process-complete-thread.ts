@@ -1,4 +1,5 @@
 import { Comment } from "../../../types";
+import { SELECTORS } from "./comments/constants";
 
 export interface TraverseState {
     /** Element to scroll to if traversal stops early to wait for replies/more replies to load. */
@@ -11,59 +12,56 @@ export interface TraverseState {
     newComments: Comment[];
 }
 
-const SELECTORS = {
-    commentContent: ":scope > #comment > #body > #main",
-    comment: {
-        author: "#author-text",
-        publishedTime: "#published-time-text",
-        text: "#content",
-        likesCount: "#vote-count-middle",
-    },
-} as const;
-
 /**
  * Extracts text with emojis from a comment element.
  * @param contentElement - The comment content element
  * @returns The text content with emojis
  */
 function getTextWithEmojis(contentElement: HTMLElement): string {
-    const attributedString = contentElement.querySelector<HTMLElement>("yt-attributed-string");
+    const attributedString = contentElement.querySelector<HTMLElement>(
+        SELECTORS.commentText.attributedString
+    );
     if (!attributedString) {
         return "";
     }
 
     // Try to find the text span with the specific class first
-    let textSpan = attributedString.querySelector<HTMLElement>(".yt-core-attributed-string");
+    let textSpan = attributedString.querySelector<HTMLElement>(SELECTORS.commentText.textSpan);
     if (!textSpan) {
         // Fallback to any span with role="text" or direct text content
-        textSpan = attributedString.querySelector<HTMLElement>("span[role='text']") || attributedString;
+        textSpan =
+            attributedString.querySelector<HTMLElement>(SELECTORS.commentText.text) ||
+            attributedString;
     }
 
     // Get all child nodes including text nodes and emoji images
     const nodes = Array.from(textSpan.childNodes);
-    
-    return nodes.map(node => {
-        if (node.nodeType === Node.TEXT_NODE) {
-            return node.textContent || "";
-        }
-        if (node.nodeType === Node.ELEMENT_NODE) {
-            const element = node as HTMLElement;
-            // Check for emoji image
-            const img = element.querySelector("img");
-            if (img) {
-                return img.getAttribute("alt") || "";
+
+    return nodes
+        .map(node => {
+            if (node.nodeType === Node.TEXT_NODE) {
+                return node.textContent || "";
             }
-            return element.textContent || "";
-        }
-        return "";
-    }).join("").trim();
+            if (node.nodeType === Node.ELEMENT_NODE) {
+                const element = node as HTMLElement;
+                // Check for emoji image
+                const img = element.querySelector("img");
+                if (img) {
+                    return img.getAttribute("alt") || "";
+                }
+                return element.textContent || "";
+            }
+            return "";
+        })
+        .join("")
+        .trim();
 }
 
 /**
  * Extracts the main comment data from a thread element.
  */
 function getCommentFromThread(thread: Element): Comment {
-    const commentContent = thread.querySelector<HTMLElement>(SELECTORS.commentContent);
+    const commentContent = thread.querySelector<HTMLElement>(SELECTORS.comments.threadContent);
     if (!commentContent) {
         console.debug("Unexpected: No comment content found", thread);
         throw new Error("Unexpected: No comment content found");
@@ -120,4 +118,4 @@ export function processCompleteThread(
         state.newCommentsCount += count;
         state.lastProcessedThread = thread; // Update cursor to this successfully processed thread
     }
-} 
+}

@@ -1,5 +1,6 @@
 import { Comment } from "../../../types";
 import { processCompleteThread, TraverseState } from "./process-complete-thread";
+import { SELECTORS, NODE_NAMES, SCROLL_BEHAVIOR, ATTRIBUTES } from "./comments/constants";
 
 // --- Interfaces ---
 
@@ -14,31 +15,6 @@ interface TraverseCommentElementsResult {
     isAllCommentsLoaded: boolean;
 }
 
-// --- Constants ---
-
-const SELECTORS = {
-    threadsContainer: "#comments > #sections > #contents",
-    replies: {
-        container: "#replies:not([hidden])",
-        expandButton: "#expander #more-replies:not([hidden]) button",
-        moreButton: "ytd-continuation-item-renderer button",
-        itemContents: "#contents #body #main",
-        commentsContainer: "#expander-contents > #contents",
-    },
-} as const; // Use "as const" for stricter typing
-
-const NODE_NAMES = {
-    commentThread: "YTD-COMMENT-THREAD-RENDERER",
-    continuation: "YTD-CONTINUATION-ITEM-RENDERER",
-} as const;
-
-/**
- * Scroll behavior for the scrollIntoView method.
- * "auto" - The browser will scroll the element into view at its current position.
- * "smooth" - The browser will scroll the element into view with a smooth animation.
- */
-const SCROLL_BEHAVIOR = "auto";
-
 // --- Utility Functions ---
 
 function handleCommentWithNotExpandedReplies(
@@ -48,7 +24,7 @@ function handleCommentWithNotExpandedReplies(
 ) {
     expandRepliesButton.click();
     if (!state.scrollTarget) {
-        state.scrollTarget = expandRepliesButton.closest("#expander");
+        state.scrollTarget = expandRepliesButton.closest(SELECTORS.replies.expanderContainer);
         if (!state.scrollTarget) {
             console.debug("Unexpected: No scroll target found", expandRepliesButton);
             throw new Error("Unexpected: No scroll target found");
@@ -63,7 +39,7 @@ function handleCommentWithNotLoadedReplies(
     state: TraverseState
 ) {
     if (!state.scrollTarget) {
-        state.scrollTarget = replyCommentsContainer.closest("#expander");
+        state.scrollTarget = replyCommentsContainer.closest(SELECTORS.replies.expanderContainer);
         if (!state.scrollTarget) {
             console.debug("Unexpected: No scroll target found", replyCommentsContainer);
             throw new Error("Unexpected: No scroll target found");
@@ -79,8 +55,7 @@ function handleCommentWithMoreReplies(
 ) {
     moreRepliesButton.click();
     if (!state.scrollTarget) {
-        console.debug("set more replies button as scroll target", moreRepliesButton);
-        state.scrollTarget = moreRepliesButton.closest("ytd-continuation-item-renderer");
+        state.scrollTarget = moreRepliesButton.closest(SELECTORS.replies.moreRepliesContainer);
         if (!state.scrollTarget) {
             console.debug("Unexpected: No scroll target found", moreRepliesButton);
             throw new Error("Unexpected: No scroll target found");
@@ -125,7 +100,7 @@ function handleThread(thread: Element, state: TraverseState) {
     }
 
     // not loaded replies
-    if (replyCommentsContainer.firstElementChild?.nodeName === "YTD-CONTINUATION-ITEM-RENDERER") {
+    if (replyCommentsContainer.firstElementChild?.nodeName === NODE_NAMES.continuation) {
         handleCommentWithNotLoadedReplies(replyCommentsContainer, thread, state);
         return;
     }
@@ -179,8 +154,8 @@ function scrollAndDetermineCompletion(state: TraverseState, thread: Element | nu
 
     if (!thread) {
         const canShowMore = document
-            .querySelector("#comments > #sections")
-            ?.hasAttribute("can-show-more");
+            .querySelector(SELECTORS.comments.sections)
+            ?.hasAttribute(ATTRIBUTES.canShowMore);
         return !canShowMore;
     }
 
@@ -211,7 +186,7 @@ export function traverseCommentElements(
         };
     }
 
-    const threadsContainer = document.querySelector(SELECTORS.threadsContainer);
+    const threadsContainer = document.querySelector(SELECTORS.comments.threadsContainer);
     if (!threadsContainer) {
         throw new Error("Unexpected: No threads container found");
     }
@@ -227,25 +202,13 @@ export function traverseCommentElements(
         newComments: [],
     };
 
-    console.debug("start while loop", thread);
-
     while (thread && thread.nodeName === NODE_NAMES.commentThread) {
         handleThread(thread, state);
 
         thread = thread.nextElementSibling;
     }
 
-    console.debug("after while loop", state, thread);
-
     const isAllCommentsLoaded = scrollAndDetermineCompletion(state, thread);
-
-    if (isAllCommentsLoaded) {
-        console.debug(
-            "section html:",
-            document.querySelector("#comments > #sections"),
-            document.querySelector("#comments > #sections")?.cloneNode(true)
-        );
-    }
 
     return {
         newCursorThread: state.lastProcessedThread,

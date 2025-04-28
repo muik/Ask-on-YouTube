@@ -1,15 +1,6 @@
 import { ObserverManager } from "../../observer";
+import { NODE_NAMES, SELECTORS } from "./comments/constants";
 import { getNumberFromText } from "./number";
-
-function getTotalCommentsCountFromCountElement(countElement: HTMLElement): number | undefined {
-    const countText = countElement.textContent;
-    if (!countText) {
-        console.debug("No count found");
-        return;
-    }
-
-    return getNumberFromText(countText);
-}
 
 /**
  * Loads the total comments head count from the comments head section.
@@ -20,18 +11,26 @@ export function loadTotalCommentsHeadCount(
     setTotalCommentsCount: (count: number | undefined) => void,
     observerManager: ObserverManager
 ): void {
-    const contentsSelector = "#comments > #sections > #contents";
-    observerManager.findOrObserveElement(contentsSelector, contentsElement => {
+    observerManager.findOrObserveElement(SELECTORS.comments.threadsContainer, contentsElement => {
         // Comments are turned off.
-        if (contentsElement.firstElementChild?.nodeName === "YTD-MESSAGE-RENDERER") {
+        if (contentsElement.firstElementChild?.nodeName === NODE_NAMES.messageRenderer) {
             setTotalCommentsCount(0);
             return;
         }
 
-        const countElementSelector = "#comments > #sections > #header #count";
-        observerManager.findOrObserveElement(countElementSelector, element => {
+        observerManager.findOrObserveElement(SELECTORS.comments.headerCount, element => {
             const countNumber = getTotalCommentsCountFromCountElement(element);
             setTotalCommentsCount(countNumber);
         });
     });
+}
+
+function getTotalCommentsCountFromCountElement(countElement: HTMLElement): number | undefined {
+    const countText = countElement.textContent;
+    if (!countText) {
+        console.debug("No count found");
+        return;
+    }
+
+    return getNumberFromText(countText);
 }

@@ -54,6 +54,11 @@ export function watchCommentsExpanded(
     });
 }
 
+/**
+ * Validates the total comments count to ensure it matches the expected count.
+ * This is used to ensure that the comments are loaded correctly.
+ * @returns void
+ */
 export function validateTotalCommentsCount(): void {
     const commentsCount = document.querySelectorAll(
         "#comments > #sections > #contents > ytd-comment-thread-renderer"
