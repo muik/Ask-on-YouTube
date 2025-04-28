@@ -1,12 +1,15 @@
 import { PromptData } from "../../types";
 import { getMessage, Messages } from "./messages";
 
-export function getTranscriptPrompt({ transcript, langCode }: PromptData): string {
-    const message = getMessage(langCode);
-    const formattedTranscript = transcript.trim();
-
-    return `${message.transcript}: \`\`\`
-${formattedTranscript}
+/**
+ * Get a prompt with a code block of the text.
+ * @param title - The title of the text.
+ * @param text - The text to be included in the prompt.
+ * @returns A string prompt with the text code block.
+ */
+export function getCodeBlockedText({ title, text }: { title: string; text: string }): string {
+    return `${title}: \`\`\`
+${text.trim()}
 \`\`\``;
 }
 

@@ -1,9 +1,20 @@
-import { BackgroundActions } from "../../constants.js";
-import { Errors } from "../../errors.js";
-import { getYouTubeLanguageCode, pauseVideoPlayer } from "./questionView.js";
-import { getVideoInfoFromVideoDetail } from "./videoInfo.js";
+import { BackgroundActions, Targets } from "../../constants";
+import { Errors } from "../../errors";
+import { getYouTubeLanguageCode } from "./questionView";
+import { getVideoInfoFromVideoDetail } from "./videoInfo";
+import { pauseVideoPlayer } from "./utils";
+import { SetPromptRequest, SetPromptResponse } from "../../types/messages";
 
-export async function loadDefaultQuestion(inputElement, setError, signal) {
+interface ErrorResponse {
+    code?: string;
+    message: string;
+}
+
+export async function loadDefaultQuestion(
+    inputElement: HTMLInputElement,
+    setError: (error: ErrorResponse | null) => void,
+    signal: AbortSignal
+): Promise<void> {
     try {
         const response = await chrome.runtime.sendMessage({
             action: BackgroundActions.GET_DEFAULT_QUESTION,
@@ -13,7 +24,7 @@ export async function loadDefaultQuestion(inputElement, setError, signal) {
             return;
         }
 
-        if (handleError(response.error)) {
+        if (handleError(response.error, setError)) {
             return;
         }
 
@@ -34,13 +45,16 @@ export async function loadDefaultQuestion(inputElement, setError, signal) {
     }
 }
 
-export async function onRequestButtonClick(event, setIsRequesting, setError) {
-    const buttonElement = event.target;
-    const formElement = buttonElement.closest(".ytq-form");
-    const inputElement = formElement.querySelector("input[type='text']");
+export async function onRequestButtonClick(
+    event: React.MouseEvent<HTMLButtonElement>,
+    setIsRequesting: (isRequesting: boolean) => void,
+    setError: (error: ErrorResponse | null) => void
+): Promise<void> {
+    const buttonElement = event.target as HTMLButtonElement;
+    const formElement = buttonElement.closest(".ytq-form") as HTMLFormElement;
+    const inputElement = formElement.querySelector("input[type='text']") as HTMLInputElement;
     const question = inputElement.value || inputElement.placeholder;
     const videoInfo = getVideoInfoFromVideoDetail();
-    const target = "chatgpt";
 
     // chrome.i18n depends on the OS language, but the YouTube language is not always the same as the OS language.
     // Assume the user wants to ask the question in the YouTube language.
@@ -51,30 +65,37 @@ export async function onRequestButtonClick(event, setIsRequesting, setError) {
     setError(null);
 
     try {
-        const response = await chrome.runtime.sendMessage({
+        const response = await chrome.runtime.sendMessage<SetPromptRequest>({
             action: BackgroundActions.SET_PROMPT,
-            target: target,
+            target: Targets.CHATGPT,
             videoInfo,
             question,
             langCode,
             type: "placeholder",
+            inclusions: {
+                transcript: true,
+                comments: false,
+            },
         });
 
         onPromptSet(response, setError);
         pauseVideoPlayer();
     } catch (error) {
-        if (error.message === "Extension context invalidated.") {
+        if (error instanceof Error && error.message === "Extension context invalidated.") {
             setError(Errors.EXTENSION_CONTEXT_INVALIDATED);
         } else {
             console.error("sendMessage setPrompt Error:", error);
-            setError(error);
+            setError(error as ErrorResponse);
         }
     } finally {
         setIsRequesting(false);
     }
 }
 
-function handleError(error, setError) {
+function handleError(
+    error: ErrorResponse | undefined,
+    setError: (error: ErrorResponse | null) => void
+): boolean {
     if (chrome.runtime.lastError) {
         console.error("onPromptSet chrome.runtime.lastError:", chrome.runtime.lastError);
         const message = `Error - ${chrome.runtime.lastError.message || chrome.runtime.lastError}`;
@@ -84,7 +105,7 @@ function handleError(error, setError) {
 
     if (error) {
         const { code, message } = error;
-        const knownError = Errors[code];
+        const knownError = Errors[code as keyof typeof Errors];
         if (knownError) {
             setError(knownError);
         } else {
@@ -97,7 +118,10 @@ function handleError(error, setError) {
     return false;
 }
 
-function onPromptSet(response, setError) {
+function onPromptSet(
+    response: SetPromptResponse,
+    setError: (error: ErrorResponse | null) => void
+): void {
     if (handleError(response?.error, setError)) {
         return;
     }

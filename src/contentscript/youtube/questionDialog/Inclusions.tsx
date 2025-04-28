@@ -1,62 +1,75 @@
-import React, { useState } from 'react';
+import React from "react";
+import { UseInclusionsServiceReturn } from "./useInclusionsService";
+import { UseCommentsServiceReturn } from "./useCommentsService";
 
 interface InclusionsProps {
-  onInclusionsChange?: (inclusions: { transcript: boolean; comments: boolean }) => void;
-  commentCount?: number;
-  onLoadMoreComments?: () => void;
+    inclusionsService: UseInclusionsServiceReturn;
+    commentsService: UseCommentsServiceReturn;
 }
 
-export const Inclusions: React.FC<InclusionsProps> = ({ 
-  onInclusionsChange,
-  commentCount,
-  onLoadMoreComments 
-}) => {
-  const [inclusions, setInclusions] = useState({
-    transcript: true,
-    comments: true,
-  });
+export const Inclusions: React.FC<InclusionsProps> = ({ inclusionsService, commentsService }) => {
+    if (!inclusionsService.isEnabled) {
+        return <></>;
+    }
 
-  const handleCheckboxChange = (key: keyof typeof inclusions) => {
-    const newInclusions = {
-      ...inclusions,
-      [key]: !inclusions[key],
-    };
-    setInclusions(newInclusions);
-    onInclusionsChange?.(newInclusions);
-  };
+    return (
+        <div className="inclusions">
+            <label>
+                <input
+                    type="checkbox"
+                    checked={inclusionsService.inclusions.transcript}
+                    onChange={() => inclusionsService.toggleInclusion("transcript")}
+                />
+                <span>{chrome.i18n.getMessage("transcriptLabelName")}</span>
+            </label>
+            <label>
+                <input
+                    type="checkbox"
+                    checked={inclusionsService.inclusions.comments}
+                    disabled={commentsService.totalCommentsCount === 0}
+                    onChange={() => inclusionsService.toggleInclusion("comments")}
+                />
+                <span>
+                    {chrome.i18n.getMessage("commentsLabelName")}{" "}
+                    <span className="comments-count">
+                        {getCommentsCountText(
+                            commentsService.totalCommentsCount,
+                            commentsService.commentsCount,
+                            commentsService.isAllCommentsLoaded,
+                            inclusionsService.inclusions.comments
+                        )}
+                    </span>
+                </span>
+            </label>
+            {inclusionsService.inclusions.comments &&
+                commentsService.isAllCommentsLoaded === false &&
+                (commentsService.isCommentsLoading ? (
+                    <button onClick={commentsService.handleStopLoadingComments}>
+                        {chrome.i18n.getMessage("stopLoadingButtonName")}
+                    </button>
+                ) : (
+                    <button onClick={commentsService.handleLoadMoreComments}>
+                        {chrome.i18n.getMessage("loadMoreButtonName")}
+                    </button>
+                ))}
+        </div>
+    );
+};
 
-  return (
-    <div className="flex flex-col gap-2">
-      <label className="flex items-center gap-2 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={inclusions.transcript}
-          onChange={() => handleCheckboxChange('transcript')}
-          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-        />
-        <span className="text-sm text-gray-700">Include Transcript</span>
-      </label>
-      <div className="flex items-center justify-between">
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={inclusions.comments}
-            onChange={() => handleCheckboxChange('comments')}
-            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-          />
-          <span className="text-sm text-gray-700">
-            Include Comments {commentCount !== undefined && `(${commentCount})`}
-          </span>
-        </label>
-        {inclusions.comments && onLoadMoreComments && (
-          <button
-            onClick={onLoadMoreComments}
-            className="text-xs text-blue-600 hover:text-blue-800 font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
-          >
-            Load More
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}; 
+function getCommentsCountText(
+    totalCommentsCount: number | undefined,
+    commentsCount: number,
+    isAllCommentsLoaded: boolean,
+    isCommentsChecked: boolean
+): string {
+    if (totalCommentsCount === undefined || totalCommentsCount === 0) {
+        return "";
+    }
+    if (!isCommentsChecked && !commentsCount) {
+        return `(${totalCommentsCount.toLocaleString()})`;
+    }
+    if (isAllCommentsLoaded || commentsCount >= totalCommentsCount) {
+        return `(${commentsCount.toLocaleString()})`;
+    }
+    return `(${commentsCount.toLocaleString()} / ${totalCommentsCount.toLocaleString()})`;
+}

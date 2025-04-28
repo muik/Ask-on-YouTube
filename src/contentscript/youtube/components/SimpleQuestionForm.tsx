@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Errors } from "../../../errors.js";
 import { showQuestionDialog } from "../questionView.js";
-import { loadDefaultQuestion, onRequestButtonClick } from "../simpleQuestion.jsx";
+import { loadDefaultQuestion, onRequestButtonClick } from "../simpleQuestion";
 import { getVideoInfoFromVideoDetail } from "../videoInfo.js";
 
 interface SimpleQuestionFormProps {}

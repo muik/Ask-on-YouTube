@@ -4,6 +4,7 @@ export interface Messages {
     caption: string;
     description: string;
     transcriptPagingFormat: string;
+    comments: string;
 }
 
 export const promptDivider = "------------";
@@ -15,6 +16,7 @@ export const messages: Record<string, Messages> = {
         caption: "Subtitle",
         description: "Description",
         transcriptPagingFormat: "Transcript (page {pageIndex} of {pagesCount})",
+        comments: "Comments",
     },
     ko: {
         transcript: "자막",
@@ -22,6 +24,7 @@ export const messages: Record<string, Messages> = {
         caption: "부제목",
         description: "설명(더보기)",
         transcriptPagingFormat: "자막 ({pageIndex} / {pagesCount} 페이지)",
+        comments: "댓글",
     },
 };
 

@@ -1,9 +1,9 @@
 import { PromptData } from "../../types";
 import { waitForElm } from "../utils.js";
 import { isAnswerUrlObserving, observeAnswerUrl, stopAnswerUrlObserver } from "./answer";
-import { promptDivider } from "./messages";
+import { getMessage, promptDivider } from "./messages";
 import { setPromptText, setPromptWithTranscript } from "./promptInteractions";
-import { getTranscriptPrompt, getVideoInfoPrompt } from "./transcript";
+import { getCodeBlockedText, getVideoInfoPrompt } from "./prompt-formatter";
 import { getNewChatButton, hasErrorResponseArticle, isNotLogin, SELECTORS } from "./ui";
 
 export function handlePromptResponse(response: { promptData: PromptData }): void {
@@ -99,10 +99,24 @@ function tryAttachTranscript(promptData: PromptData): void {
 
 function getPromptText(promptData: PromptData): string {
     const videoInfoPrompt = getVideoInfoPrompt(promptData);
-    const transcriptPrompt = getTranscriptPrompt(promptData);
+    const items = [promptData.question, promptDivider, videoInfoPrompt];
+    const message = getMessage(promptData.langCode);
 
-    return `${promptData.question}
-${promptDivider}
-${videoInfoPrompt}
-${transcriptPrompt}`;
+    if (promptData.transcript != null) {
+        const transcriptPrompt = getCodeBlockedText({
+            title: message.transcript,
+            text: promptData.transcript,
+        });
+        items.push(transcriptPrompt);
+    }
+
+    if (promptData.commentsText != null) {
+        const commentsPrompt = getCodeBlockedText({
+            title: message.comments,
+            text: promptData.commentsText,
+        });
+        items.push(commentsPrompt);
+    }
+
+    return items.join("\n");
 }

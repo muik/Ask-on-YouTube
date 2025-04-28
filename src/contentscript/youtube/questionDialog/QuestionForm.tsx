@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { VideoInfo as VideoInfoType } from "../../../types";
+import { SharedQuestionFormData, VideoInfo as VideoInfoType } from "../../../types";
 import {
     adjustInputHeight,
     cancelPendingRequest,
@@ -11,12 +11,20 @@ import {
 import { CompleteTextContainer } from "../components/CompleteTextContainer";
 import { useGeminiService } from "../geminiService";
 import { loadDefaultQuestion } from "./loadDefaultQuestion";
-import { onRequestButtonClick } from "./requestHandler.js";
+import { onRequestButtonClick } from "./requestHandler";
 
 // Debounce delay in milliseconds
 const DEBOUNCE_DELAY = 200;
 
-export function QuestionForm({ videoInfo }: { videoInfo: VideoInfoType }) {
+export function QuestionForm({
+    videoInfo,
+    sharedFormData,
+    isCommentsLoading,
+}: {
+    videoInfo: VideoInfoType;
+    sharedFormData: SharedQuestionFormData;
+    isCommentsLoading: boolean;
+}) {
     const requestButtonName = chrome.i18n.getMessage("requestButtonName");
     const requestingButtonName = chrome.i18n.getMessage("requestingButtonName");
     const inputElementRef = useRef<HTMLTextAreaElement>(null);
@@ -40,10 +48,8 @@ export function QuestionForm({ videoInfo }: { videoInfo: VideoInfoType }) {
         DEBOUNCE_DELAY
     );
     const onInput = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        const inputElement = inputElementRef.current;
-        if (!inputElement) {
-            return;
-        }
+        const inputElement = e.target as HTMLTextAreaElement;
+
         if (autoCompleteData) {
             cancelPendingRequest();
 
@@ -62,23 +68,21 @@ export function QuestionForm({ videoInfo }: { videoInfo: VideoInfoType }) {
         }
 
         if (!(e instanceof CustomEvent) && isGeminiServiceAvailable) {
+            cancelPendingRequest();
             debouncedInputHandler(e);
         }
+
+        adjustInputHeight(inputElement);
     };
 
     useEffect(() => {
-        if (autoCompleteData && inputElementRef.current && autoCompleteTextRef.current) {
-            inputElementRef.current.style.height = autoCompleteTextRef.current.scrollHeight + "px";
-        }
-    }, [autoCompleteData, inputElementRef.current, autoCompleteTextRef.current]);
-
-    useEffect(() => {
-        if (inputElementRef.current) {
-            adjustInputHeight(inputElementRef.current);
+        const inputElement = inputElementRef.current;
+        if (inputElement) {
+            adjustInputHeight(inputElement);
 
             // cursor focus on the input field
             const focusTimeout = setTimeout(() => {
-                inputElementRef.current?.focus();
+                inputElement.focus();
             }, 100);
 
             return () => {
@@ -113,6 +117,18 @@ export function QuestionForm({ videoInfo }: { videoInfo: VideoInfoType }) {
         }
     }, [isRequesting]);
 
+    useEffect(() => {
+        const inputElement = inputElementRef.current;
+        if (!inputElement) {
+            return;
+        }
+
+        const autoCompleteText = autoCompleteTextRef.current;
+        if (autoCompleteData && autoCompleteText) {
+            inputElement.style.height = autoCompleteText.scrollHeight + "px";
+        }
+    }, [autoCompleteData, inputElementRef.current, autoCompleteTextRef.current]);
+
     function getInputWidth() {
         const inputElement = inputElementRef.current;
         if (!inputElement) {
@@ -135,21 +151,15 @@ export function QuestionForm({ videoInfo }: { videoInfo: VideoInfoType }) {
                     className="question-input"
                     rows={1}
                     onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-                        if (!inputElementRef.current) {
-                            return;
-                        }
+                        console.debug("onKeyDown", e);
+                        const inputElement = e.target as HTMLTextAreaElement;
 
                         if (!autoCompleteData && e.key === "Enter") {
                             requestButtonRef.current?.click();
                             return;
                         }
 
-                        handleKeyDown(
-                            e,
-                            inputElementRef.current,
-                            setAutoCompleteData,
-                            autoCompleteData
-                        );
+                        handleKeyDown(e, inputElement, setAutoCompleteData, autoCompleteData);
                     }}
                     onInput={onInput}
                     placeholder={placeholder}
@@ -158,19 +168,26 @@ export function QuestionForm({ videoInfo }: { videoInfo: VideoInfoType }) {
                 <button
                     ref={requestButtonRef}
                     className="question-button"
-                    onClick={e =>
+                    onClick={() => {
+                        if (!inputElementRef.current) {
+                            return;
+                        }
                         onRequestButtonClick(
-                            e,
                             setIsRequesting,
                             setError,
                             videoInfo,
-                            inputElementRef.current
-                        )
-                    }
-                    {...(isRequesting ? { disabled: true } : {})}
+                            inputElementRef.current,
+                            sharedFormData
+                        );
+                    }}
+                    {...(isRequesting || isCommentsLoading ? { disabled: true } : {})}
                 >
                     <span className="default-text">{requestButtonName}</span>
-                    <span className="loading-text">{requestingButtonName}</span>
+                    <span className="loading-text">
+                        {isCommentsLoading && !isRequesting
+                            ? requestButtonName
+                            : requestingButtonName}
+                    </span>
                 </button>
                 {autoCompleteData && (
                     <div

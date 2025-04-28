@@ -1,6 +1,6 @@
 import { PromptData } from "../../types";
-import { promptDivider } from "./messages";
-import { getTranscriptPrompt, getVideoInfoPrompt } from "./transcript";
+import { getMessage, promptDivider } from "./messages";
+import { getCodeBlockedText, getVideoInfoPrompt } from "./prompt-formatter";
 
 export function setPromptText(textarea: HTMLTextAreaElement, text: string): void {
     const lines = text.split("\n");
@@ -25,25 +25,46 @@ export function setPromptWithTranscript(
     promptTextarea: HTMLTextAreaElement,
     promptData: PromptData
 ): void {
-    const { prompt, transcript } = getPromptTextWithTranscript(promptData);
+    const { prompt, transcript, comments } = getPromptTextWithAttachments(promptData);
 
     setPromptText(promptTextarea, prompt);
 
-    const attachFilename = chrome.i18n.getMessage("attachFilename");
-    attachTextAsFile(promptTextarea, transcript, attachFilename);
+    if (transcript) {
+        const attachFilename = chrome.i18n.getMessage("attachFilename");
+        attachTextAsFile(promptTextarea, transcript, attachFilename);
+    }
+
+    if (comments) {
+        const attachFilename = chrome.i18n.getMessage("attachCommentsFilename");
+        attachTextAsFile(promptTextarea, comments, attachFilename);
+    }
 }
 
-function getPromptTextWithTranscript(promptData: PromptData): {
+function getPromptTextWithAttachments(promptData: PromptData): {
     prompt: string;
-    transcript: string;
+    transcript: string | null;
+    comments: string | null;
 } {
     const videoInfoPrompt = getVideoInfoPrompt(promptData);
-    const transcriptPrompt = getTranscriptPrompt(promptData);
+    const message = getMessage(promptData.langCode);
+    const transcriptPrompt = promptData.transcript
+        ? getCodeBlockedText({
+              title: message.transcript,
+              text: promptData.transcript,
+          })
+        : null;
+    const commentsTextPrompt = promptData.commentsText
+        ? getCodeBlockedText({
+              title: message.comments,
+              text: promptData.commentsText,
+          })
+        : null;
 
     return {
         prompt: `${promptData.question}
 ${promptDivider}
 ${videoInfoPrompt}`,
         transcript: transcriptPrompt,
+        comments: commentsTextPrompt,
     };
-} 
+}

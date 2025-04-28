@@ -157,9 +157,8 @@ export function QuestionSuggestions({ videoInfo }: QuestionSuggestionsProps) {
                 id="question-suggestions-error"
                 className="message"
                 {...(error ? { type: error.type || "error" } : {})}
-            >
-                {error?.message}
-            </p>
+                dangerouslySetInnerHTML={{ __html: error?.message || '' }}
+            />
             {isLoading && <Spinner />}
         </div>
     );

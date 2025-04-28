@@ -1,4 +1,4 @@
-import { Errors } from "../../errors.js";
+import { Errors } from "../../errors";
 import { VideoInfo } from "../../types";
 import { getVideoInfoFromItemVideoOptionMenu } from "./videoInfo/itemVideoOptionMenu.js";
 import { getVideoInfoFromMainVideoOptionMenu } from "./videoInfo/mainVideoOptionMenu.js";

@@ -37,10 +37,3 @@ export function isQuestionDialogOpened(): boolean {
     const containerElement = getContainerElement();
     return containerElement ? containerElement.style.display === "block" : false;
 }
-
-export function pauseVideoPlayer(): void {
-    const videoPlayer = document.querySelector<HTMLVideoElement>("video.html5-main-video");
-    if (videoPlayer) {
-        videoPlayer.pause();
-    }
-}

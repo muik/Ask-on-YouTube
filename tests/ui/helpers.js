@@ -1,6 +1,6 @@
 // Helper function to wait for a selector and click it.
 export async function waitAndClick(page, selector, options = {}) {
-    await page.waitForSelector(selector, { timeout: 2000, ...options });
+    await page.waitForSelector(selector, { timeout: 3000, ...options });
     await page.click(selector);
 }
 

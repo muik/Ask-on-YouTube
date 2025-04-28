@@ -101,6 +101,9 @@
     "attachFilename": {
         "message": "transcript.txt"
     },
+    "attachCommentsFilename": {
+        "message": "comments.txt"
+    },
     "chatgptMorePages": {
         "message": "Do not respond yet. There are more pages to come."
     },
@@ -130,5 +133,17 @@
     },
     "geminiApiTimeoutError": {
         "message": "Request to Gemini API timed out. Please try again."
+    },
+    "stopLoadingButtonName": {
+        "message": "Stop"
+    },
+    "loadMoreButtonName": {
+        "message": "Load more"
+    },
+    "transcriptLabelName": {
+        "message": "Transcript"
+    },
+    "commentsLabelName": {
+        "message": "Comments"
     }
 }

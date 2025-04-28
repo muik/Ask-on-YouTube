@@ -12,9 +12,10 @@ const dataCache = new LRUCache(10);
 
 export async function getVideoPagePromptDataCached(
     videoId: string,
-    langCode: string = "en"
+    langCode: string = "en",
+    includeTranscript: boolean
 ): Promise<VideoPagePromptData> {
-    const cacheKey = `${videoId}-${langCode}`;
+    const cacheKey = `${videoId}-${langCode}-${includeTranscript ? 1 : 0}`;
     if (dataCache.has(cacheKey)) {
         const data = dataCache.get(cacheKey);
         console.debug(`Using cached transcript for video ID: ${videoId} and langCode: ${langCode}`);
@@ -27,7 +28,7 @@ export async function getVideoPagePromptDataCached(
         description: description,
     };
 
-    if (!transcriptItems) {
+    if (!includeTranscript || !transcriptItems) {
         return data;
     }
 
