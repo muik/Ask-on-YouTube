@@ -151,7 +151,6 @@ export function QuestionForm({
                     className="question-input"
                     rows={1}
                     onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-                        console.debug("onKeyDown", e);
                         const inputElement = e.target as HTMLTextAreaElement;
 
                         if (!autoCompleteData && e.key === "Enter") {
