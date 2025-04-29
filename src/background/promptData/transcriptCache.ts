@@ -22,7 +22,7 @@ export async function getVideoPagePromptDataCached(
         return data;
     }
 
-    const { transcriptItems, description } = await getVideoPageData(videoId);
+    const { transcriptItems, description, chapters } = await getVideoPageData(videoId);
     const data: VideoPagePromptData = {
         transcript: null,
         description: description,
@@ -33,7 +33,7 @@ export async function getVideoPagePromptDataCached(
     }
 
     const link = await loadTranscriptLink(transcriptItems, langCode);
-    data.transcript = await getTranscriptParagraphised(link);
+    data.transcript = await getTranscriptParagraphised(link, chapters);
 
     dataCache.put(cacheKey, data);
     console.debug(`Cached transcript for video ID: ${videoId} and langCode: ${langCode}`);

@@ -1,4 +1,5 @@
 import { getTranscriptParagraphised, InvalidTranscriptFormatError, TranscriptFetchError } from '../transcript';
+import { Chapter } from '../promptData/types';
 
 // Mock fetch globally
 global.fetch = jest.fn();
@@ -18,13 +19,22 @@ describe('transcript.ts', () => {
             </transcript>
         `;
 
+        const mockTranscriptXmlOverHour = `
+            <transcript>
+                <text start="3600.0" dur="1.5">Hello world</text>
+                <text start="3660.0" dur="1.0">This is a test</text>
+                <text start="3670.0" dur="1.5">of the transcript</text>
+                <text start="3680.0" dur="1.0">paragraph system</text>
+            </transcript>
+        `;
+
         it('should paragraphise transcript with default interval', async () => {
             (global.fetch as jest.Mock).mockResolvedValueOnce({
                 ok: true,
                 text: () => Promise.resolve(mockTranscriptXml)
             });
 
-            const result = await getTranscriptParagraphised('https://example.com/transcript');
+            const result = await getTranscriptParagraphised('https://example.com/transcript', null);
             
             expect(result).toBe(
                 'Hello world This is a test of the transcript paragraph system'
@@ -37,7 +47,7 @@ describe('transcript.ts', () => {
                 text: () => Promise.resolve(mockTranscriptXml)
             });
 
-            const result = await getTranscriptParagraphised('https://example.com/transcript', 3.0);
+            const result = await getTranscriptParagraphised('https://example.com/transcript', null, 3.0);
             
             expect(result).toBe(
                 'Hello world This is a test of the transcript paragraph system'
@@ -57,9 +67,63 @@ describe('transcript.ts', () => {
                 text: () => Promise.resolve(dirtyTranscriptXml)
             });
 
-            const result = await getTranscriptParagraphised('https://example.com/transcript');
+            const result = await getTranscriptParagraphised('https://example.com/transcript', null);
             
             expect(result).toBe('Hello & world This is \'test\'');
+        });
+
+        it('should paragraphise transcript with chapters', async () => {
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: true,
+                text: () => Promise.resolve(mockTranscriptXml)
+            });
+
+            const chapters: Chapter[] = [
+                { title: 'Introduction', startTime: 0 },
+                { title: 'Main Content', startTime: 2.5 }
+            ];
+
+            const result = await getTranscriptParagraphised('https://example.com/transcript', chapters);
+            
+            expect(result).toBe(
+                '## Introduction [0:00~]\nHello world This is a test\n\n## Main Content [0:02~]\nof the transcript paragraph system'
+            );
+        });
+
+        it('should paragraphise transcript with chapters starting after 0', async () => {
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: true,
+                text: () => Promise.resolve(mockTranscriptXml)
+            });
+
+            const chapters: Chapter[] = [
+                { title: 'First Chapter', startTime: 2.5 },
+                { title: 'Second Chapter', startTime: 4.0 }
+            ];
+
+            const result = await getTranscriptParagraphised('https://example.com/transcript', chapters);
+            
+            expect(result).toBe(
+                'Hello world This is a test\n\n## First Chapter [0:02~]\nof the transcript\n\n## Second Chapter [0:04~]\nparagraph system'
+            );
+        });
+
+        it('should paragraphise transcript with chapters over an hour', async () => {
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: true,
+                text: () => Promise.resolve(mockTranscriptXmlOverHour)
+            });
+
+            const chapters: Chapter[] = [
+                { title: 'First Hour', startTime: 3600 },
+                { title: 'After First Hour', startTime: 3660 }
+            ];
+
+            const result = await getTranscriptParagraphised('https://example.com/transcript', chapters);
+            
+            expect(result).toBe(
+                '## First Hour [1:00:00~]\nHello world\n\n## After First Hour [1:01:00~]\nThis is a test\nof the transcript\nparagraph system'
+            );
         });
     });
 
@@ -70,7 +134,7 @@ describe('transcript.ts', () => {
                 status: 404
             });
 
-            await expect(getTranscriptParagraphised('https://example.com/transcript'))
+            await expect(getTranscriptParagraphised('https://example.com/transcript', null))
                 .rejects
                 .toThrow(TranscriptFetchError);
         });
@@ -81,7 +145,7 @@ describe('transcript.ts', () => {
                 text: () => Promise.resolve('Invalid XML format')
             });
 
-            await expect(getTranscriptParagraphised('https://example.com/transcript'))
+            await expect(getTranscriptParagraphised('https://example.com/transcript', null))
                 .rejects
                 .toThrow(InvalidTranscriptFormatError);
         });
@@ -89,7 +153,7 @@ describe('transcript.ts', () => {
         it('should throw error when transcript fetch fails', async () => {
             (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
 
-            await expect(getTranscriptParagraphised('https://example.com/transcript'))
+            await expect(getTranscriptParagraphised('https://example.com/transcript', null))
                 .rejects
                 .toThrow('Network error');
         });

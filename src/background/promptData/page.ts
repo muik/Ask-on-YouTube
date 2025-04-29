@@ -1,4 +1,6 @@
-interface TranscriptItem {
+import { Chapter } from "./types";
+
+interface Transcript {
     language: {
         code: string;
         name: string;
@@ -29,13 +31,8 @@ interface YouTubeChapter {
     };
 }
 
-interface Chapter {
-    title: string;
-    startTime: string;
-}
-
 interface VideoPageData {
-    transcriptItems: TranscriptItem[] | null;
+    transcriptItems: Transcript[] | null;
     description: string | null;
     chapters: Chapter[] | null;
 }
@@ -123,7 +120,7 @@ function getDescriptionFromText(text: string): {
 }
 
 function getTranscriptItemsFromHtml(videoPageHtml: string): {
-    items: TranscriptItem[];
+    items: Transcript[];
     endIndex: number;
 } | null {
     const CAPTIONS_START_MARKER = '"captions":';
@@ -166,7 +163,7 @@ function extractChaptersFromVideoHtml(htmlContent: string): {
 
         const chapters = chaptersJson.map((chapter: YouTubeChapter) => ({
             title: chapter.chapterRenderer.title.simpleText,
-            startTime: chapter.chapterRenderer.timeRangeStartMillis,
+            startTime: chapter.chapterRenderer.timeRangeStartMillis / 1000,
         }));
 
         return {
