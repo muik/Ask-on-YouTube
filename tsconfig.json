@@ -30,5 +30,5 @@
         "types": ["jest", "node", "chrome"],
     },
     "include": ["src/**/*", "tests/**/*"],
-    "exclude": ["node_modules", "dist", "build", "coverage"]
+    "exclude": ["node_modules", "dist"]
 }

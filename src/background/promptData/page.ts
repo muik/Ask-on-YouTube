@@ -1,4 +1,4 @@
-export interface TranscriptItem {
+interface TranscriptItem {
     language: {
         code: string;
         name: string;
@@ -20,9 +20,24 @@ interface YouTubeCaptionsResponse {
     };
 }
 
+interface YouTubeChapter {
+    chapterRenderer: {
+        title: {
+            simpleText: string;
+        };
+        timeRangeStartMillis: number;
+    };
+}
+
+interface Chapter {
+    title: string;
+    startTime: string;
+}
+
 interface VideoPageData {
     transcriptItems: TranscriptItem[] | null;
     description: string | null;
+    chapters: Chapter[] | null;
 }
 
 /**
@@ -32,57 +47,93 @@ interface VideoPageData {
  */
 export async function getVideoPageData(videoId: string): Promise<VideoPageData> {
     const response = await fetch("https://www.youtube.com/watch?v=" + videoId);
+    if (!response.ok) {
+        throw new Error("Failed to fetch video page");
+    }
     const html = await response.text();
-    const { items, endIndex } = getTranscriptItemsFromHtml(html);
-    const description = getDescriptionFromText(html.substring(endIndex));
+
+    return getVideoPageDataFromHtml(html);
+}
+
+async function getVideoPageDataFromHtml(html: string): Promise<VideoPageData> {
+    const transcriptResult = getTranscriptItemsFromHtml(html);
+    const transcriptItems = transcriptResult?.items ?? null;
+    if (transcriptResult) {
+        html = html.substring(transcriptResult.endIndex);
+    }
+
+    const descriptionResult = getDescriptionFromText(html);
+    const description = descriptionResult?.description ?? null;
+    if (descriptionResult) {
+        html = html.substring(descriptionResult.endIndex);
+    }
+
+    const chaptersResult = extractChaptersFromVideoHtml(html);
+    const chapters = chaptersResult?.chapters ?? null;
 
     return {
-        transcriptItems: items,
+        transcriptItems,
         description,
+        chapters,
     };
 }
 
-function getDescriptionFromText(text: string): string | null {
+function getTextBetweenMarkers(
+    text: string,
+    startMarker: string,
+    endMarker: string
+): {
+    text: string;
+    endIndex: number;
+} | null {
+    const startMarkerIndex = text.indexOf(startMarker);
+    if (startMarkerIndex === -1) {
+        console.debug("No start marker found");
+        return null;
+    }
+
+    const startIndex = startMarkerIndex + startMarker.length;
+    const endIndex = text.indexOf(endMarker, startIndex);
+    if (endIndex === -1) {
+        console.debug("No end marker found");
+        return null;
+    }
+
+    return {
+        text: text.substring(startIndex, endIndex),
+        endIndex, // to be used for the next marker
+    };
+}
+
+function getDescriptionFromText(text: string): {
+    description: string;
+    endIndex: number;
+} | null {
     const START_MARKER = ',"description":{"simpleText":"';
     const END_MARKER = '"},"lengthSeconds":"';
 
-    const descriptionIndex = text.indexOf(START_MARKER);
-    if (descriptionIndex === -1) {
-        console.debug("No start marker of description found");
-        return null;
-    }
+    const result = getTextBetweenMarkers(text, START_MARKER, END_MARKER);
+    if (!result) return null;
 
-    const startIndex = descriptionIndex + START_MARKER.length;
-    const endIndex = text.indexOf(END_MARKER, startIndex);
-
-    if (endIndex === -1) {
-        console.debug("No end marker of description found");
-        return null;
-    }
-
-    const description = text.slice(startIndex, endIndex);
-    return description.replace(/\\n/g, "\n");
+    const description = result.text.replace(/\\n/g, "\n");
+    return {
+        description,
+        endIndex: result.endIndex,
+    };
 }
 
 function getTranscriptItemsFromHtml(videoPageHtml: string): {
-    items: TranscriptItem[] | null;
+    items: TranscriptItem[];
     endIndex: number;
-} {
+} | null {
     const CAPTIONS_START_MARKER = '"captions":';
     const CAPTIONS_END_MARKER = ',"videoDetails';
-    const captionsIndex = videoPageHtml.indexOf(CAPTIONS_START_MARKER);
 
-    if (captionsIndex === -1) {
-        return {
-            items: null,
-            endIndex: -1,
-        };
-    } // No Caption Available
+    const result = getTextBetweenMarkers(videoPageHtml, CAPTIONS_START_MARKER, CAPTIONS_END_MARKER);
+    if (!result) return null;
 
-    const startIndex = captionsIndex + CAPTIONS_START_MARKER.length;
-    const captionsEndIndex = videoPageHtml.indexOf(CAPTIONS_END_MARKER, startIndex);
-    const captionsJsonString = videoPageHtml.slice(startIndex, captionsEndIndex).replace("\n", "");
-    const captionsJson = JSON.parse(captionsJsonString) as YouTubeCaptionsResponse;
+    const jsonString = result.text.replace("\n", "");
+    const captionsJson = JSON.parse(jsonString) as YouTubeCaptionsResponse;
     const captionTracks = captionsJson.playerCaptionsTracklistRenderer.captionTracks;
 
     const items = captionTracks.map(track => ({
@@ -95,6 +146,35 @@ function getTranscriptItemsFromHtml(videoPageHtml: string): {
 
     return {
         items,
-        endIndex: captionsEndIndex,
+        endIndex: result.endIndex,
     };
+}
+
+function extractChaptersFromVideoHtml(htmlContent: string): {
+    chapters: Chapter[];
+    endIndex: number;
+} | null {
+    const START_MARKER = '"chapters":';
+    const END_MARKER = ',"trackingParams":';
+
+    const result = getTextBetweenMarkers(htmlContent, START_MARKER, END_MARKER);
+    if (!result) return null;
+
+    try {
+        // Parse the chapters array
+        const chaptersJson = JSON.parse(result.text);
+
+        const chapters = chaptersJson.map((chapter: YouTubeChapter) => ({
+            title: chapter.chapterRenderer.title.simpleText,
+            startTime: chapter.chapterRenderer.timeRangeStartMillis,
+        }));
+
+        return {
+            chapters,
+            endIndex: result.endIndex,
+        };
+    } catch (error) {
+        console.error("Error parsing chapters:", error, result.text);
+        return null;
+    }
 }
