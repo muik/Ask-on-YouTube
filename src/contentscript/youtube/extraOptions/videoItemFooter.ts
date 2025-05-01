@@ -42,8 +42,7 @@ export function handleVideoItemFooter(dropdown: Element): boolean {
 
                 if (mutation.attributeName === "focused" && target.hasAttribute("focused")) {
                     const optionClickResult = getOptionClickResult();
-                    if (!optionClickResult) {
-                        console.debug("no option click result", target);
+                    if (!optionClickResult || !optionClickResult.videoInfo) {
                         extraOptions.setAttribute("aria-hidden", "true");
                         return;
                     }

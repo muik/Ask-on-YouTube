@@ -69,7 +69,6 @@ export function getVideoInfoFromItemVideoOptionMenu(target: HTMLElement): ClickR
     // Locate an <a> tag within the container that links to the video
     const linkElement = videoContainer.querySelector<HTMLAnchorElement>("a#thumbnail");
     if (!linkElement || !linkElement.href) {
-        console.debug("No video link found", videoContainer);
         return {
             type: ClickElementType.OTHER,
         };
