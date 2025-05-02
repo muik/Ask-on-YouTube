@@ -101,7 +101,7 @@ function preventExtraOptionsRemoval(footer: Element): void {
             mutations.forEach(mutation => {
                 if (mutation.removedNodes.length > 0) {
                     mutation.removedNodes.forEach(node => {
-                        if ((node as Element).classList.contains(extraOptionsClassName)) {
+                        if ((node as Element).classList?.contains(extraOptionsClassName)) {
                             const footer = mutation.target as Element;
                             const extraOptions = createExtraOptionsContainer();
                             footer.insertAdjacentElement("beforeend", extraOptions);

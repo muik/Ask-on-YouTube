@@ -112,7 +112,6 @@ function getVideoInfoFromShortsItem(target: HTMLElement): ClickResult | undefine
             type: ClickElementType.UNEXPECTED,
         };
     }
-    console.debug("getVideoInfoFromShortsItem", container);
 
     const linkElement = container.querySelector<HTMLAnchorElement>("h3 a");
     const thumbnailElement = container.querySelector<HTMLImageElement>("img.yt-core-image");
