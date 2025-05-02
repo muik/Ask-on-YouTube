@@ -221,6 +221,7 @@
 }
 .ytq-form #question-input-error {
     margin-top: 4px;
+    line-height: 1.5;
 }
 
 #ytq-detail-related-above {
@@ -237,7 +238,10 @@
     background-color: var(--yt-spec-text-primary);
     color: var(--yt-spec-text-primary-inverse);
 }
-#ytq-detail-related-above .ytq-form .question-button:hover {
+#ytq-detail-related-above .ytq-form .question-button[disabled] svg {
+    fill: var(--yt-spec-text-primary-inverse);
+}
+#ytq-detail-related-above .ytq-form .question-button:not([disabled]):hover {
     background: var(--yt-spec-10-percent-layer);
 }
 #ytq-detail-related-above .ytq-form .question-button:active {

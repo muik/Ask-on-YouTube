@@ -6,14 +6,18 @@ import { getVideoInfoFromVideoDetail } from "../videoInfo.js";
 
 interface SimpleQuestionFormProps {}
 
+const requestButtonName = chrome.i18n.getMessage("requestButtonName");
+const requestingButtonName = chrome.i18n.getMessage("requestingButtonName");
+
 export const containerId = "ytq-simple-question";
 
 export function SimpleQuestionForm({}: SimpleQuestionFormProps) {
-    const requestButtonName = chrome.i18n.getMessage("requestButtonName");
-    const requestingButtonName = chrome.i18n.getMessage("requestingButtonName");
-    const [error, setError] = useState<{ message: string; type?: string } | null>(null);
+    const [error, setError] = useState<{ message: string; type?: string; code?: string } | null>(
+        null
+    );
     const [isRequesting, setIsRequesting] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
+    const [isDisabled, setIsDisabled] = useState(false);
 
     const onFocus = (event: React.FocusEvent<HTMLInputElement>) => {
         event.preventDefault();
@@ -43,6 +47,16 @@ export function SimpleQuestionForm({}: SimpleQuestionFormProps) {
         }
     }, []);
 
+    useEffect(() => {
+        if (isRequesting) {
+            setIsDisabled(true);
+        } else if (error?.code === Errors.EXTENSION_CONTEXT_INVALIDATED.code) {
+            setIsDisabled(true);
+        } else {
+            setIsDisabled(false);
+        }
+    }, [isRequesting, error]);
+
     return (
         <div id={containerId} className="ytq-form">
             <div className="question-input-container">
@@ -52,16 +66,18 @@ export function SimpleQuestionForm({}: SimpleQuestionFormProps) {
                     className="question-input"
                     value=""
                     onFocus={onFocus}
-                    {...(isRequesting && { disabled: true })}
+                    {...(isDisabled && { disabled: true })}
                 />
                 <button
                     className="question-button"
                     onClick={e => onRequestButtonClick(e, setIsRequesting, setError)}
-                    {...(isRequesting && { disabled: true })}
+                    {...(isDisabled && { disabled: true })}
                 >
                     <QuestionMarkIcon />
                     <span className="default-text">{requestButtonName}</span>
-                    <span className="loading-text">{requestingButtonName}</span>
+                    <span className="loading-text">
+                        {isRequesting ? requestingButtonName : requestButtonName}
+                    </span>
                 </button>
             </div>
             <p
