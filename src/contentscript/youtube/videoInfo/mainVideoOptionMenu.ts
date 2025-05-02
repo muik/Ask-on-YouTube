@@ -39,6 +39,13 @@ export function getVideoInfoFromMainVideoOptionMenu(target: HTMLElement): ClickR
 
     let menuButton = expectedMenuButton;
     if (expectedMenuButton?.nodeName !== "YTD-MENU-RENDERER") {
+        if (expectedMenuButton?.getAttribute("id")?.endsWith("-replies")) {
+            // skip more-replies or less-replies button
+            return {
+                type: ClickElementType.OTHER,
+            };
+        }
+
         console.debug("expectedMenuButton", expectedMenuButton);
         menuButton = target.closest("ytd-menu-renderer") as HTMLElement | null;
     }
