@@ -25,7 +25,7 @@ const Config: Config = {
     MAX_HISTORY_SIZE: 500,
     MAX_HISTORY_SIZE_IN_PROMPT: 10,
     REF_CODE: "ytq",
-    INCLUSIONS_ENABLED: false,
+    INCLUSIONS_ENABLED: true,
 };
 
 export default Config; 
