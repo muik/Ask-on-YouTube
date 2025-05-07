@@ -11,6 +11,7 @@
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 0 24px 12px var(--paper-dialog-shadow-color, rgba(0, 0, 0, 0.15));
+    padding: 20px 24px 24px 24px;
 }
 .ytq-dialog > *:first-child {
     margin-top: 24px;
